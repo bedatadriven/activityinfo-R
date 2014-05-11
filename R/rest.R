@@ -6,7 +6,7 @@
 #' Remaining arguments are treated as query parameters
 #' and must be named
 #' 
-#' @importFrom httr GET accept_json verbose 
+#' @importFrom httr GET accept_json verbose content
 #' @importFrom rjson fromJSON 
 getResource <- function(path, ...) {
   

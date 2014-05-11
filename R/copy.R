@@ -52,7 +52,7 @@ cloneActivity <- function(activity, targetDatabaseId) {
   for(i in seq_along(activity$indicators)) {
     sourceIndicatorIds[i] <- activity$indicators[[i]]$id
     targetIndicatorIds[i] <- do.call("createIndicator", c(
-                activityId = activity$id, 
+                activityId = targetActivityId, 
                 activity$indicators[[i]],
                 sortOrder = i)) 
   
@@ -65,7 +65,7 @@ cloneActivity <- function(activity, targetDatabaseId) {
   for(i in seq_along(activity$attributeGroups)) {
     attributeGroup <- activity$attributeGroups[[i]]
     targetGroupId <- do.call("createAttributeGroup", c(
-      activityId = activity$id, 
+      activityId = targetActivityId,
       attributeGroup))
     
     for(attribute in attributeGroup$attributes) {
@@ -86,11 +86,13 @@ cloneActivity <- function(activity, targetDatabaseId) {
     
     target <- list()
     target$id <- generateId()
+    target$reportingPeriodId <- generateId()
     target$activityId <- targetActivityId
-    target$startDate <- site$startDate
-    target$endDate <- site$endDate
+    target$date1 <- site$startDate
+    target$date2 <- site$endDate
     target$locationId <- site$location$id
     target$partnerId <- site$partner$id
+    target$comments <- site$comments
     
     for(indicatorId in names(site$indicatorValues)) {
       indicatorIndex <- match(x = as.integer(indicatorId), sourceIndicatorIds)

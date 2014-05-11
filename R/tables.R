@@ -59,6 +59,39 @@ asActivityDataFrame <- function(databaseSchema) {
   df
 }
 
+asIndicatorDataFrame <- function(databaseSchema) {
+  tables <- lapply(databaseSchema$activities, function(activity) {
+    indicators <- activity$indicators
+    data.frame(
+      databaseId=        databaseSchema$id,
+      activityId =       activity$id,
+      indicatorId =        extractField(indicators, "id"),
+      indicatorName =        extractField(indicators, "name"),
+      indicatorCategory =        extractField(indicators, "category"),
+      aggregation = extractField(indicators, "aggregation"),
+      units = extractField(indicators, "units"),
+      mandatory = extractField(indicators, "mandatory"),
+      listHeader = extractField(indicators, "listHeader"))
+      
+  })
+  do.call("rbind", tables)
+}
+
+asAttributeGroupDataFrame <- function(databaseSchema) {
+  
+  tables <- lapply(databaseSchema$activities, function(activity) {
+    groups <- activity$attributeGroups
+    data.frame(
+      databaseId=        databaseSchema$id,
+      activityId =       activity$id,
+      attributeGroupId =        extractField(groups, "id"),
+      attributeGroupName =        extractField(groups, "name"),
+      multipleAllowed =        extractField(groups, "multipleAllowed"),
+      mandatory = extractField(groups, "mandatory"))
+    
+  })
+  do.call("rbind", tables)
+}
 
 # helper functions to make other functions to extract 
 # the data from the list for us

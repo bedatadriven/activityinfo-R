@@ -134,5 +134,20 @@ createAttribute <- function(...)
 createSite <- function(properties) 
   executeCommand("CreateSite", properties = properties)
 
+#' Deletes an activity
+#' 
+#' @export
 deleteActivity <- function(activityId) 
   invisible(executeCommand("Delete", entityName = "Activity", id = activityId))
+
+#' Deletes an indicator
+#' 
+#' @export
+deleteIndicator <- function(indicatorId) 
+  invisible(executeCommand("Delete", entityName = "Indicator", id = indicatorId))
+
+#' Deletes an attribute group
+#' 
+#' @export
+deleteAttributeGroup <- function(attributeGroupId) 
+  invisible(executeCommand("Delete", entityName = "AttributeGroup", id = attributeGroupId))

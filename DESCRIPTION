@@ -1,4 +1,4 @@
-Package: ActivityInfo
+Package: activityinfo
 Type: Package
 Title: Query and update datasets from ActivityInfo.org
 Version: 0.2

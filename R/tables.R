@@ -7,7 +7,7 @@
 getSitesDataFrame <- function(databaseId, activityId) {
   
   # fetch this activity's schema
-  db <- getDatabaseSchema(database_id)
+  db <- getDatabaseSchema(databaseId)
   activityIds <- sapply(db$activities, function(a) a$id )
   
   # double check that database / activity corresponds
@@ -20,13 +20,13 @@ getSitesDataFrame <- function(databaseId, activityId) {
   activity <- db$activities[[ which(activityIds == activityId) ]]
   
   # fetch the site data
-  sites <- get_sites(activityId)
+  sites <- getSites(activityId)
   
   columns <- list(
     siteId =               extractField(sites, "id"),
     activityId =           extractField(sites, "activity"),
-    startDate =    as.Date(extractField(sites, "startDate")),
-    endDate =      as.Date(extractField(sites, "endDate")),
+    startDate =      extractField(sites, "startDate"),
+    endDate =        extractField(sites, "endDate"),
     locationId =     extractNestedField(sites, "location", "id"),
     locationName =   extractNestedField(sites, "location", "name"),
     latitude =       extractNestedField(sites, "location", "latitude"),

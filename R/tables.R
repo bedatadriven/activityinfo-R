@@ -105,8 +105,7 @@ getMonthlyReportsCube <- function(activityId, month) {
 #' @export
 getMonthlyReportsCubeForDatabase <- function(databaseId, month) {
   
-  # Make a list of all indicators so that we can create a table
-  # with the same 
+  db <- getDatabaseSchema(databaseId)
   
   # Fetch one cube per activity
   tables <- lapply(db$activities, function(activity) {

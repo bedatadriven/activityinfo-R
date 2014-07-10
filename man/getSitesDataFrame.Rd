@@ -2,9 +2,26 @@
 \alias{getSitesDataFrame}
 \title{getSitesDataFrame}
 \usage{
-getSitesDataFrame(databaseId, activityId)
+getSitesDataFrame(activity)
+}
+\arguments{
+  \item{activity}{an activity object}
+
+  \item{month}{the month for which to fetch indicator
+  values, in the format '2014-02'}
 }
 \description{
 Fetch the sites for an activity as a data.frame
+}
+\details{
+If the activity has monthly reporting, indicator values
+will only be fetched if the month is specified
+}
+\examples{
+\dontrun{
+clusterDb <- getDatabase(4)
+nfi <- clusterDb$activities[[1]]
+df <- getSitesDataFrame(nfi, '2014-02')
+}
 }
 

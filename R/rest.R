@@ -19,10 +19,7 @@ getResource <- function(path, ...) {
   url <- paste(activityInfoRootUrl(), "resources", path, sep = "/")
   url <- paste(url, queryString, sep="?")
   
-  cat(sprintf("requesting: %s...\n", url))
-  
-  result <- GET(url,
-      config = list(authenticate(), accept_json()), ...) 
+  result <- GET(url, activityInfoAuthentication(), accept_json())
   
   if(result$status_code != 200) {
     stop(sprintf("Request for %s failed with status code %d: %s",

@@ -3,40 +3,145 @@
 #' getSitesDataFrame
 #' 
 #' Fetch the sites for an activity as a data.frame
+#' 
+#' If the activity has monthly reporting, indicator values will
+#' only be fetched if the month is specified
+#' 
+#' @param activity an activity object
+#' @param month the month for which to fetch indicator values, in 
+#'              the format '2014-02'
+#'              
+#' @examples \dontrun{
+#' clusterDb <- getDatabase(4)
+#' nfi <- clusterDb$activities[[1]]
+#' df <- getSitesDataFrame(nfi, '2014-02')
+#' }
 #' @export
-getSitesDataFrame <- function(databaseId, activityId) {
+getSitesDataFrame <- function(activity) {
   
-  # fetch this activity's schema
-  db <- getDatabaseSchema(databaseId)
-  activityIds <- sapply(db$activities, function(a) a$id )
+  # fetch the site data  
+  sites <- getSites(activity$id)
   
-  # double check that database / activity corresponds
-  if( !(activityId %in% activityIds)) {
-    stop(sprintf("database %s (id=%d) has no activity with id=%d", 
-         db$name, database_id, activityId))
+  columns <- list()
+  columns$siteId <- extractField(sites, "id")
+  columns$activityId <- extractField(sites, "activity")
+  
+  if(activity$reportingFrequency == 0) {
+    columns$startDate <- extractField(sites, "startDate")
+    columns$endDate <- extractField(sites, "endDate")
   }
+
+  columns$locationId <- extractNestedField(sites, "location", "id")
+  columns$locationName <- extractNestedField(sites, "location", "name")
+  columns$latitude <- extractNestedField(sites, "location", "latitude")
+  columns$longitude <- extractNestedField(sites, "location", "longitude")
+  columns$partnerId <- extractNestedField(sites, "partner", "id")
+  columns$partnerName <- extractNestedField(sites, "partner", "name")
+
   
-  # get the activity schema
-  activity <- db$activities[[ which(activityIds == activityId) ]]
-  
-  # fetch the site data
-  sites <- getSites(activityId)
-  
-  columns <- list(
-    siteId =               extractField(sites, "id"),
-    activityId =           extractField(sites, "activity"),
-    startDate =      extractField(sites, "startDate"),
-    endDate =        extractField(sites, "endDate"),
-    locationId =     extractNestedField(sites, "location", "id"),
-    locationName =   extractNestedField(sites, "location", "name"),
-    latitude =       extractNestedField(sites, "location", "latitude"),
-    longitude =      extractNestedField(sites, "location", "longitude"),
-    partnerId =      extractNestedField(sites, "partner", "id"),
-    partnerName =    extractNestedField(sites, "partner", "name")
-  )
-  
+  for(group in activity$attributeGroups) {
+    if(group$multipleAllowed) {
+      for(attrib in group$attributes) {
+        columns[[paste(group$name, ".", attrib$name)]] <- 
+          sapply(sites, function(s) attrib$id %in% s$attributes)
+      }
+    } else {
+      value <- character(length(sites))
+      if(length(sites) > 0) {
+        for(attrib in group$attributes) {
+          present <- sapply(sites, function(s) attrib$id %in% s$attributes)
+          value[present] <- attrib$name
+        }
+      }
+      columns[[group$name]] <- value
+    }
+  }
   data.frame(columns, stringsAsFactors=FALSE)
 }
+
+#' getMonthlyReportsCube
+#' 
+#' Retrieves a data.frame containing sites and indicators in rows  
+#' 
+#' @param activityId the activityid
+#' @param month the calendar month to retrieve in the format '2014-02'
+#' 
+#' @examples
+#' \dontrun{ 
+#' db <- getDatabase(1064)
+#' sites <- getSitesDataFrame(db$activities[[1]])
+#' cube <- getMonthlyReportsCube(1064, '2014-06')
+#' merge(sites, cube)
+#' }
+#' @export
+getMonthlyReportsCube <- function(activityId, month) {
+  
+  cube <- getResource("sites/cube", form = activityId, dimension = "indicator", dimension = "site", month = month)
+
+  columns <- list()
+  columns$siteId <- extractDimension(cube, "Site", "id")
+  columns$indicatorName <- extractDimension(cube, "Indicator", "label")
+  columns$indicatorId <-   extractDimension(cube, "Indicator", "id")
+  columns$month <- rep(month, length(cube))
+  columns$value <-  extractBucketValue(cube)
+
+  data.frame(columns, stringsAsFactors=FALSE)
+}
+
+#' getMonthlyReportsCubeForDatabase
+#' 
+#' Retrieves a data.frame containing the siteId, indicatorId, and 
+#' indicatorName, month, and value columns for all sites in the 
+#' given database, combined with details about the sites.
+#' 
+#' This routine will return only rows for those activities and
+#' sites with results for the given months- if a site has no
+#' results provided for the given month, it will not appear in these
+#' results.
+#' 
+#' @param databaseId
+#' @param month the calendar month to retrieve in the format '2014-02'
+#' 
+#' @export
+getMonthlyReportsCubeForDatabase <- function(databaseId, month) {
+  
+  # Make a list of all indicators so that we can create a table
+  # with the same 
+  
+  # Fetch one cube per activity
+  tables <- lapply(db$activities, function(activity) {
+    cat(sprintf("Fetching %d %s %s...\n", activity$id, activity$category, activity$name))
+    
+    # Fetch a data frame for this activity with sites in rows, and 
+    # attributes of the sites in the columns
+    sites <- getSitesDataFrame(activity)
+    
+    # Fetch indicators for this month
+    indicatorValues <- getMonthlyReportsCube(activityId=activity$id, month='2014-06')
+    
+    merge(sites, indicatorValues)
+  })
+  
+  # Make sure all activities have the same attributes
+  columnNames <- unique(unlist(sapply(tables, function(table) names(table)), recursive=T))
+  tables <- lapply(tables, function(table) {
+    columns <- lapply(columnNames, function(columnName) {
+      column <- table[[columnName]]
+      if(is.null(column)) {
+        logical(if(is.null(table)) 0 else nrow(table))
+      } else {
+        column
+      }
+    })
+    names(columns) <- columnNames
+    data.frame(columns, stringsAsFactors=F)
+  })
+  
+  
+  # Merge into mega table
+  table <- do.call("rbind", tables)
+}
+
 
 #' asActivityDataFrame
 #' 
@@ -120,3 +225,33 @@ extractNestedField <- function(sites, fieldName, nestedFieldName)
       NA
     }
   })
+
+extractDimension <- function(buckets, dimension, property) {
+  if(length(buckets) == 0) {
+    logical(0)
+  } else {
+    sapply(buckets, function(bucket) {
+      obj <- bucket$key[[dimension]]
+      if(is.list(obj)) {
+        x <- obj[[property]]
+        if(!is.null(x) && is.atomic(x)) {
+          x
+        } else {
+          NA
+        }
+      } else {
+        NA
+      }
+    })
+  }
+}
+
+extractBucketValue <- function(buckets) {
+  if(length(buckets) == 0) {
+    numeric(0)
+  } else {
+    sapply(buckets, function(bucket) {
+      bucket$sum
+    })
+  }
+}

@@ -25,7 +25,7 @@ activityInfoRootUrl <- local({
 #' Constructs a httr::authentication object from saved credentials 
 #' from the user's home directory at ~/.activityinfo.credentials
 #' 
-authenticate <- local({
+activityInfoAuthentication <- local({
   
   credentials <- NULL
   

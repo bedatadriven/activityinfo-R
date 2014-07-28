@@ -116,7 +116,7 @@ getMonthlyReportsCubeForDatabase <- function(databaseId, month) {
     sites <- getSitesDataFrame(activity)
     
     # Fetch indicators for this month
-    indicatorValues <- getMonthlyReportsCube(activityId=activity$id, month='2014-06')
+    indicatorValues <- getMonthlyReportsCube(activityId=activity$id, month=month)
     
     merge(sites, indicatorValues)
   })

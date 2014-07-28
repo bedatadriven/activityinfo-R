@@ -6,9 +6,10 @@ executeCommand <- function(type, ...) {
   body <- list( type = type,
                 command = list(...))
 
+  print(body)
   
   url <- paste(activityInfoRootUrl(), "command", sep = "/")
-  result <- POST(url, body = toJSON(body), authenticate())
+  result <- POST(url, body = toJSON(body), activityInfoAuthentication())
   
   
   if(result$status_code != 200) {
@@ -133,6 +134,25 @@ createAttribute <- function(...)
 #' @export
 createSite <- function(properties) 
   executeCommand("CreateSite", properties = properties)
+
+
+#' Creates a new site
+#' @param id the id for the new location
+#' @param locationTypeId the id of the locationType to which to add this location
+#' @param name the name of the location
+#' @param axe an optional secondary name of the location (originally axe routiere, but can be
+#'        used for PCODEs or alternate spellings)
+#' @param longitude optional latitude of the location
+#' @param latitude optional longitude of the location
+#' @export 
+createLocation <- function(id = generateId(), locationTypeId, name, axe = NULL, longitude = NULL, latitude = NULL) 
+  invisible(executeCommand("CreateLocation", properties = list(
+      id=id, 
+      locationTypeId=locationTypeId, 
+      name=name,
+      axe=axe,
+      longitude=longitude,
+      latitude=latitude)))
 
 #' Deletes an activity
 #' 

@@ -1,7 +1,7 @@
 
 #' @export
 #' @importFrom httr POST
-#' @importFrom rjson fromJSON
+#' @importFrom rjson toJSON fromJSON
 executeCommand <- function(type, ...) {
   body <- list( type = type,
                 command = list(...))

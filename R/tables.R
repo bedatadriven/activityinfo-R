@@ -29,6 +29,9 @@ getSitesDataFrame <- function(activity) {
   if(activity$reportingFrequency == 0) {
     columns$startDate <- extractField(sites, "startDate")
     columns$endDate <- extractField(sites, "endDate")
+    for(indicator in activity$indicators) {
+      columns[[indicator$name]] <- extractNestedField(sites, "indicatorValues", as.character(indicator$id))
+    }
   }
 
   columns$locationId <- extractNestedField(sites, "location", "id")
@@ -37,7 +40,7 @@ getSitesDataFrame <- function(activity) {
   columns$longitude <- extractNestedField(sites, "location", "longitude")
   columns$partnerId <- extractNestedField(sites, "partner", "id")
   columns$partnerName <- extractNestedField(sites, "partner", "name")
-
+  
   
   for(group in activity$attributeGroups) {
     if(group$multipleAllowed) {
@@ -56,6 +59,7 @@ getSitesDataFrame <- function(activity) {
       columns[[group$name]] <- value
     }
   }
+  
   data.frame(columns, stringsAsFactors=FALSE)
 }
 

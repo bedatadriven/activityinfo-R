@@ -5,8 +5,8 @@ source("mailinator.R")
 
 library(activityinfo)
 
-activityInfoRootUrl(getConfig("test.root.uri"))
-activityInfoLogin(getConfig("test.user"), getConfig("test.pass"))
+activityInfoRootUrl(getConfig("TEST_ROOT_URI"))
+activityInfoLogin(getConfig("TEST_USER"), getConfig("TEST_PASS"))
 
 # Generate a base identifier for this test run
 testId <- paste("test", strftime(Sys.time(), "%Y%m%d-%H%M%S"), sep="-")

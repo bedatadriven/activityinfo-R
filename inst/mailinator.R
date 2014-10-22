@@ -1,7 +1,7 @@
 library(httr)
 library(rjson)
 
-mailinatorToken <- getConfig("mailinator.token")
+mailinatorToken <- getConfig("MAILINATOR_TOKEN")
 
 testEmail <- function(inboxId, subject) 
   parse(inbox.id, "mailinator.com", sep="@")

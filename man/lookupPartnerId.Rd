@@ -1,0 +1,19 @@
+\name{lookupPartnerId}
+\alias{lookupPartnerId}
+\title{Retrieves a partner's id from a database by name}
+\usage{
+lookupPartnerId(databaseId, partnerId)
+}
+\arguments{
+  \item{databaseId}{the database in which to look}
+
+  \item{partnerId}{numeric id or short name on which to
+  search}
+}
+\value{
+the partner's numeric id
+}
+\description{
+Retrieves a partner's id from a database by name
+}
+

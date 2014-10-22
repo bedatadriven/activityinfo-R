@@ -1,0 +1,18 @@
+\name{copyUsers}
+\alias{copyUsers}
+\title{Copies users and their authorizations from a source to a target database. Any partners
+that are not yet present in the target database are copied from the source database.}
+\usage{
+copyUsers(sourceDatabase, targetDatabase)
+}
+\arguments{
+  \item{sourceDatabase}{the id of the source database}
+
+  \item{targetDatabase}{the id of the target database}
+}
+\description{
+Copies users and their authorizations from a source to a
+target database. Any partners that are not yet present in
+the target database are copied from the source database.
+}
+

@@ -7,10 +7,78 @@ cloneDatabase <- function(sourceDatabaseId, targetDatabaseId) {
   
   sourceSchema <- getDatabaseSchema(sourceDatabaseId)
   
+  # Clone each activity/form
   for(i in seq_along(sourceSchema$activities)) {
     cloneActivity(sourceSchema$activities[[i]], targetDatabaseId) 
   }
 }
+
+#' Function to read partner names from a database with numeric identifier
+#' provided by 'databaseId'. 
+#' @return a character vector with one or more partner names.
+getPartnerNames <- function(databaseId) {
+  schema <- getDatabaseSchema(databaseId)
+  partners <- schema$partners
+  
+  # pull partner names out of list into a vector:
+  partner.names <- sapply(schema$partners, function(p) { p$name })
+}
+
+#' Copies the partners linked to 'sourceDatabase' to each database
+#' in the vector 'targetDatabase'. Databases are identified by their numeric
+#' identifier and you must, of course, have access to all databases.
+#' 
+#' @param sourceDatabase the id of the source database
+#' @param targetDatabase the id of the target database 
+#' @export
+copyPartners <- function(sourceDatabase, targetDatabase) {
+  
+  partner.names <- getPartnerNames(sourceDatabase)
+  
+  for (database in targetDatabase) {  
+    database.partners <- getPartnerNames(database)
+    for (partner in partner.names) {
+      if (!(partner %in% database.partners)) {
+        cat("Adding partner '", partner, "'' to database ", database,
+            "\n", sep="")
+        tryCatch(executeCommand("AddPartner",
+                                databaseId=database,
+                                partner=list(name=partner)),
+                 error=function(e) {
+                   cat("Failed to add partner '", partner, "' with error: ", e,
+                       "\n", sep="")
+                 }
+        )
+      }
+    }
+  }
+  cat("Done.\n")
+  invisible()
+}
+
+#' Copies users and their authorizations from a source to a target database. Any partners
+#' that are not yet present in the target database are copied from the source database.
+#' 
+#' @param sourceDatabase the id of the source database
+#' @param targetDatabase the id of the target database 
+#' @export
+copyUsers <- function(sourceDatabase, targetDatabase) {
+  copyPartners(sourceDatabase, targetDatabase)
+  users <- getAuthorizedUsers(sourceDatabase)
+  for(user in users) {
+    updateUserPermissions(databaseId=targetDatabase, 
+                          userEmail=user$email, userName=user$name, 
+                          partner = user$partner$id,
+                          allowView = user$allowView,
+                          allowViewAll = user$allowViewAll,
+                          allowEdit = user$allowEdit,
+                          allowEditAll = user$allowEditAll,
+                          allowDesign = user$allowEditDesign,
+                          allowManageUsers = user$allowManageUsers,
+                          allowManageAllUsers = user$allowManageAllUsers)
+  }
+} 
+
 
 #' Deletes all activities within a given database
 #' 

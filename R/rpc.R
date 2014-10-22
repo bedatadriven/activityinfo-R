@@ -6,8 +6,6 @@ executeCommand <- function(type, ...) {
   body <- list( type = type,
                 command = list(...))
 
-  print(body)
-  
   url <- paste(activityInfoRootUrl(), "command", sep = "/")
   result <- POST(url, body = toJSON(body), activityInfoAuthentication())
   
@@ -73,39 +71,122 @@ createEntity <- function(entityName, properties) {
 }
 
 #' Creates a new database
+#' @param name a short-ish name for the database
+#' @param description a longer description of the database
+#' @param country the location and geographic reference data to use
 #' @export
-createDatabase <- function(name, description, countryId) 
+createDatabase <- function(name, description, countryId) {
+  if(missing(countryId)) {
+    stop("you must provide a country for the database, either using a numeric id or an ISO-3166 two-letter code.")
+  }
+  countryId <- lookupCountryId(countryId)
   createEntity("UserDatabase",
                   properties = list(
                     name = name,
                     description = description,
                     countryId = countryId))
+}
+
+#' Looks up the internal identifier for a country by code
+#' @param countryId the country's name or ISO-3166-2 code 
+#' @return the country's internal identifier used by AI.
+#' @export
+lookupCountryId <- function(countryId) {
+  if(is.numeric(countryId)) {
+    return(countryId)
+  } else {
+    countries <- getCountries()
+    for(i in 1:nrow(countries)) {
+      if(identical(as.character(countries$code[i]), countryId) ||
+         identical(countries$name[i], countryId)) {
+        return(countries$id[i])
+      } 
+    }
+  }
+  stop(paste(sprintf("Invalid country id '%s': tried matching against ISO-3166-1 alpha-2 codes and name.", countryId),
+                     "See https://www.activityinfo.org/resources/countries for a full list of codes."))
+}
+
 
 #' Creates a new activity
+#' @param databaseId the id of the database in which to create this activity
+#' @param name the activity's name
+#' @param category the new activity's category
+#' @param locationTypeId the id of the activity's location type
+#' @param reportingFrequency either "once" or "monthly"
 #' @export
-createActivity <- function(...) 
+createActivity <- function(databaseId, name, category = NULL, locationTypeId, reportingFrequency = "once") {
+  if(missing(locationTypeId)) {
+    stop("you must provide a locationTypeId")
+  }
+  locationTypeId <- lookupLocationType(databaseId, locationTypeId)
+  
+  if(is.numeric(reportingFrequency)) {
+    rpCode <- reportingFrequency
+  } else {
+    rpCode <- switch(match.arg(reportingFrequency),
+                once = 0,
+                monthly = 1)
+  }
+  
   createEntity("Activity", 
-    propertyList(list(...), 
-                   databaseId = requiredId,
-                   name = requiredString,
-                   category = optionalString,
-                   locationTypeId = requiredId,
-                   reportingFrequency = requiredId))
+      list(databaseId = databaseId,
+           name = name,
+           category = category,
+           locationTypeId = locationTypeId,
+           reportingFrequency = rpCode))
+}
+
+lookupLocationType <- function(databaseId, locationTypeId) {
+  if(is.numeric(locationTypeId)) {
+    return(locationTypeId)
+  }
+  db <- getDatabaseSchema(databaseId)
+  countryId <- db$country$id
+  types <- getLocationTypes(countryId)
+  for(type in types) {
+    if(identical(type$name, locationTypeId)) {
+      return(type$id)
+    }
+  }
+  stop(sprintf("Could not match locationTypeId %s to a location type in country %s: %s",
+               deparse(locationTypeId),
+               db$country$name,
+               paste(sapply(types, function(t) t$name), collapse=",")))
+}
 
 #' Creates a new Indicator
-#' 
+#' @param activityId the id of the activity to which this indicator should be added
+#' @param name the name of this indicator
+#' @param category the activity's category
+#' @param listHeader a short label to be used when displaying the indicator as a column
+#' @param description an extended description of this indicator
+#' @param units the units of measure of this indicator
+#' @param aggregation the method to use when aggregating this indicator's values ("sum", "mean", "count")
+#' @param sortOrder an ordinal value indicating the order of this indicator
+#' @return the id of the new indicator
 #' @export
-createIndicator <- function(...) 
+createIndicator <- function(activityId, 
+                            name, 
+                            category = NULL, 
+                            listHeader = NULL, 
+                            description = NULL,
+                            units,
+                            aggregation = c("sum", "mean", "count"),
+                            sortOrder = NULL) {
+  
   createEntity("Indicator", 
-    propertyList(list(...), 
-                 activityId = requiredId,
-                 name = requiredString, 
-                 category = optionalString,
-                 listHeader = optionalString,
-                 description = optionalString, 
-                 units = requiredString,  
-                 aggregation = requiredId,
-                 sortOrder = requiredId))
+               list(
+                 activityId = activityId,
+                 name = name, 
+                 category = category,
+                 listHeader = listHeader,
+                 description = description, 
+                 units = units,  
+                 aggregation = aggregation,
+                 sortOrder = sortOrder))
+}
+
 
 #' Creates a new AttributeGroup
 #' 
@@ -166,8 +247,118 @@ deleteActivity <- function(activityId)
 deleteIndicator <- function(indicatorId) 
   invisible(executeCommand("Delete", entityName = "Indicator", id = indicatorId))
 
+#' Deletes a site
+#' 
+#' @export
+deleteSite <- function(siteId) 
+  invisible(executeCommand("DeleteSite", id = siteId))
+
+
 #' Deletes an attribute group
 #' 
 #' @export
 deleteAttributeGroup <- function(attributeGroupId) 
   invisible(executeCommand("Delete", entityName = "AttributeGroup", id = attributeGroupId))
+
+
+#' Adds a partner to a database. 
+#' 
+#' Currently, partners are globally shared objects with an identity derived from their
+#' name. 
+#' 
+#' @param databaseId the numeric id of the database to which the partner will be added
+#' @param partnerName the partner's acronym or shortened name
+#' @param partnerFullName the partner's complete name. Only used if a partner identified by 'partnerName' does 
+#'        not yet exist
+#' @return the id of the partner 
+#' @export 
+addPartner <- function(databaseId, partnerName, fullPartnerName = NULL) {
+  result <- executeCommand("AddPartner", 
+                          databaseId=databaseId,
+                          partner=list(name=partnerName, fullName=fullPartnerName))
+  result$newId
+}
+
+
+
+#' Updates a user's permission to access a database. 
+#' 
+#' If the user identified by the 
+#' given email address does not yet have an ActivityInfo account, they will receive
+#' an email inviting them to create a new account and choose a password.
+#' 
+#' @param databaseId the id of the database
+#' @param userEmail the user's email address
+#' @param userName the user's full name. If the user with this email address already has an 
+#'                  activityinfo account, this parameter will have no effect.
+#' @param partner the id or name of the partner to which the user will be added.
+#' @param allowView if TRUE, the user can view sites belonging to their partner
+#' @param allowViewAll if TRUE, the user can view sites belonging to all partners
+#' @param allowEdit if TRUE, the user can create and edit sites belonging to their partner
+#' @param allowEditAll if TRUE, the user can  create and edit sites belonging to all partners
+#' @param allowDesign if TRUE, the user can create and modify the structure of the database
+#' @param allowManageUsers if TRUE, the user can change the permission of users for the database within their own partner
+#' @param allowManageUsers if TRUE, the user can change the permission of all users within the database
+#' @export
+updateUserPermissions <- function(databaseId, 
+                                  userEmail, userName, 
+                                  partner,
+                                 allowView = TRUE,
+                                 allowViewAll = FALSE,
+                                 allowEdit = FALSE,
+                                 allowEditAll = FALSE,
+                                 allowDesign = FALSE,
+                                 allowManageUsers = FALSE,
+                                 allowManageAllUsers = FALSE) {
+  userEmail <- as.character(userEmail)
+  userName <- as.character(userName)
+  
+  stopifnot(grepl(userEmail, pattern=".+@.+"))
+  stopifnot(!missing(userName))
+ 
+  partnerId <- lookupPartnerId(databaseId, partner)
+  
+  invisible(executeCommand("UpdateUserPermissions", 
+                 databaseId = databaseId,
+                 model = list(
+                   name = userName,
+                   email = userEmail,
+                   partner = list(id = partnerId),
+                   allowView = allowView,
+                   allowViewAll = allowViewAll,
+                   allowEdit = allowEdit,
+                   allowEditAll = allowEditAll,
+                   allowDesign = allowDesign,
+                   allowManageUsers = allowManageUsers,
+                   allowManageAllUsers = allowManageAllUsers)))
+}
+
+#' Retrieves a partner's id from a database by name
+#' 
+#' @param databaseId the database in which to look
+#' @param partnerId numeric id or short name on which to search
+#' @return the partner's numeric id
+#' @export
+lookupPartnerId <- function(databaseId, partnerId) {
+  db <- getDatabaseSchema(databaseId)
+  for(partner in db$partners) {
+    if(is.numeric(partnerId) && length(partnerId) == 1 &&
+         partnerId == partner$id) {
+        return(partner$id)
+        
+    } else if(identical(partnerId, partner$name)) {
+        return(partner$id)
+    }
+  }
+  
+  partnerNames <- paste(sort(sapply(db$partners, function(p) p$name)), collapse=", ")
+  stop(sprintf("Could not find partner with id or name %s in database %d. The following partners are present: %s",
+               deparse(partnerId), databaseId, partnerNames))
+  
+}
+
+#' Retrieves a list of authorized users of the given database
+#' @param databaseId the id of the database for which to retrieve authorized users
+#' @export
+getAuthorizedUsers <- function(databaseId) 
+  executeCommand("GetUsers", databaseId = databaseId)$data

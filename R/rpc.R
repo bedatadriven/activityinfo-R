@@ -75,7 +75,7 @@ createEntity <- function(entityName, properties) {
 #' @param description a longer description of the database
 #' @param country the location and geographic reference data to use
 #' @export
-createDatabase <- function(name, description, countryId) {
+createDatabase <- function(name, description = NULL, countryId) {
   if(missing(countryId)) {
     stop("you must provide a country for the database, either using a numeric id or an ISO-3166 two-letter code.")
   }

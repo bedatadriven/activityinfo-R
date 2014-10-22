@@ -44,3 +44,12 @@ stopifnot(length(db$activities) == 1)
 stopifnot(identical(db$activities[[1]]$name, "A1"))
 stopifnot(length(authorizedUsers)==1)
 
+# Now try to copy users to a new db
+testCopyDbId <- createDatabase(name=testDbName, country="SS")
+copyUsers(testDbId, testCopyDbId)
+
+copiedUsers <- getAuthorizedUsers(databaseId=testDbId)
+stopifnot(length(copiedUsers)==1)
+stopifnot(copiedUsers$userName == "Test McTest Test")
+stopifnot(copiedUsers$allowView == TRUE)
+

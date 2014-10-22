@@ -11,8 +11,7 @@ getEmail <- function(inboxId, subject) {
   for(msg in inbox$messages) {
     if(identical(msg$subject, subject)) {
       body <- GET("https://api.mailinator.com/api/email", query = list(msgid=msg$id, token=mailinatorToken))
-      cat(content(body, "text"))
-      return(msg$data$parts[[1]]$body)
+      return(TRUE)
     }
   }
   return(NULL)
@@ -20,13 +19,14 @@ getEmail <- function(inboxId, subject) {
 
 assertInvitationReceived <- function(inboxId) {
   subject <- "Access to ActivityInfo"
-  retries <- 5
-  while(retries < 0) {
+  retries <- 50
+  while(retries > 0) {
+    cat("Checking mail...\n")
     m <- getEmail(inboxId, subject)
     if(!is.null(m)) {
       return(TRUE)
     }
-    Sys.sleep(1)
+    Sys.sleep(2)
     retries <- (retries-1)
   }
   stop(sprintf("%s@mailinator.com did not receive an email with subject '%s'", inboxId, subject))

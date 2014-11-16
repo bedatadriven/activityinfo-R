@@ -1,0 +1,25 @@
+\name{addPartner}
+\alias{addPartner}
+\title{Adds a partner to a database.}
+\usage{
+addPartner(databaseId, partnerName, fullPartnerName = NULL)
+}
+\arguments{
+  \item{databaseId}{the numeric id of the database to which
+  the partner will be added}
+
+  \item{partnerName}{the partner's acronym or shortened
+  name}
+
+  \item{partnerFullName}{the partner's complete name. Only
+  used if a partner identified by 'partnerName' does not
+  yet exist}
+}
+\value{
+the id of the partner
+}
+\description{
+Currently, partners are globally shared objects with an
+identity derived from their name.
+}
+

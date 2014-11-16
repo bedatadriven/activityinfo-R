@@ -5,8 +5,8 @@ Version: 0.2
 Date: 2014-05-09
 Author: Alex Bertram <alex@bedatadriven.com>
 Maintainer: Alex Bertram <alex@bedatadriven.com>
-Description: More about what it does (maybe more than one line)
-License: GPLv3
+Description: Interface to ActivtyInfo.org
+License: GPL-3
 Imports:
     httr,
     rjson

@@ -1,0 +1,15 @@
+\name{getPartnerNames}
+\alias{getPartnerNames}
+\title{Function to read partner names from a database with numeric identifier
+provided by 'databaseId'.}
+\usage{
+getPartnerNames(databaseId)
+}
+\value{
+a character vector with one or more partner names.
+}
+\description{
+Function to read partner names from a database with numeric
+identifier provided by 'databaseId'.
+}
+

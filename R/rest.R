@@ -69,3 +69,11 @@ getCountries <- local({
                 name = extractField(countries, "name"))
   }
 })
+
+#' Get location types within a country
+#' @param country the country's numeric id or an ISO-3166 alpha-2 code (like 'US' or 'SS' or 'RW')
+#' @export
+getLocationTypes <- function(country) {
+  countryId <- lookupCountryId(country)
+  getResource(paste("country", countryId, "locationTypes", sep="/"))
+}

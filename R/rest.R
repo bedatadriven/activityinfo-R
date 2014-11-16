@@ -1,13 +1,14 @@
 
 
-#' get_ai_resource
+#' Get a resource by path
 #' 
 #' Retrieves a single resource from the given path.
 #' Remaining arguments are treated as query parameters
 #' and must be named
 #' 
 #' @importFrom httr GET accept_json verbose content
-#' @importFrom rjson fromJSON 
+#' @importFrom rjson fromJSON
+#' @export
 getResource <- function(path, ...) {
   
   queryParams <- list(...)

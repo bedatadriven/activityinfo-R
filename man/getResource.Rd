@@ -2,7 +2,7 @@
 \alias{getResource}
 \title{get_ai_resource}
 \usage{
-getResource(path, ...)
+getResource(path, queryParams = list(...), ...)
 }
 \description{
 Retrieves a single resource from the given path. Remaining

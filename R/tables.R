@@ -63,6 +63,32 @@ getSitesDataFrame <- function(activity) {
   data.frame(columns, stringsAsFactors=FALSE)
 }
 
+#' getIndicatorValueTable
+#' 
+#' Retrieves a data.frame containing one indicator value per row,
+#' along with the related site, location, and reporting period details
+#' linked to each value
+#' 
+#' @export
+getIndicatorValueTable <- function(databaseId) {
+  
+  sites <- activityinfo:::getResource("sites", database=databaseId)
+  
+  columns <- list()
+  columns$siteId <- extractField(sites, "id")
+  columns$activityId <- extractField(sites, "activity")
+  columns$locationId <- extractNestedField(sites, "location", "id")
+  columns$locationName <- extractNestedField(sites, "location", "name")
+  columns$partnerId <- extractNestedField(sites, "partner", "id")
+  columns$partnerName <- extractNestedField(sites, "partner", "name")  
+  
+  sites <- data.frame(columns, stringsAsFactors=FALSE)
+  
+  values <- getCube(filter = list(database = databaseId), dimensions = c("site", "indicator", "month"))
+  
+  merge(sites, values)
+}
+
 #' getMonthlyReportsCube
 #' 
 #' Retrieves a data.frame containing sites and indicators in rows  
@@ -74,22 +100,71 @@ getSitesDataFrame <- function(activity) {
 #' \dontrun{ 
 #' db <- getDatabase(1064)
 #' sites <- getSitesDataFrame(db$activities[[1]])
-#' cube <- getMonthlyReportsCube(1064, '2014-06')
+#' cube <- getMonthlyReportsCube(1064, month = '2014-06')
 #' merge(sites, cube)
 #' }
 #' @export
-getMonthlyReportsCube <- function(activityId, month) {
+getMonthlyReportsCube <- function(activityId, month)
+  getCube(filters = list(form = activityId, month = month), dimensions = c("indicator", "site"))
   
-  cube <- getResource("sites/cube", form = activityId, dimension = "indicator", dimension = "site", month = month)
 
-  columns <- list()
-  columns$siteId <- extractDimension(cube, "Site", "id")
-  columns$indicatorName <- extractDimension(cube, "Indicator", "label")
-  columns$indicatorId <-   extractDimension(cube, "Indicator", "id")
-  columns$month <- rep(month, length(cube))
-  columns$value <-  extractBucketValue(cube)
+#' getCube
+#' 
+#' Aggregates indicator values up to one or more dimensions.
+#' 
+#' @param filters a named list of dimensions on which to filter
+#' @param dimensions a list of dimensions on which to roll-up
+#' 
+#' @export
+getCube <- function(filters = list(), dimensions = c("indicator", "site")) {
 
-  data.frame(columns, stringsAsFactors=FALSE)
+  queryParams <- list()
+
+  for(filter in names(filters)) { 
+    # Expand database filter to form filter until the server supports database
+    
+    if(identical(filter, "database")) {
+      db <- getDatabaseSchema(filters[["database"]])
+      formIds <- sapply(db$activities, function(a) a$id)
+      names(formIds) <- rep("form", times=length(formIds))
+      queryParams <- c(queryParams, formIds)
+    } else if(filter %in% c("activity", "form")) {
+      queryParams <- c(queryParams, list(form = filters[[filter]]))
+    } else {
+      stop(sprintf("unknown filter value '%s'", filter))
+    }
+  }
+  
+  # Expand the dimension vector into a series of dimension=X, dimension=Y, dimension=Z
+  queryParams <- c(queryParams, structure(dimensions, .Names = rep("dimension", length(dimensions))))
+  
+  # Query server
+  cube <- getResource("sites/cube", queryParams = queryParams)
+  
+  columns <- list(value = extractBucketValue(cube))
+  
+  if("site" %in% dimensions) {
+    columns$siteId <- extractDimension(cube, "Site", "id")
+  }
+  
+  if("indicator" %in% dimensions) {
+    columns$indicatorId <-   extractDimension(cube, "Indicator", "id")
+    columns$indicatorName <- extractDimension(cube, "Indicator", "label")
+  }
+  
+  if("month" %in% dimensions) {
+    columns$month <- sprintf("%d-%02d", extractDimension(cube, "Date", "year"), extractDimension(cube, "Date", "month"))
+  }
+  
+  for(filter in unique(names(filters))) {
+    columns[[filter]] <- rep(filters[[filter]], length(cube))
+  }  
+  
+  
+  df <- data.frame(columns, stringsAsFactors=FALSE)
+  attr(df, 'cube') <- cube
+  
+  df
 }
 
 #' getMonthlyReportsCubeForDatabase
@@ -145,7 +220,6 @@ getMonthlyReportsCubeForDatabase <- function(databaseId, month) {
   table <- do.call("rbind", tables)
 }
 
-
 #' asActivityDataFrame
 #' 
 #' Creates a data.frame containing a list of activities
@@ -180,7 +254,6 @@ asIndicatorDataFrame <- function(databaseSchema) {
       units = extractField(indicators, "units"),
       mandatory = extractField(indicators, "mandatory"),
       listHeader = extractField(indicators, "listHeader"))
-      
   })
   do.call("rbind", tables)
 }

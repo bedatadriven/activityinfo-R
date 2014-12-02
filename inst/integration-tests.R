@@ -22,7 +22,7 @@ testA1 <- createActivity(databaseId=testDbId, name="A1", locationTypeId="State")
 testI1 <- createIndicator(activityId=testA1, name="Number of thneeds", description="A thing everyone, EVERYONE, needs.",
                           units="thneeds")
 
-# Add a partner to the db
+  # Add a partner to the db
 partnerId <- addPartner(database=testDbId, partnerName="NRC", fullPartnerName="Norweigen Refugee Council")
 
 # Add a (new) user to the db

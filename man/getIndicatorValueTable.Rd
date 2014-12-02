@@ -1,0 +1,12 @@
+\name{getIndicatorValueTable}
+\alias{getIndicatorValueTable}
+\title{getIndicatorValueTable}
+\usage{
+getIndicatorValueTable(databaseId)
+}
+\description{
+Retrieves a data.frame containing one indicator value per
+row, along with the related site, location, and reporting
+period details linked to each value
+}
+

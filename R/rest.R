@@ -8,9 +8,8 @@
 #' 
 #' @importFrom httr GET accept_json verbose content
 #' @importFrom rjson fromJSON 
-getResource <- function(path, ...) {
+getResource <- function(path, queryParams = list(...), ...) {
   
-  queryParams <- list(...)
   queryString <- if(length(queryParams) == 0) 
                     NULL
                   else 
@@ -76,3 +75,11 @@ getLocationTypes <- function(country) {
   countryId <- lookupCountryId(country)
   getResource(paste("country", countryId, "locationTypes", sep="/"))
 }
+
+#' Gets the locations belonging to a location type
+#' @param locationTypeId 
+#' @export
+getLocations <- function(locationTypeId) {
+   getResource("locations", type = locationTypeId)
+}
+

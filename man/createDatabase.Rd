@@ -2,7 +2,7 @@
 \alias{createDatabase}
 \title{Creates a new database}
 \usage{
-createDatabase(name, description, countryId)
+createDatabase(name, description = NULL, countryId)
 }
 \arguments{
   \item{name}{a short-ish name for the database}

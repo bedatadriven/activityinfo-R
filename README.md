@@ -12,7 +12,7 @@ directly from GitHub:
 
     install.packages("devtools")
     library(devtools)
-    install_github( "activityinfo-R", "bedatadriven")
+    install_github( "bedatadriven/activityinfo-R")
 
 
 Authentication

@@ -1,13 +1,14 @@
 
 
-#' get_ai_resource
+#' Get a resource by path
 #' 
 #' Retrieves a single resource from the given path.
 #' Remaining arguments are treated as query parameters
 #' and must be named
 #' 
 #' @importFrom httr GET accept_json verbose content
-#' @importFrom rjson fromJSON 
+#' @importFrom rjson fromJSON
+#' @export
 getResource <- function(path, queryParams = list(...), ...) {
   
   queryString <- if(length(queryParams) == 0) 
@@ -75,6 +76,7 @@ getLocationTypes <- function(country) {
   countryId <- lookupCountryId(country)
   getResource(paste("country", countryId, "locationTypes", sep="/"))
 }
+<<<<<<< HEAD
 
 #' Gets the locations belonging to a location type
 #' @param locationTypeId 
@@ -83,3 +85,5 @@ getLocations <- function(locationTypeId) {
    getResource("locations", type = locationTypeId)
 }
 
+=======
+>>>>>>> cc631e3e86d3c09424d3f326ff6ed34d9139792a

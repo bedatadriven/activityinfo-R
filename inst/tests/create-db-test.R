@@ -43,6 +43,6 @@ test.createDatabase <- function() {
   
   copiedUsers <- getAuthorizedUsers(databaseId=testDbId)
   checkTrue(length(copiedUsers)==1)
-  checkIdentical(copiedUsers$userName, "Testy McTest Test")
+  checkIdentical(copiedUsers$name, "Testy McTest Test")
   checkTrue(copiedUsers$allowView)
 }

@@ -76,7 +76,6 @@ getLocationTypes <- function(country) {
   countryId <- lookupCountryId(country)
   getResource(paste("country", countryId, "locationTypes", sep="/"))
 }
-<<<<<<< HEAD
 
 #' Gets the locations belonging to a location type
 #' @param locationTypeId 
@@ -85,5 +84,3 @@ getLocations <- function(locationTypeId) {
    getResource("locations", type = locationTypeId)
 }
 
-=======
->>>>>>> cc631e3e86d3c09424d3f326ff6ed34d9139792a

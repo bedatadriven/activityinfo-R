@@ -72,6 +72,10 @@ getSitesDataFrame <- function(activity) {
 #' @export
 getIndicatorValueTable <- function(databaseId) {
   
+  # Fetch db schema
+  db <- getDatabaseSchema(databaseId)
+  
+  # Fetch site properties
   sites <- activityinfo:::getResource("sites", database=databaseId)
   
   columns <- list()
@@ -84,8 +88,19 @@ getIndicatorValueTable <- function(databaseId) {
   
   sites <- data.frame(columns, stringsAsFactors=FALSE)
   
-  values <- getCube(filter = list(database = databaseId), dimensions = c("site", "indicator", "month"))
+  # Join additional the activityCategory
+  activities <- asActivityDataFrame(db)
+  sites <- merge(sites, subset(activities, select = c("activityId", "activityName", "activityCategory")))
   
+  # Fetch the individual indicator values
+  values <- getCube(filter = list(database = databaseId), dimensions = c("site", "indicator", "month"))
+  indicators <- asIndicatorDataFrame(db)
+  values <- merge(values, subset(indicators, select = c("indicatorId", "indicatorCategory", "units" )))
+  
+  # Join the indicator properties
+  indicators <- as
+  
+  # Join the values to their sites
   merge(sites, values)
 }
 
@@ -236,7 +251,8 @@ asActivityDataFrame <- function(databaseSchema) {
     activityCategory =       extractField(activities, "category"),
     reportingFrequency     = extractField(activities, "reportingFrequency"),
     locationTypeName = extractNestedField(activities, "locationType", "name"),
-    published =             (extractField(activities, "published") == 1)
+    published =             (extractField(activities, "published") == 1),
+    stringsAsFactors = FALSE
   )
   df
 }
@@ -253,7 +269,8 @@ asIndicatorDataFrame <- function(databaseSchema) {
       aggregation = extractField(indicators, "aggregation"),
       units = extractField(indicators, "units"),
       mandatory = extractField(indicators, "mandatory"),
-      listHeader = extractField(indicators, "listHeader"))
+      listHeader = extractField(indicators, "listHeader"),
+      stringsAsFactors = FALSE)
   })
   do.call("rbind", tables)
 }

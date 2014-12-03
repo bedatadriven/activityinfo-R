@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>Index. activityinfo 0.4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="Alex Bertram &lt;alex@bedatadriven.com&gt;">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">activityinfo 0.4</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <div class="row">
+  <div class="span8">
+    <h1>ActivityInfo R Client</h1>
+
+<p>Provides access to ActivityInfo databases through R </p>
+
+<h2>Installation</h2>
+
+<p>The package is currently under development and can be installed
+directly from GitHub:</p>
+
+<pre><code>install.packages(&quot;devtools&quot;)
+library(devtools)
+install_github( &quot;bedatadriven/activityinfo-R&quot;)
+</code></pre>
+
+<h2>Authentication</h2>
+
+<p>Once the package is installed, you can authenticate interactively
+using the activityInfoLogin() function</p>
+
+<pre><code>library(activityinfo)
+activityInfoLogin()
+</code></pre>
+
+<p>You will be prompted to save your password locally. </p>
+
+
+    <h2>Help topics</h2>
+
+    <h3></h3>
+    
+    
+    <ul class="index">
+        
+      <li>
+        <code><a href="activityInfoAuthentication.html">activityInfoAuthentication</a></code><br />Constructs a httr::authentication object from saved credentials
+</li>
+            
+      <li>
+        <code><a href="activityInfoLogin.html">activityInfoLogin</a></code><br />Configures the current session to use a user's email address and
+</li>
+            
+      <li>
+        <code><a href="ActivityInfo-package.html">ActivityInfo-package</a></code>(ActivityInfo)<br />
+</li>
+            
+      <li>
+        <code><a href="activityInfoRootUrl.html">activityInfoRootUrl</a></code><br />activityInfoRootUrl</li>
+            
+      <li>
+        <code><a href="addPartner.html">addPartner</a></code><br />Adds a partner to a database.</li>
+            
+      <li>
+        <code><a href="asActivityDataFrame.html">asActivityDataFrame</a></code><br />asActivityDataFrame</li>
+            
+      <li>
+        <code><a href="authenticate.html">authenticate</a></code><br />Constructs a httr::authentication object from saved credentials
+</li>
+            
+      <li>
+        <code><a href="cloneActivity.html">cloneActivity</a></code><br />Creates a copy of an existing activity</li>
+            
+      <li>
+        <code><a href="cloneDatabase.html">cloneDatabase</a></code><br />Creates copies of all existing activities in another
+</li>
+            
+      <li>
+        <code><a href="copyPartners.html">copyPartners</a></code><br />Copies the partners linked to 'sourceDatabase' to each database
+</li>
+            
+      <li>
+        <code><a href="copyUsers.html">copyUsers</a></code><br />Copies users and their authorizations from a source to a target database. Any partners
+</li>
+            
+      <li>
+        <code><a href="createActivity.html">createActivity</a></code><br />Creates a new activity</li>
+            
+      <li>
+        <code><a href="createAttribute.html">createAttribute</a></code><br />Creates a new attribute</li>
+            
+      <li>
+        <code><a href="createAttributeGroup.html">createAttributeGroup</a></code><br />Creates a new AttributeGroup</li>
+            
+      <li>
+        <code><a href="createDatabase.html">createDatabase</a></code><br />Creates a new database</li>
+            
+      <li>
+        <code><a href="createIndicator.html">createIndicator</a></code><br />Creates a new Indicator</li>
+            
+      <li>
+        <code><a href="createLocation.html">createLocation</a></code><br />Creates a new site</li>
+            
+      <li>
+        <code><a href="createSite.html">createSite</a></code><br />Creates a new site</li>
+            
+      <li>
+        <code><a href="deleteActivity.html">deleteActivity</a></code><br />Deletes an activity</li>
+            
+      <li>
+        <code><a href="deleteAllActivitiesInDatabase.html">deleteAllActivitiesInDatabase</a></code><br />Deletes all activities within a given database</li>
+            
+      <li>
+        <code><a href="deleteAttributeGroup.html">deleteAttributeGroup</a></code><br />Deletes an attribute group</li>
+            
+      <li>
+        <code><a href="deleteIndicator.html">deleteIndicator</a></code><br />Deletes an indicator</li>
+            
+      <li>
+        <code><a href="deleteSite.html">deleteSite</a></code><br />Deletes a site</li>
+            
+      <li>
+        <code><a href="getAdminLevel.html">getAdminLevel</a></code><br />Get an admin level by ID</li>
+            
+      <li>
+        <code><a href="getAuthorizedUsers.html">getAuthorizedUsers</a></code><br />Retrieves a list of authorized users of the given database</li>
+            
+      <li>
+        <code><a href="getCountries.html">getCountries</a></code><br />GetCountries</li>
+            
+      <li>
+        <code><a href="getCube.html">getCube</a></code><br />getCube</li>
+            
+      <li>
+        <code><a href="getDatabaseSchema.html">getDatabaseSchema</a></code><br />GetDatabaseSchema</li>
+            
+      <li>
+        <code><a href="getIndicatorValueTable.html">getIndicatorValueTable</a></code><br />getIndicatorValueTable</li>
+            
+      <li>
+        <code><a href="getLocations.html">getLocations</a></code><br />Gets the locations belonging to a location type</li>
+            
+      <li>
+        <code><a href="getLocationTypes.html">getLocationTypes</a></code><br />Get location types within a country</li>
+            
+      <li>
+        <code><a href="getMonthlyReportsCube.html">getMonthlyReportsCube</a></code><br />getMonthlyReportsCube</li>
+            
+      <li>
+        <code><a href="getMonthlyReportsCubeForDatabase.html">getMonthlyReportsCubeForDatabase</a></code><br />getMonthlyReportsCubeForDatabase</li>
+            
+      <li>
+        <code><a href="getPartnerNames.html">getPartnerNames</a></code><br />Function to read partner names from a database with numeric identifier
+</li>
+            
+      <li>
+        <code><a href="getResource.html">getResource</a></code><br />Get a resource by path</li>
+            
+      <li>
+        <code><a href="getSites.html">getSites</a></code><br />getSites</li>
+            
+      <li>
+        <code><a href="getSitesDataFrame.html">getSitesDataFrame</a></code><br />getSitesDataFrame</li>
+            
+      <li>
+        <code><a href="lookupCountryId.html">lookupCountryId</a></code><br />Looks up the internal identifier for a country by code</li>
+            
+      <li>
+        <code><a href="lookupPartnerId.html">lookupPartnerId</a></code><br />Retrieves a partner's id from a database by name</li>
+            
+      <li>
+        <code><a href="updateUserPermissions.html">updateUserPermissions</a></code><br />Updates a user's permission to access a database.</li>
+    
+    </ul>
+  </div>
+  
+  <div class="span3 offset1">
+        
+    <h2>Dependencies</h2>
+    <ul>
+      <li><strong>Depends</strong>: </li>
+      <li><strong>Imports</strong>: httr, rjson</li>
+      <li><strong>Suggests</strong>: </li>
+      <li><strong>Extends</strong>: </li>
+    </ul>
+     
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

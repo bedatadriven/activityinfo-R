@@ -13,14 +13,15 @@ for(pkg in c('devtools', 'httr', 'rjson', 'RUnit', 'roxygen2', 'Rcpp')) {
 }
 
 # Check the package for errors
+library(methods)
 devtools::check(pkg="./activityinfo")
 
 # Run the integration tests
-source("activityinfo/inst/integration-tests.R")
+source("activityinfo/inst/integration-tests.R", chdir = TRUE)
 
 
 # Install staticdocs (using a specific commit so we don't break due to hadley's changes)
-if('staticdocs' %in% installed.packages()) {
+if(!('staticdocs' %in% installed.packages())) {
   devtools::install_github('hadley/staticdocs', ref = '4be10f2a30f56a56961930e2e9d097ecd1771e28')
 }
 staticdocs::build_site("activityinfo")

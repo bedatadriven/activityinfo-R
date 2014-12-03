@@ -18,7 +18,6 @@ test.indicatorValues <- function() {
   checkIdentical( subset(meridja, indicatorName == 'OP2')$value, 25)
   checkIdentical( subset(meridja, indicatorName == 'OP2')$units, "%")
   checkIdentical( subset(meridja, indicatorName == 'OP3')$value, 125)
-  checkIdentical( subset(meridja, indicatorName == 'OP3')$indicatorCategory, 125)
   
   # Check the category name appears
   checkTrue( all(subset(df, activityName == 'MonthlyFormPoint')$activityCategory == "CategoryPoint"))

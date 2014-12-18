@@ -1,9 +1,13 @@
 
+if(!("RUnit" %in% installed.packages())) {
+  install.packages("RUnit")
+}
+
 library(RUnit)
 
 # Integration tests meant to run against the development server
-source("config.R")
-source("mailinator.R")
+source("inst/config.R")
+source("inst/mailinator.R")
 
 library(activityinfo)
 
@@ -11,7 +15,7 @@ activityInfoRootUrl(getConfig("TEST_ROOT_URI"))
 activityInfoLogin(getConfig("TEST_USER"), getConfig("TEST_PASS"))
 
 integration.tests <- defineTestSuite("Integration Tests",
-     dirs = "tests",
+     dirs = file.path("inst", "tests"),
      testFileRegexp = ".+\\.R",
      testFuncRegexp = "^test.+")
 

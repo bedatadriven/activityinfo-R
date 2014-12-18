@@ -1,28 +1,101 @@
 
-# Set a CRAN mirror to use
-options(repos=structure(c(CRAN="http://cran.rstudio.com")))
+# Continuous Integration Build Script
 
-# Install packages to Jenkins' root folder
-.libPaths(new="~/R/libs")
 
-# Install CRAN packages
-for(pkg in c('devtools', 'httr', 'rjson', 'RUnit', 'roxygen2', 'Rcpp')) {
-  if(!(pkg %in% installed.packages())) {
-    install.packages(pkg, dependencies = TRUE)
+# Install required packages
+install.dependencies <- function() {
+  
+  # Set a CRAN mirror to use
+  options(repos=structure(c(CRAN="http://cran.rstudio.com")))
+  
+  # Install packages to Jenkins' root folder
+  .libPaths(new="~/R/libs")
+  
+  # Install CRAN packages
+  for(pkg in c('devtools', 'httr', 'rjson', 'RUnit', 'roxygen2', 'Rcpp')) {
+    if(!(pkg %in% installed.packages())) {
+      install.packages(pkg, dependencies = TRUE)
+    }
   }
 }
 
 # Check the package for errors
-library(methods)
-devtools::check(pkg="./activityinfo")
+check <- function() {
+  library(methods)
+  devtools::check(pkg="./activityinfo", document = TRUE, build_args = "--no-manual")
+}
 
 # Run the integration tests
-source("activityinfo/inst/integration-tests.R", chdir = TRUE)
-
-
-# Install staticdocs (using a specific commit so we don't break due to hadley's changes)
-if(!('staticdocs' %in% installed.packages())) {
-  devtools::install_github('hadley/staticdocs', ref = '4be10f2a30f56a56961930e2e9d097ecd1771e28')
+test <- function() {
+  install.dependencies()
+  check()
+  source("activityinfo/inst/integration-tests.R", chdir = TRUE)
 }
-staticdocs::build_site("activityinfo")
+
+git <- function(...) {
+  arguments <- list(...)
+  commandLine <- paste(c("git", "-C", "activityinfo", arguments), collapse = " ")
+  exit.code <- system(command = commandLine)
+  if(exit.code != 0) {
+    stop(paste("Failed to execute: ", commandLine))
+  }
+}
+
+commit.release <- function(version) {
+  git("commit", "DESCRIPTION", "-m", sprintf('"[RELEASE] Version %s"', version))
+  git("tag", paste("activityinfo", version, sep = "-"))
+  git("push origin release")
+  git("push --tags origin release")
+}
+
+# Increment the version number of this package
+update.version <- function() {
+  
+  # Get the build number (provided by Jenkins)
+  build.number <- Sys.getenv("BUILD_NUMBER")
+  if(nchar(build.number) == 0) {
+    stop("The BUILD_NUMBER environment variable has not been defined, are we running in Jenkins?")
+  }
+  
+  # Update the description file
+  description <- read.dcf("./activityinfo/DESCRIPTION")
+  version <- numeric_version(description[1,"Version"])  
+  version$Version[3] <- build.number
+  
+  description[1, "Version"] <- as.character(version)
+  
+  write.dcf(description, file="./activityinfo/DESCRIPTION")
+  
+  return(as.character(version))
+}
+
+# Release a new version of the library, incrementing the version number
+# and comitting back to the master branch
+release <- function() {
+  install.dependencies()
+  new.version <- update.version()
+  check()
+  generate.site()
+  commit.release(new.version)
+}
+
+generate.site <- function() {
+  # Install staticdocs (using a specific commit so we don't break due to hadley's changes)
+  if(!('staticdocs' %in% installed.packages())) {
+    devtools::install_github('hadley/staticdocs', ref = '4be10f2a30f56a56961930e2e9d097ecd1771e28')
+  }
+  staticdocs::build_site("activityinfo")
+}
+
+# Check Arguments
+goals <- c("test", "release")
+arg <- commandArgs(trailingOnly = TRUE)
+
+if(length(arg) != 1 || !(arg %in% goals)) {
+  cat("Usage: Rscript ci-build.R (", paste(goals, collapse = " | "), ")\n")
+  q(status=-1)
+}
+cat(sprintf("Executing %s\n", arg))
+goal <- get(arg)
+goal()
 

@@ -42,7 +42,6 @@ git <- function(...) {
 }
 
 commit.release <- function(version) {
-
   git("add DESCRIPTION man/*.Rd")
   git("commit", "-m", sprintf('"[RELEASE] Version %s"', version))
   git("tag", paste("activityinfo", version, sep = "-"))
@@ -84,6 +83,10 @@ release <- function() {
   check()
   generate.site()
   commit.release(new.version)
+  
+  # Write the new version out to a property file for
+  # subsequent build steps
+  cat(sprintf("RELEASE_VERSION=%s\n", version), file = "release.properties")
 }
 
 generate.site <- function() {

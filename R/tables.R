@@ -261,8 +261,8 @@ asIndicatorDataFrame <- function(databaseSchema) {
   tables <- lapply(databaseSchema$activities, function(activity) {
     indicators <- activity$indicators
     data.frame(
-      databaseId=        databaseSchema$id,
-      activityId =       activity$id,
+      databaseId=        rep(databaseSchema$id, length.out=length(indicators)),
+      activityId =       rep(activity$id, length.out=length(indicators)),
       indicatorId =        extractField(indicators, "id"),
       indicatorName =        extractField(indicators, "name"),
       indicatorCategory =        extractField(indicators, "category"),

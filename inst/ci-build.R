@@ -88,14 +88,6 @@ release <- function() {
   cat(sprintf("RELEASE_VERSION=%s\n", new.version), file = "release.properties")
 }
 
-generate.site <- function() {
-  # Install staticdocs (using a specific commit so we don't break due to hadley's changes)
-  if(!('staticdocs' %in% installed.packages())) {
-    devtools::install_github('hadley/staticdocs', ref = '4be10f2a30f56a56961930e2e9d097ecd1771e28')
-  }
-  staticdocs::build_site("activityinfo")
-}
-
 # Check Arguments
 goals <- c("test", "release")
 arg <- commandArgs(trailingOnly = TRUE)

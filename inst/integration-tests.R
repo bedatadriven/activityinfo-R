@@ -12,7 +12,7 @@ source("mailinator.R")
 library(activityinfo)
 
 activityInfoRootUrl(getConfig("TEST_ROOT_URI"))
-activityInfoLogin(getConfig("TEST_USER"), getConfig("TEST_PASS"))
+activityInfoLogin(getCredentials()$userEmail, getCredentials()$password)
 
 integration.tests <- defineTestSuite("Integration Tests",
      dirs = file.path(".", "tests"),

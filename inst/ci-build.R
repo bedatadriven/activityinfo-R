@@ -44,7 +44,6 @@ git <- function(...) {
 commit.release <- function(version) {
   git("add DESCRIPTION man/*.Rd")
   git("commit", "-m", sprintf('"[RELEASE] Version %s"', version))
-  git("tag", paste("activityinfo", version, sep = "-"))
 }
 
 # Increment the version number of this package

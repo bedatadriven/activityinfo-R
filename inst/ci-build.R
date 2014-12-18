@@ -35,14 +35,16 @@ test <- function() {
 git <- function(...) {
   arguments <- list(...)
   commandLine <- paste(c("git", "-C", "activityinfo", arguments), collapse = " ")
-  exit.code <- system(command = commandLine)
-  if(exit.code != 0) {
-    stop(paste("Failed to execute: ", commandLine))
-  }
+  cat(commandLine, "\n")
+  output <- system(command = commandLine, intern = TRUE)
+  cat(output)
+  return(output)
 }
 
 commit.release <- function(version) {
-  git("commit", "DESCRIPTION", "-m", sprintf('"[RELEASE] Version %s"', version))
+
+  git("add DESCRIPTION man/*.Rd")
+  git("commit", "-m", sprintf('"[RELEASE] Version %s"', version))
   git("tag", paste("activityinfo", version, sep = "-"))
   git("push origin release")
   git("push --tags origin release")
@@ -72,6 +74,13 @@ update.version <- function() {
 # Release a new version of the library, incrementing the version number
 # and comitting back to the master branch
 release <- function() {
+  
+  # Ensure that we're on the release branch
+  currentBranch <- git("symbolic-ref --short HEAD")
+  if(!identical(currentBranch, "release")) {
+    stop(sprintf("release must be performed from the 'release' branch, currently on '%s'", currentBranch))
+  }
+  
   install.dependencies()
   new.version <- update.version()
   check()

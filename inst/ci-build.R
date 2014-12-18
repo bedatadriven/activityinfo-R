@@ -86,7 +86,7 @@ release <- function() {
   
   # Write the new version out to a property file for
   # subsequent build steps
-  cat(sprintf("RELEASE_VERSION=%s\n", version), file = "release.properties")
+  cat(sprintf("RELEASE_VERSION=%s\n", new.version), file = "release.properties")
 }
 
 generate.site <- function() {

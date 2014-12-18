@@ -80,7 +80,6 @@ release <- function() {
   install.dependencies()
   new.version <- update.version()
   check()
-  generate.site()
   commit.release(new.version)
   
   # Write the new version out to a property file for

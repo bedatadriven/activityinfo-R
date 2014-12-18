@@ -34,7 +34,7 @@ test <- function() {
 
 git <- function(...) {
   arguments <- list(...)
-  commandLine <- paste(c("git", "-C", "activityinfo", arguments), collapse = " ")
+  commandLine <- paste(c("git", "--git-dir=activityinfo/.git", "--work-tree=activityinfo", arguments), collapse = " ")
   cat(commandLine, "\n")
   output <- system(command = commandLine, intern = TRUE)
   cat(output)

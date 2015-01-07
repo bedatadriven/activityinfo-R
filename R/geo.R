@@ -10,6 +10,9 @@
 #' @export
 getAdminLevel <- function(id) {
   
+  warning("the getAdminLevel() function is deprecated, ",
+          "please use getAdminLevelEntities() instead")
+  
   url <- paste(activityInfoRootUrl(), "resources", "adminLevel", id, "entities", sep = "/")
   
   result <- GET(url, activityInfoAuthentication(), accept_json())
@@ -22,4 +25,14 @@ getAdminLevel <- function(id) {
   json <- content(result, as = "text", encoding = "UTF-8")
   
   fromJSON(json)
+}
+
+#' Get all entities belonging to an administrative level by ID
+#' 
+#' Retrieves all entities belonging to an administrative level with the given
+#' identifier.
+#' 
+#' @export
+getAdminLevelEntities <- function(id) {
+    getResource(paste("adminLevel", id, "entities", sep="/"))
 }

@@ -6,7 +6,7 @@
 #' Remaining arguments are treated as query parameters
 #' and must be named
 #' 
-#' @importFrom httr GET accept_json verbose content
+#' @importFrom httr GET accept_json verbose content http_status
 #' @importFrom rjson fromJSON
 #' @export
 getResource <- function(path, queryParams = list(...), ...) {
@@ -23,7 +23,7 @@ getResource <- function(path, queryParams = list(...), ...) {
   
   if(result$status_code != 200) {
     stop(sprintf("Request for %s failed with status code %d: %s",
-                 url, result$status_code, result$headers$statusmessage))
+                 url, result$status_code, http_status(result$status_code)$message))
   }
   
   json <- content(result, as = "text", encoding = "UTF-8")

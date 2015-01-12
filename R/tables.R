@@ -76,7 +76,7 @@ getIndicatorValueTable <- function(databaseId) {
   db <- getDatabaseSchema(databaseId)
   
   # Fetch site properties
-  sites <- activityinfo:::getResource("sites", database=databaseId)
+  sites <- getResource("sites", database=databaseId)
   
   columns <- list()
   columns$siteId <- extractField(sites, "id")

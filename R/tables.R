@@ -270,12 +270,13 @@ asIndicatorDataFrame <- function(databaseSchema) {
       databaseId=        rep(databaseSchema$id, length.out=length(indicators)),
       activityId =       rep(activity$id, length.out=length(indicators)),
       indicatorId =        extractField(indicators, "id"),
-      indicatorName =        extractField(indicators, "name"),
-      indicatorCategory =        extractField(indicators, "category"),
-      aggregation = extractField(indicators, "aggregation"),
-      units = extractField(indicators, "units"),
-      mandatory = extractField(indicators, "mandatory"),
-      listHeader = extractField(indicators, "listHeader"),
+      indicatorName =      extractField(indicators, "name"),
+      indicatorCategory =  extractField(indicators, "category"),
+      indicatorCode =      extractField(indicators, "code"),
+      aggregation =        extractField(indicators, "aggregation"),
+      units =              extractField(indicators, "units"),
+      mandatory =          extractField(indicators, "mandatory"),
+      listHeader =         extractField(indicators, "listHeader"),
       stringsAsFactors = FALSE)
   })
   do.call("rbind", tables)

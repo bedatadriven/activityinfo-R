@@ -257,6 +257,12 @@ asActivityDataFrame <- function(databaseSchema) {
   df
 }
 
+#' asIndicatorDataFrame
+#' 
+#' Creates a data.frame containing a list of indicators
+#' and their properties from the given database schema
+#' 
+#' @export
 asIndicatorDataFrame <- function(databaseSchema) {
   tables <- lapply(databaseSchema$activities, function(activity) {
     indicators <- activity$indicators
@@ -275,13 +281,19 @@ asIndicatorDataFrame <- function(databaseSchema) {
   do.call("rbind", tables)
 }
 
+#' asAttributeGroupDataFrame
+#' 
+#' Creates a data.frame containing a list of attribute groups
+#' and their properties from the given database schema
+#' 
+#' @export
 asAttributeGroupDataFrame <- function(databaseSchema) {
   
   tables <- lapply(databaseSchema$activities, function(activity) {
     groups <- activity$attributeGroups
     data.frame(
-      databaseId=        databaseSchema$id,
-      activityId =       activity$id,
+      databaseId=        rep(databaseSchema$id, length.out=length(groups)),
+      activityId =       rep(activity$id, length.out=length(groups)),
       attributeGroupId =        extractField(groups, "id"),
       attributeGroupName =        extractField(groups, "name"),
       multipleAllowed =        extractField(groups, "multipleAllowed"),

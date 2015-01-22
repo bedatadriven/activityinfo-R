@@ -12,7 +12,7 @@ executeCommand <- function(type, ...) {
   
   if(result$status_code != 200) {
     stop(sprintf("Request for %s failed with status code %d: %s",
-                 url, result$status_code, result$headers$statusmessage))
+                 url, result$status_code, http_status(result$status_code)$message))
   }
   
   fromJSON(content(result, as = "text", encoding = "UTF-8"))

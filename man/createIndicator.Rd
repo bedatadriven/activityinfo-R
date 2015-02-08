@@ -8,11 +8,11 @@ createIndicator(activityId, name, category = NULL, listHeader = NULL,
   sortOrder = NULL)
 }
 \arguments{
-\item{activityId}{the id of the activity to which this indicator should be added}
+\item{activityId}{the numeric id of the activity to which this indicator should be added}
 
 \item{name}{the name of this indicator}
 
-\item{category}{the activity's category}
+\item{category}{the activity's category as a string}
 
 \item{listHeader}{a short label to be used when displaying the indicator as a column}
 
@@ -25,7 +25,7 @@ createIndicator(activityId, name, category = NULL, listHeader = NULL,
 \item{sortOrder}{an ordinal value indicating the order of this indicator}
 }
 \value{
-the id of the new indicator
+Returns the numeric id of the newly created indicator.
 }
 \description{
 Creates a new Indicator

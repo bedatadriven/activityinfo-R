@@ -7,15 +7,18 @@ createActivity(databaseId, name, category = NULL, locationTypeId,
   reportingFrequency = "once")
 }
 \arguments{
-\item{databaseId}{the id of the database in which to create this activity}
+\item{databaseId}{the numeric id of the database in which to create this activity}
 
 \item{name}{the activity's name}
 
-\item{category}{the new activity's category}
+\item{category}{the new activity's category as a string}
 
-\item{locationTypeId}{the id of the activity's location type}
+\item{locationTypeId}{the numeric id of the activity's location type}
 
 \item{reportingFrequency}{either "once" or "monthly"}
+}
+\value{
+Returns the numeric id of the newly created activity.
 }
 \description{
 Creates a new activity

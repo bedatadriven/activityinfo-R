@@ -14,7 +14,7 @@ addPartner(databaseId, partnerName, fullPartnerName = NULL)
 not yet exist}
 }
 \value{
-the id of the partner
+Returns the numeric id of the partner.
 }
 \description{
 Currently, partners are globally shared objects with an identity derived from their

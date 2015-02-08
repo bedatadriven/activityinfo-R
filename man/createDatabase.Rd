@@ -10,9 +10,22 @@ createDatabase(name, description = NULL, countryId)
 
 \item{description}{a longer description of the database}
 
-\item{country}{the location and geographic reference data to use}
+\item{country}{the location and geographic reference data to use: either the
+numeric identifier used by ActivityInfo or an ISO-3166 two-letter code}
+}
+\value{
+Returns the numeric id of the newly created database.
 }
 \description{
 Creates a new database
+}
+\examples{
+\dontrun{
+id <- createDatabase(name="My Database in Bangladesh", countryId = "BD")
+}
+}
+\references{
+See \url{http://en.wikipedia.org/wiki/ISO_3166-2} for two-letter
+  country codes.
 }
 

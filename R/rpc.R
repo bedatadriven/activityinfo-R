@@ -73,7 +73,14 @@ createEntity <- function(entityName, properties) {
 #' Creates a new database
 #' @param name a short-ish name for the database
 #' @param description a longer description of the database
-#' @param country the location and geographic reference data to use
+#' @param country the location and geographic reference data to use: either the
+#'   numeric identifier used by ActivityInfo or an ISO-3166 two-letter code
+#' @examples \dontrun{
+#' id <- createDatabase(name="My Database in Bangladesh", countryId = "BD")
+#' }
+#' @references See \url{http://en.wikipedia.org/wiki/ISO_3166-2} for two-letter
+#'   country codes.
+#' @return Returns the numeric id of the newly created database.
 #' @export
 createDatabase <- function(name, description = NULL, countryId) {
   if(missing(countryId)) {
@@ -109,11 +116,12 @@ lookupCountryId <- function(countryId) {
 
 
 #' Creates a new activity
-#' @param databaseId the id of the database in which to create this activity
+#' @param databaseId the numeric id of the database in which to create this activity
 #' @param name the activity's name
-#' @param category the new activity's category
-#' @param locationTypeId the id of the activity's location type
+#' @param category the new activity's category as a string
+#' @param locationTypeId the numeric id of the activity's location type
 #' @param reportingFrequency either "once" or "monthly"
+#' @return Returns the numeric id of the newly created activity.
 #' @export
 createActivity <- function(databaseId, name, category = NULL, locationTypeId, reportingFrequency = "once") {
   if(missing(locationTypeId)) {
@@ -156,15 +164,15 @@ lookupLocationType <- function(databaseId, locationTypeId) {
 }
 
 #' Creates a new Indicator
-#' @param activityId the id of the activity to which this indicator should be added
+#' @param activityId the numeric id of the activity to which this indicator should be added
 #' @param name the name of this indicator
-#' @param category the activity's category
+#' @param category the activity's category as a string
 #' @param listHeader a short label to be used when displaying the indicator as a column
 #' @param description an extended description of this indicator
 #' @param units the units of measure of this indicator
 #' @param aggregation the method to use when aggregating this indicator's values ("sum", "mean", "count")
 #' @param sortOrder an ordinal value indicating the order of this indicator
-#' @return the id of the new indicator
+#' @return Returns the numeric id of the newly created indicator.
 #' @export
 createIndicator <- function(activityId, 
                             name, 
@@ -270,7 +278,7 @@ deleteAttributeGroup <- function(attributeGroupId)
 #' @param partnerName the partner's acronym or shortened name
 #' @param partnerFullName the partner's complete name. Only used if a partner identified by 'partnerName' does 
 #'        not yet exist
-#' @return the id of the partner 
+#' @return Returns the numeric id of the partner. 
 #' @export 
 addPartner <- function(databaseId, partnerName, fullPartnerName = NULL) {
   result <- executeCommand("AddPartner", 

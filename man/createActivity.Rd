@@ -4,7 +4,7 @@
 \title{Creates a new activity}
 \usage{
 createActivity(databaseId, name, category = NULL, locationTypeId,
-  reportingFrequency = "once")
+  reportingFrequency = c("once", "monthly"))
 }
 \arguments{
 \item{databaseId}{the numeric id of the database in which to create this activity}
@@ -15,7 +15,8 @@ createActivity(databaseId, name, category = NULL, locationTypeId,
 
 \item{locationTypeId}{the numeric id of the activity's location type}
 
-\item{reportingFrequency}{either "once" or "monthly"}
+\item{reportingFrequency}{a string that defines the reporting frequency; can
+be "once" (default) or "monthly"}
 }
 \value{
 Returns the numeric id of the newly created activity.

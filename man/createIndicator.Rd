@@ -8,19 +8,22 @@ createIndicator(activityId, name, category = NULL, listHeader = NULL,
   sortOrder = NULL)
 }
 \arguments{
-\item{activityId}{the numeric id of the activity to which this indicator should be added}
+\item{activityId}{the numeric id of the activity to which this indicator
+should be added}
 
 \item{name}{the name of this indicator}
 
 \item{category}{the activity's category as a string}
 
-\item{listHeader}{a short label to be used when displaying the indicator as a column}
+\item{listHeader}{a short label to be used when displaying the indicator as a
+column}
 
 \item{description}{an extended description of this indicator}
 
 \item{units}{the units of measure of this indicator}
 
-\item{aggregation}{the method to use when aggregating this indicator's values ("sum", "mean", "count")}
+\item{aggregation}{the method to use when aggregating this indicator's values;
+can be "sum" (default), "mean" or "count"}
 
 \item{sortOrder}{an ordinal value indicating the order of this indicator}
 }

@@ -120,10 +120,12 @@ lookupCountryId <- function(countryId) {
 #' @param name the activity's name
 #' @param category the new activity's category as a string
 #' @param locationTypeId the numeric id of the activity's location type
-#' @param reportingFrequency either "once" or "monthly"
+#' @param reportingFrequency a string that defines the reporting frequency; can 
+#' be "once" (default) or "monthly"
 #' @return Returns the numeric id of the newly created activity.
 #' @export
-createActivity <- function(databaseId, name, category = NULL, locationTypeId, reportingFrequency = "once") {
+createActivity <- function(databaseId, name, category = NULL, locationTypeId,
+                           reportingFrequency = c("once", "monthly")) {
   if(missing(locationTypeId)) {
     stop("you must provide a locationTypeId")
   }
@@ -164,13 +166,16 @@ lookupLocationType <- function(databaseId, locationTypeId) {
 }
 
 #' Creates a new Indicator
-#' @param activityId the numeric id of the activity to which this indicator should be added
+#' @param activityId the numeric id of the activity to which this indicator
+#'   should be added
 #' @param name the name of this indicator
 #' @param category the activity's category as a string
-#' @param listHeader a short label to be used when displaying the indicator as a column
+#' @param listHeader a short label to be used when displaying the indicator as a
+#'   column
 #' @param description an extended description of this indicator
 #' @param units the units of measure of this indicator
-#' @param aggregation the method to use when aggregating this indicator's values ("sum", "mean", "count")
+#' @param aggregation the method to use when aggregating this indicator's values; 
+#'   can be "sum" (default), "mean" or "count"
 #' @param sortOrder an ordinal value indicating the order of this indicator
 #' @return Returns the numeric id of the newly created indicator.
 #' @export
@@ -183,6 +188,15 @@ createIndicator <- function(activityId,
                             aggregation = c("sum", "mean", "count"),
                             sortOrder = NULL) {
   
+  if(is.numeric(aggregation)) {
+    aggCode <- aggregation
+  } else {
+    aggCode <- switch(match.arg(aggregation),
+                     sum = 0,
+                     mean = 1,
+                     count = 2)
+  }
+  
   createEntity("Indicator", 
                list(
                  activityId = activityId,
@@ -191,7 +205,7 @@ createIndicator <- function(activityId,
                  listHeader = listHeader,
                  description = description, 
                  units = units,  
-                 aggregation = aggregation,
+                 aggregation = aggCode,
                  sortOrder = sortOrder))
 }
 

@@ -10,12 +10,14 @@ executeCommand <- function(type, ...) {
   result <- POST(url, body = toJSON(body), activityInfoAuthentication())
   
   
-  if(result$status_code != 200) {
+  if (!result$status_code %in% seq(from=200, to=299, by=1)) {
     stop(sprintf("Request for %s failed with status code %d: %s",
                  url, result$status_code, http_status(result$status_code)$message))
   }
   
-  fromJSON(content(result, as = "text", encoding = "UTF-8"))
+  # is status code is not 200 or 201, the content() function may not return anything:
+  tryCatch(fromJSON(content(result, as = "text", encoding = "UTF-8")),
+           error=function(e) invisible())
 }
 
 requiredString <- function(x) {

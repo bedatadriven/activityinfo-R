@@ -68,7 +68,15 @@ getSitesDataFrame <- function(activity) {
 #' Retrieves a data.frame containing one indicator value per row,
 #' along with the related site, location, and reporting period details
 #' linked to each value
-#' 
+#' @note The value of the \code{month} column in the resulting data frame 
+#' depends on the reporting frequency of the activity:
+#' \itemize{
+#'   \item for \sQuote{monthly} reporting it is the month in which the data was 
+#'   entered and
+#'   \item for reporting \sQuote{once} it is the month of the end date of the 
+#'   reporting period.
+#'   }
+#' In both cases the format is the same: YYYY-MM.   
 #' @export
 getIndicatorValueTable <- function(databaseId) {
   
@@ -94,11 +102,10 @@ getIndicatorValueTable <- function(databaseId) {
   
   # Fetch the individual indicator values
   values <- getCube(filter = list(database = databaseId), dimensions = c("site", "indicator", "month"))
-  indicators <- asIndicatorDataFrame(db)
-  values <- merge(values, subset(indicators, select = c("indicatorId", "indicatorCategory", "units" )))
   
   # Join the indicator properties
-  indicators <- as
+  indicators <- asIndicatorDataFrame(db)
+  values <- merge(values, subset(indicators, select = c("indicatorId", "indicatorCategory", "units" )))
   
   # Join the values to their sites
   merge(sites, values)

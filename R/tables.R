@@ -145,6 +145,8 @@ getCube <- function(filters = list(), dimensions = c("indicator", "site")) {
       queryParams <- c(queryParams, formIds)
     } else if(filter %in% c("activity", "form")) {
       queryParams <- c(queryParams, list(form = filters[[filter]]))
+    } else if(filter == "month") {
+      queryParams <- c(queryParams, list(month = filters[[filter]]))
     } else {
       stop(sprintf("unknown filter value '%s'", filter))
     }

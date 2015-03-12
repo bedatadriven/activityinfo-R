@@ -11,10 +11,13 @@ along with the related site, location, and reporting period details
 linked to each value
 }
 \note{
-The value of the \code{month} column in the resulting data frame depends on the reporting frequency of the activity:
+The value of the \code{month} column in the resulting data frame
+depends on the reporting frequency of the activity:
 \itemize{
-  \item for \sQuote{monthly} reporting it is the month in which the data was entered and
-  \item for reporting \sQuote{once} it is the month of the end date of the reporting period.
+  \item for \sQuote{monthly} reporting it is the month in which the data was
+  entered and
+  \item for reporting \sQuote{once} it is the month of the end date of the
+  reporting period.
   }
 In both cases the format is the same: YYYY-MM.
 }

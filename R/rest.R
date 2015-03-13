@@ -22,8 +22,9 @@ getResource <- function(path, queryParams = list(...), ...) {
   result <- GET(url, activityInfoAuthentication(), accept_json())
   
   if (result$status_code != 200) {
-    stop(sprintf("Request for %s failed with status code %d: %s",
-                 url, result$status_code, http_status(result$status_code)$message))
+    stop(sprintf("Request for %s failed with status code %d %s: %s",
+                 url, result$status_code, http_status(result$status_code)$message,
+                 content(result, as = "text", encoding = "UTF-8")))
   }
   
   json <- content(result, as = "text", encoding = "UTF-8")

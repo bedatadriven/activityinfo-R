@@ -11,8 +11,9 @@ executeCommand <- function(type, ...) {
   
   
   if (!result$status_code %in% seq(from=200, to=299, by=1)) {
-    stop(sprintf("Request for %s failed with status code %d: %s",
-                 url, result$status_code, http_status(result$status_code)$message))
+    stop(sprintf("Request for %s failed with status code %d %s: %s",
+                 url, result$status_code, http_status(result$status_code)$message,
+                 content(result, as = "text", encoding = "UTF-8")))
   }
   
   # is status code is not 200 or 201, the content() function may not return anything:

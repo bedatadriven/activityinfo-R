@@ -1,7 +1,24 @@
 
-
-#' getSitesDataFrame
+#' Fetch the partners registered in a database as a data.frame
 #' 
+#' @param databaseId database identifier
+#' @return A data frame with columns \code{id} and \code{name}. This data frame 
+#' is empty if no partners are registered in the database.
+#' @export
+getPartnersDataFrame <- function(databaseId) {
+  schema <- getDatabaseSchema(databaseId)
+  
+  if (length(schema$partners)) {
+    do.call(rbind, function(partner) {
+      data.frame(id = partner$id,
+                 name = partner$name,
+                 stringsAsFactors = FALSE)
+    })
+  } else {
+    data.frame(id = integer(0), name = character(0))
+  }
+}
+
 #' Fetch the sites for an activity as a data.frame
 #' 
 #' If the activity has monthly reporting, indicator values will

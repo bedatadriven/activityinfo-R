@@ -13,9 +13,9 @@ cloneDatabase <- function(sourceDatabaseId, targetDatabaseId) {
   }
 }
 
-#' Function to read partner names from a database with numeric identifier
-#' provided by 'databaseId'. 
-#' @return a character vector with one or more partner names.
+# Function to read partner names from a database with numeric identifier 
+# provided by 'databaseId'. Returns a character vector with one or more partner
+# names.
 getPartnerNames <- function(databaseId) {
   schema <- getDatabaseSchema(databaseId)
   partners <- schema$partners

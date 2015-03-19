@@ -5,8 +5,11 @@
 \usage{
 getDatabaseSchema(databaseId)
 }
+\arguments{
+\item{databaseId}{database identifier}
+}
 \description{
-Retrieves the schema (activities, indicators, and attributes) from
+Retrieves the schema (partners, activities, indicators and attributes) from
 for the given database
 }
 

@@ -42,8 +42,10 @@ getSites <- function(activityId, ...)
 
 #' GetDatabaseSchema
 #' 
-#' Retrieves the schema (activities, indicators, and attributes) from
+#' Retrieves the schema (partners, activities, indicators and attributes) from
 #' for the given database
+#' 
+#' @param databaseId database identifier
 #' @export
 getDatabaseSchema <- function(databaseId) { 
   schema <- getResource(paste("database", databaseId, "schema", sep="/"))

@@ -58,9 +58,11 @@ propertyList <- function(args, ...) {
   properties
 }
 
+#' Generates a unique 31-bit integer id
+#' @param n the number of ids to generate
 #' @export
-generateId <- function()
-  as.integer(runif(1, min = 0, max=2^31))
+generateId <- function(n = 1)
+  as.integer(runif(n , min = 0, max=2^31))
 
 
 #' @export
@@ -186,6 +188,7 @@ createIndicator <- function(activityId,
                             category = NULL, 
                             listHeader = NULL, 
                             description = NULL,
+                            type = "quantity",
                             units,
                             aggregation = c("sum", "mean", "count"),
                             sortOrder = NULL) {

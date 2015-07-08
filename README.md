@@ -9,7 +9,7 @@ Installation
 
 ## Latest Release
 
-[![Build Status](https://jenkins.bedatadriven.com/buildStatus/icon?job=ActivityInfo-R-Release)](https://jenkins.bedatadriven.com/job/ActivityInfo-R-Release/)
+[![Build Status](https://jenkins.bedatadriven.com/buildStatus/icon?job=ActivityInfo/R-Client/ActivityInfo-R-Client)](https://jenkins.bedatadriven.com/job/ActivityInfo/R-Client/ActivityInfo-R-Client)
 
 You can install the latest stable release directly from GitHub:
 
@@ -19,7 +19,7 @@ You can install the latest stable release directly from GitHub:
 
 ## Development Version
 
-[![Build Status](https://jenkins.bedatadriven.com/buildStatus/icon?job=ActivityInfo-R-Development)](https://jenkins.bedatadriven.com/job/ActivityInfo-R-Development/)
+[![Build Status](https://jenkins.bedatadriven.com/buildStatus/icon?job=ActivityInfo/R-Client/ActivityInfo-R-Development)](https://jenkins.bedatadriven.com/job/ActivityInfo/R-Client/ActivityInfo-R-Development)
 
 You can also install the very very latest development version locally:
  

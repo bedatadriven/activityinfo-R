@@ -9,11 +9,11 @@ getPartnersDataFrame <- function(databaseId) {
   schema <- getDatabaseSchema(databaseId)
   
   if (length(schema$partners)) {
-    do.call(rbind, function(partner) {
+    do.call(rbind, lapply(schema$partners, function(partner) {
       data.frame(id = partner$id,
                  name = partner$name,
                  stringsAsFactors = FALSE)
-    })
+    }))
   } else {
     data.frame(id = integer(0), name = character(0))
   }

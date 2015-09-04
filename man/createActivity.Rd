@@ -4,10 +4,11 @@
 \title{Creates a new activity}
 \usage{
 createActivity(databaseId, name, category = NULL, locationTypeId,
-  reportingFrequency = c("once", "monthly"))
+  reportingFrequency = c("once", "monthly"), ...)
 }
 \arguments{
-\item{databaseId}{the numeric id of the database in which to create this activity}
+\item{databaseId}{the numeric id of the database in which to create this
+activity}
 
 \item{name}{the activity's name}
 
@@ -17,6 +18,10 @@ createActivity(databaseId, name, category = NULL, locationTypeId,
 
 \item{reportingFrequency}{a string that defines the reporting frequency; can
 be "once" (default) or "monthly"}
+
+\item{...}{additional key=value arguments which are passed to the
+createEntity function. For example: \code{classicView = TRUE} to create a
+classic activity form.}
 }
 \value{
 Returns the numeric id of the newly created activity.

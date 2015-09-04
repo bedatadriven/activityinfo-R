@@ -121,16 +121,20 @@ lookupCountryId <- function(countryId) {
 
 
 #' Creates a new activity
-#' @param databaseId the numeric id of the database in which to create this activity
+#' @param databaseId the numeric id of the database in which to create this
+#'   activity
 #' @param name the activity's name
 #' @param category the new activity's category as a string
 #' @param locationTypeId the numeric id of the activity's location type
 #' @param reportingFrequency a string that defines the reporting frequency; can 
-#' be "once" (default) or "monthly"
+#'   be "once" (default) or "monthly"
+#' @param ... additional key=value arguments which are passed to the
+#'   createEntity function. For example: \code{classicView = TRUE} to create a
+#'   classic activity form.
 #' @return Returns the numeric id of the newly created activity.
 #' @export
 createActivity <- function(databaseId, name, category = NULL, locationTypeId,
-                           reportingFrequency = c("once", "monthly")) {
+                           reportingFrequency = c("once", "monthly"), ...) {
   if(missing(locationTypeId)) {
     stop("you must provide a locationTypeId")
   }
@@ -149,7 +153,8 @@ createActivity <- function(databaseId, name, category = NULL, locationTypeId,
            name = name,
            category = category,
            locationTypeId = locationTypeId,
-           reportingFrequency = rpCode))
+           reportingFrequency = rpCode,
+           ...))
 }
 
 lookupLocationType <- function(databaseId, locationTypeId) {

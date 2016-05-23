@@ -4,6 +4,7 @@
 
 # Install required packages
 install.dependencies <- function() {
+  cat("Installing Dependencies...\n")
   
   # Set a CRAN mirror to use
   options(repos=structure(c(CRAN="http://cran.rstudio.com")))
@@ -21,12 +22,15 @@ install.dependencies <- function() {
 
 # Check the package for errors
 check <- function() {
+  cat("Running checks...\n")
+  
   library(methods)
   devtools::check(pkg="./activityinfo", document = TRUE, build_args = "--no-manual")
 }
 
 # Run the integration tests
 test <- function() {
+  cat("GOAL: test\n")
   install.dependencies()
   check()
   source("activityinfo/inst/integration-tests.R", chdir = TRUE)

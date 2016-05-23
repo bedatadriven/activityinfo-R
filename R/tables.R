@@ -269,7 +269,7 @@ getActivityChangeLog <- function(activityId) {
   table <- queryTable(form = activityId, id = "_id")
   siteIds <- extractOldId(table$id)
   
-  sites <- lapply(siteIds[1:10], function(siteId) {
+  sites <- lapply(siteIds, function(siteId) {
     message(sprintf("Fetching history for site %d...", siteId))
     history <- executeCommand("GetSiteHistory", siteId = siteId)
     changes <- history$changes

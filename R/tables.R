@@ -261,6 +261,36 @@ getMonthlyReportsCubeForDatabase <- function(databaseId, month) {
   table <- do.call("rbind", tables)
 }
 
+#' Retrieves a data.frame containing all changes made to a given activity
+#'
+#'@export
+getActivityChangeLog <- function(activityId) {
+  
+  table <- queryTable(form = activityId, id = "_id")
+  siteIds <- extractOldId(table$id)
+  
+  sites <- lapply(siteIds[1:10], function(siteId) {
+    message(sprintf("Fetching history for site %d...", siteId))
+    history <- executeCommand("GetSiteHistory", siteId = siteId)
+    changes <- history$changes
+    lapply(changes, function(change) {
+      list(siteId = siteId,
+           time =  change$time,
+           userName = change$userName,
+           userEmail = change$userEmail)
+    })
+  })
+  
+  changes <- unlist(sites, recursive = FALSE)
+  
+  data.frame(siteId = extractField(changes, "siteId"),
+             time = as.POSIXct( extractField(changes, "time") / 1000, origin="1970-01-01"),
+             userName = extractField(changes, "userName"),
+             userEmail = extractField(changes, "userEmail"))
+
+}
+
+
 #' asActivityDataFrame
 #' 
 #' Creates a data.frame containing a list of activities

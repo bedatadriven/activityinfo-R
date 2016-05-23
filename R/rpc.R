@@ -7,8 +7,8 @@ executeCommand <- function(type, ...) {
                 command = list(...))
 
   url <- paste(activityInfoRootUrl(), "command", sep = "/")
-  result <- POST(url, body = toJSON(body), activityInfoAuthentication())
   
+  result <- POST(url, body = toJSON(body), activityInfoAuthentication())
   
   if (!result$status_code %in% seq(from=200, to=299, by=1)) {
     stop(sprintf("Request for %s failed with status code %d %s: %s",
@@ -395,3 +395,5 @@ lookupPartnerId <- function(databaseId, partnerId) {
 #' @export
 getAuthorizedUsers <- function(databaseId) 
   executeCommand("GetUsers", databaseId = databaseId)$data
+
+

@@ -8,7 +8,7 @@ install.dependencies <- function() {
   
   # Set a CRAN mirror to use
   options(repos=structure(c(CRAN="http://cran.rstudio.com")))
-  
+  cat("...installed packages: ", paste(installed.packages(), collapse = ", "), "\n")
   # Install CRAN packages
   for(pkg in c('devtools', 'httr', 'rjson', 'RUnit', 'roxygen2', 'Rcpp')) {
     if(!(pkg %in% installed.packages())) {

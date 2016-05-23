@@ -4,7 +4,6 @@
 #' 
 #' @param the form to query. This can be an object of type "tree", "class", or the id of the 
 #' form as a character. 
-#' @param
 #' @export
 queryTable <- function(form, ...) {
   

@@ -7,6 +7,8 @@
 getMonthlyReportsCubeForDatabase(databaseId, month)
 }
 \arguments{
+\item{databaseId}{the id of the database to retrieve}
+
 \item{month}{the calendar month to retrieve in the format '2014-02'}
 }
 \description{

@@ -219,7 +219,7 @@ getCube <- function(filters = list(), dimensions = c("indicator", "site")) {
 #' results provided for the given month, it will not appear in these
 #' results.
 #' 
-#' @param databaseId
+#' @param databaseId the id of the database to retrieve
 #' @param month the calendar month to retrieve in the format '2014-02'
 #' 
 #' @export

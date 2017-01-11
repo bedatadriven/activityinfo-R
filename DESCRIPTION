@@ -7,5 +7,5 @@ Author: Alex Bertram <alex@bedatadriven.com>
 Maintainer: Alex Bertram <alex@bedatadriven.com>
 Description: Interface to ActivityInfo.org
 License: GPL-3
-Imports: httr, rjson
+Imports: httr, rjson, reshape2
 RoxygenNote: 5.0.1

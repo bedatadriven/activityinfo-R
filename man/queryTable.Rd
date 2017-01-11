@@ -4,7 +4,7 @@
 \alias{queryTable}
 \title{Queries a form collection as a flat, two-dimensional table.}
 \usage{
-queryTable(form, ...)
+queryTable(form, columns, ...)
 }
 \arguments{
 \item{the}{form to query. This can be an object of type "tree", "class", or the id of the 

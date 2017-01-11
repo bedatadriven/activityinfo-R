@@ -2,7 +2,7 @@
 % Please edit documentation in R/rest.R
 \name{getDatabaseSchema}
 \alias{getDatabaseSchema}
-\title{GetDatabaseSchema}
+\title{getDatabaseSchema}
 \usage{
 getDatabaseSchema(databaseId)
 }

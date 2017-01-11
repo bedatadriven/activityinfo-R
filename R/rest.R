@@ -32,6 +32,23 @@ getResource <- function(path, queryParams = list(...), ...) {
   fromJSON(json)
 }
 
+postResource <- function(path, body) {
+
+  url <- paste(activityInfoRootUrl(), "resources", path, sep = "/")
+
+  result <- POST(url, body = body, encode = "json",  activityInfoAuthentication(), accept_json())
+  
+  if (result$status_code < 200 || result$status_code >= 300) {
+    stop(sprintf("Request for %s failed with status code %d %s: %s",
+                 url, result$status_code, http_status(result$status_code)$message,
+                 content(result, as = "text", encoding = "UTF-8")))
+  }
+  
+  json <- content(result, as = "text", encoding = "UTF-8")
+  
+  fromJSON(json)
+}
+
 #' getSites
 #' 
 #' Fetches a list of sites for the given activity. 
@@ -40,7 +57,7 @@ getResource <- function(path, queryParams = list(...), ...) {
 getSites <- function(activityId, ...)
   getResource("sites", activity = activityId, ...)
 
-#' GetDatabaseSchema
+#' getDatabaseSchema
 #' 
 #' Retrieves the schema (partners, activities, indicators and attributes) from
 #' for the given database
@@ -52,6 +69,20 @@ getDatabaseSchema <- function(databaseId) {
   schema$id <- databaseId
   schema
 }
+
+
+#' Returns TRUE if the given object is an activity
+#' object included from getDatabaseSchema
+#' 
+is.activity <- function(activity) {
+  is.list(activity) &&
+    all(c("name",
+          "id",
+          "attributeGroups",
+          "reportingFrequency",
+          "indicators") %in% names(activity))
+}
+
 
 #' GetCountries
 #' 

@@ -1,4 +1,167 @@
 
+#' Fetch the sites for an activity as a data.frame
+#
+getSiteData <- function(activity, adminlevel.names, include.comments) {
+  
+  # Ensure that we are dealing with an activity from the database schema:
+  stopifnot(is.activity(activity))
+  
+  # Fields which exist for all "classical" sites:
+  query <- list(
+    site.id = "_id",
+    partner.id = "partner._id",
+    partner.label = "partner.label",
+    partner.description = "partner.[full name]",
+    location.latitude = "location.latitude",
+    location.longitude = "location.longitude",
+    location.name = "location.name",
+    location.alternate_name = "location.axe",
+    project.label = "project.name",
+    project.description = "project.description"
+  )
+  
+  # Add comments if requested:
+  if (include.comments) {
+    query$site.comments <- "comments"
+  }
+  
+  # Start and end date are site data if reporting frequency is "once":
+  if (as.character(activity$reportingFrequency) == "0") {
+    query[["start_date"]] <- "date1"
+    query[["end_date"]] <- "date2"
+  }
+  
+  # Fields which depend on the administrative levels in the country of the
+  # database which contains the form:
+  for (admin.level in adminlevel.names) {
+    column.name <- makeColumnName(admin.level, prefix = "location.adminlevel.")
+
+    if (column.name %in% names(query)) {
+      stop("cannot create unique column name for administrative level '", admin.level, "'")
+    }
+
+    query[[column.name]] <- paste("location.[", admin.level, "].name", sep = "")
+  }
+
+  # Translation table for the attributes (from identifier to full name):
+  attributes <- data.frame(
+    id = vapply(activity$attributeGroups, function(x) sprintf("Q%010d", x$id), character(1L)),
+    name = vapply(activity$attributeGroups, function(x) x$name, character(1L)),
+    stringsAsFactors = FALSE
+  )
+  
+  for (id in attributes$id) {
+    # Use indicator identifiers instead of names for greater robustness and
+    # shorter URLs:
+    query[[id]] <- id
+  }
+  
+  list(table = queryTable(activity$id, columns = query),
+       column.names = attributes)
+}
+
+#'
+getIndicatorData <- function(activity) {
+  
+  # Ensure that we are dealing with a form instance from the database schema:
+  stopifnot(is.activity(activity))
+  
+  # Return an empty result if the form has no indicators in its design:
+  if (length(activity$indicators) == 0L) {
+    warning("form '", activity$name, "' has no indicators")
+    return(list(table = data.frame()))
+  }
+  
+  query <- list(site.id = "site")
+  
+  # Start and end date are report data if reporting frequency is "monthly":
+  if (as.character(activity$reportingFrequency) == "1") {
+    formId <- sprintf("M%s", activity$id)
+    query[["site.id"]] <- "site"
+    query[["start_date"]] <- "date1"
+    query[["end_date"]] <- "date2"
+    query[["report.id"]] <- "_id"
+  } else {
+    formId <- sprintf("a%s", activity$id)
+    query[["site.id"]] <- "_id"
+  }
+  
+  # Translation table for the indicators (from identifier to full name):
+  indicators <- data.frame(
+    id = vapply(activity$indicators, function(x) sprintf("i%010d", x$id), character(1L)),
+    name = vapply(activity$indicators, function(x) x$name, character(1L)),
+    units = vapply(activity$indicators, function(x) x$units, character(1L)),
+    stringsAsFactors = FALSE
+  )
+  
+  for (id in indicators$id) {
+    # Use indicator identifiers instead of names for greater robustness and
+    # shorter URLs:
+    query[[id]] <- id
+  }
+  
+  # Execute the query through the ActivityInfo API:
+  list(table = queryTable(formId, query), 
+       column.names = indicators)
+}
+
+#'
+#' @importFrom reshape2 melt
+getFormData <- function(activity, adminlevel.names, include.comments) {
+  
+  site <- getSiteData(activity, adminlevel.names, include.comments)
+  site.data <- site$table
+  
+  if(nrow(site.data) == 0) {
+    message(paste("Form '", activity$name,
+        "' has no reports. Skipping...", sep = ""))
+    return(invisible())
+  } else {
+    message(paste("Form '", activity$name,
+        "' has ", nrow(site.data), " reports.", sep = ""))
+  }
+  
+  indicators <- getIndicatorData(activity)
+  
+  if (nrow(indicators$table) == 0) {
+    message(paste("Form '", activity$name,
+        "' has no indicator values in any report. Skipping...", sep = ""))
+    return(invisible())
+  }
+  
+  # Convert reported indicator values from a list to a data frame:
+  indicator.data <- indicators$table
+  # Reshape the table to create a separate row for each reported indicator value:
+  indicator.columns <- grep("^i\\d+", names(indicator.data), value = TRUE)
+  indicator.data <- melt(indicator.data,
+                                   measure.vars = indicator.columns,
+                                   variable.name = "indicator.id",
+                                   value.name = "indicator.value",
+                                   na.rm = TRUE)
+  
+  indicator.metadata <- indicators$column.names
+  names(indicator.metadata) <- paste("indicator", names(indicator.metadata), sep = ".")
+  indicator.data <- merge(indicator.data, indicator.metadata, by = "indicator.id", all.x = TRUE)
+  
+  # Merge site (meta) data and reported values:
+  form.data <- merge(indicator.data, site.data, by = "site.id", all.x = TRUE)
+  # Add form name and category:
+  form.data$form <- activity$name
+  form.data$form.category <- na.if.null(activity$category)
+  # Sort columns alphabetically to group related columns together:
+  form.data <- form.data[, order(names(form.data))]
+  # Rename the columns with attribute values:
+  names(form.data) <- vapply(names(form.data), function(colname) {
+    if (colname %in% site$column.names$id) {
+      site$column.names$name[match(colname, site$column.names$id)]
+    } else {
+      colname
+    }
+  }, character(1L), USE.NAMES = FALSE)
+  
+  form.data
+}
+
 
 #' Extract a full database in "long" format
 #' 
@@ -7,283 +170,67 @@
 #' and for each of the single-valued attributes defined.
 #' 
 #' @export
-extractDatabaseLong <- function(database.id = NA) {
+getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE) {
   
-  if (is.na(database.id)) {
-    stop("you forgot to set the database identifier at the top of this script!")
-  }
+  message("Fetching database schema...")
+  db.schema <- getDatabaseSchema(database.id)
   
-  message("Retrieving schema for database ", database.id, "...\n", sep ="")
-  schema <- getDatabaseSchema(database.id)
+  message("Fetching administrative levels...")
+  adminlevel.names <- vapply(getAdminLevels(db.schema$country$id), function(x) {
+    x$name
+  }, character(1L))
   
-  # Prepare a list with query parameters to get administrative level and
-  # geographic location data:
-  adminLevels <- getAdminLevels(schema$country$id)
-  adminLevelNames <- vapply(adminLevels, function(x) x$name, "character")
-  locationQueryParams <- local({
-    tmp <- sprintf("[%s].name",vapply(adminLevelNames, URLencode, "character"))
-    tmp <- as.list(tmp)
-    names(tmp) <- make.names(adminLevelNames)
-    tmp$id <- "_id"
-    tmp$lat <- "location.latitude"
-    tmp$lon <- "location.longitude"
-    tmp
-  })
+  message(paste("Database contains ", length(db.schema$activities),
+      " forms. Retrieving data per form...\n", sep = ""))
   
-  # Which fields are attributes?
-  attributeGroups <- unique(
-    do.call(c, lapply(schema$activities, function(form) {
-      sapply(form$attributeGroups, function(group) {
-        group$name
-      })
-    }))
-  )
-  
-  values <- NULL
-  
-  # Loop over all forms in the database:
-  for (formIndex in seq(length(schema$activities))) {
+  form.data <- lapply(db.schema$activities, function(form) {
+    # Check if the data in the form is reported monthly or just once:
+    monthly <- switch(as.character(form$reportingFrequency), "0"=FALSE, "1"=TRUE)
     
+    form.data <- getFormData(form, adminlevel.names, include.comments)
     
-    activity <- schema$activities[[formIndex]] # "activity" is the old name for a form
-    
-    indicator.metadata <- do.call(rbind, lapply(activity$indicators, function(indicator) {
-      data.frame(oldId = indicator$id,
-                 units = na.if.null(indicator$units),
-                 category = na.if.null(indicator$category),
-                 stringsAsFactors = FALSE)
-    }))
-    
-    message(paste("Processing activity ", activity$id, " (", activity$name, ")...", sep = ""))
-    formTree <- getFormTree(activity)
-    
-    message("Retrieving reported values...")
-    retry <- 3
-    while (retry) {
-      success <- TRUE
-      tryCatch(reports <- queryForm(formTree),
-               error = function(e) {
-                 cat("Error: failed to retrieve reported values for form ", activity$id,
-                     ". Retrying...\n", sep = "")
-                 retry <<- retry - 1
-                 if (retry == 0) {
-                   stop("Failed with the following error: ", conditionMessage(e), call. = FALSE)
-                 }
-                 success <<- FALSE
-               },
-               finally = if (success) {
-                 retry <- 0
-               }
-      )
+    if (!monthly) {
+      form.data$report.id <- rep(NA_character_, nrow(form.data))
     }
     
-    message("Retrieving administrative levels...")
-    success <- TRUE
-    tryCatch(admin.levels <- queryForm(formTree, queryParams = locationQueryParams),
-             error = function(e) {
-               cat("Error: failed to retrieve administrative levels for form ", activity$id,
-                   ", skipping...\n", sep = "")
-               success <<- FALSE
-             },
-             finally = if (!success) next)
-    
-    # Merge/fuse the two lists together:
-    reports <- mapply(c, reports, admin.levels, SIMPLIFY = FALSE)
-    
-    message("Converting values to a tabular format...")
-    new.values <- lapply(reports, function(report) {
-      # Convert report to a data frame so we can merge with the form tree:
-      reportTable <- data.frame(name = names(report),
-                                values = unlist(report), stringsAsFactors = FALSE)
-      reportTable <- merge(reportTable, formTree, by = "name")
-      
-      
-      if (is.monthly(formTree)) {
-        partnerLabel <- report$site.partner.label
-        locationLabel <- if (is.null(report$site.location.name)) {
-          "unknown"
-        } else {
-          report$site.location.name
-        }
-      } else {
-        partnerLabel <- report$partner.label
-        locationLabel <- if (is.null(report$location.name)) {
-          "unknown"
-        } else {
-          report$location.name
-        }
-      }
-
-      is.indicator <- grepl("indicator", reportTable$type)
-      n <- sum(is.indicator)
-      
-      if (n == 0L) {
-        # The current report doesn't have any data on indicators
-        return(NULL)
-      } else {
-        oldIndicatorId <- extractOldId(reportTable$id[is.indicator])
-        values <- data.frame(
-          entryId       = report[["@id"]], # entryId = either the site identifier or the identifier of the monthly report
-          indicatorId   = oldIndicatorId,
-          indicatorName = reportTable$label[is.indicator],
-          units         = lookupName(oldIndicatorId, indicator.metadata, outputCol = "units"),
-          indicatorCategory = lookupName(oldIndicatorId, indicator.metadata, outputCol = "category"),
-          value         = as.numeric(reportTable$values[is.indicator]),
-          stringsAsFactors = FALSE)
-        
-      }
-      values$activityId   <- activity$id
-      values$activityName <- activity$name
-      values$activityCategory <- na.if.null(activity$category)
-      values$month        <- determineMonth(report$date1, report$date2)
-      
-      # Add administrative level information:
-      for (col in make.names(adminLevelNames)) {
-        values[[col]] <- na.if.null(report[[col]])
-      }
-      values$lat <- na.if.null(report$lat, "numeric")
-      values$lon <- na.if.null(report$lon, "numeric")
-      
-      if (is.monthly(formTree)) {
-        values$locationName <- locationLabel
-        values$locationCode <- na.if.null(report[["site.location.axe"]])
-        values$partnerName  <- if(is.null(report$site.partner.label)) "unknown" else report$site.partner.label
-        values$partnerFullName <- na.if.null(report[["site.partner.Full Name"]])
-      } else {
-        values$locationName <- locationLabel
-        values$locationCode <- na.if.null(report[["location.axe"]])
-        values$partnerName  <- report$partner.label
-        values$partnerFullName <- na.if.null(report[["partner.Full Name"]])
-      }
-      for (col in attributeGroups) {
-        if (is.monthly(formTree)) {
-          values[[make.names(col)]] <- na.if.null(report[[paste("site", col, sep = ".")]])
-        } else {
-          values[[make.names(col)]] <- na.if.null(report[[col]])
-        }
-      }
-      values
-    })
-    
-    values <- rbind(values, do.call(rbind, new.values))
-  } # end of loop over forms
+    form.data
+  })
   
-  values$databaseId <- database.id
-  values$databaseName <- schema$name
+  # Remove forms without data entries:
+  form.data <- form.data[!vapply(form.data, is.null, logical(1L))]
+  
+  # Find common column names for combining all results into a single table:
+  common.column.names <- Reduce(intersect, lapply(form.data, names))
+  
+  # Combine all data into a single table:
+  values <- do.call(rbind, lapply(form.data, function(table) table[, common.column.names]))
+  
+  # Warn the user if any column(s) is or are missing in the combined result:
+  all.column.names <- unique(do.call(c, lapply(form.data, names)))
+  missing.columns <- setdiff(all.column.names, common.column.names)
+  if (length(missing.columns) > 0L) {
+    warning("the following column(s) is or are not shared by all forms: ",
+            paste(missing.columns, collapse = ", "))
+  }
   return(values)
 }
 
 
-lookupName <- function(x, table, lookupCol = "oldId", outputCol = "name") {
+makeColumnName <- function(s, prefix = NULL) {
   
-  if (is.na(x) || is.character(x)) return(x)
+  stopifnot(is.character(s))
   
-  tableName <- deparse(substitute(table))
+  s <- gsub("\\s+|\\.+|-+", "_", trimws(tolower(s)))
+  s <- gsub("#", "nr", s)
   
-  if(is.null(table[[lookupCol]]) || is.null(table[[outputCol]])) {
-    stop("'", tableName, "' must have columns '", lookupCol, "' and '", outputCol, "'")
-  }
-  
-  row <- match(x, table[[lookupCol]])
-  if (any(is.na(row))) {
-    cat("Warning: no record(s) found with (old) identifier(s) ",
-        paste(x[is.na(row)], collapse = ", "), " in '", tableName,
-        "'\n", sep ="")
-  }
-  table[[outputCol]][row]
-}
-
-is.monthly <- function(formTree) {
-  grepl("^M\\d*$", attr(formTree, "tree")$root)
-}
-
-
-na.if.null <- function(x, mode = "character") {
-  if (is.null(x)) as.vector(NA, mode) else x
-}
-
-sanitizeNames <- function(s) {
-  # convert strings to a format that's suitable for use as name
-  gsub("\\s|-|_", ".", tolower(s))
-}
-
-translateFieldType <- function(typeClass) {
-  switch(toupper(typeClass),
-         REFERENCE  = "reference",
-         LOCAL_DATE = "date",
-         QUANTITY   = "indicator",
-         CALCULATED = "calculated indicator",
-         ENUMERATED = "attribute",
-         NARRATIVE  =,
-         FREE_TEXT  = "text",
-         GEOAREA    = "geographic entity",
-         "other")
-}
-
-getFormElements <- function(form, tree, name.prefix = NULL) {
-  
-  if (is.null(form$elements)) {
-    NULL
+  if (is.null(prefix)) {
+    make.names(s)  
   } else {
-    do.call(rbind, lapply(form$elements, function(e) {
-      fieldType <- translateFieldType(e$type)
-      if (fieldType == "reference") {
-        # This form refers to one or more other forms
-        do.call(rbind, lapply(e$typeParameters$range, function(refform) {
-          refId= refform$formId
-          getFormElements(tree$forms[[refId]],
-                          tree,
-                          ifelse(is.null(name.prefix),
-                                 e$code,
-                                 paste(name.prefix, e$code, sep = ".")))
-        }))
-      } else {
-        fieldName <- ifelse(is.null(e$code), e$label, e$code)
-        fieldLabel <- ifelse(is.null(e$label), e$code, e$label)
-        fieldType <- if (fieldType == "attribute") {
-          switch(tolower(e$typeParameters$cardinality),
-                 single="single attribute",
-                 multiple="multiple attribute",
-                 stop(sprintf("unknown cardinality: %s", deparse(e$typeParameters$cardinality))))
-        } else {
-          fieldType
-        }
-        data.frame(id = e$id,
-                   name = ifelse(is.null(name.prefix),
-                                 fieldName,
-                                 paste(name.prefix, fieldName, sep = ".")),
-                   label = fieldLabel,
-                   type = fieldType,
-                   stringsAsFactors = FALSE
-        )
-      }
-    }))
+    make.names(paste(prefix, s, sep = ""))
   }
 }
 
-getFormTree <- function(activity) {
-  
-  prefix <- switch(as.character(activity$reportingFrequency),
-                   "0"="a",
-                   "1"="M",
-                   stop("reporting frequency should be 0 (once) or 1 (monthly)")
-  )
-  
-  tree <- getResource(sprintf("form/%s%s/tree", prefix, activity$id))
-  
-  form <- tree$forms[[tree$root]]
-  
-  elements <- getFormElements(form, tree)
-  
-  structure(elements, class = c("formtree", class(elements)), tree = tree)
-}
 
-
-determineMonth <- function(start, end) {
-  start <- as.POSIXlt(start)
-  end <- as.POSIXlt(end)
-  if (start$year != end$year || start$mon != end$mon) {
-    cat("Warning: found a start and end date in different months\n")
-  }
-  format(start, format = "%Y-%m")
+na.if.null <- function(x, mode) {
+  if (is.null(x)) as.vector(NA, mode) else x
 }

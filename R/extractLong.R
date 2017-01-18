@@ -1,7 +1,7 @@
 
 #' Fetch the sites for an activity as a data.frame
 #
-getSiteData <- function(activity, adminlevel.names, include.comments) {
+getSiteData <- function(activity, adminlevels, include.comments) {
   
   # Ensure that we are dealing with an activity from the database schema:
   stopifnot(is.activity(activity))
@@ -33,14 +33,14 @@ getSiteData <- function(activity, adminlevel.names, include.comments) {
   
   # Fields which depend on the administrative levels in the country of the
   # database which contains the form:
-  for (admin.level in adminlevel.names) {
+  for (admin.level in names(adminlevels)) {
     column.name <- makeColumnName(admin.level, prefix = "location.adminlevel.")
 
     if (column.name %in% names(query)) {
       stop("cannot create unique column name for administrative level '", admin.level, "'")
     }
 
-    query[[column.name]] <- paste("location.[", admin.level, "].name", sep = "")
+    query[[column.name]] <- as.character(adminlevels[admin.level])
   }
 
   # Translation table for the attributes (from identifier to full name):
@@ -55,6 +55,9 @@ getSiteData <- function(activity, adminlevel.names, include.comments) {
     # shorter URLs:
     query[[id]] <- id
   }
+  
+  cat("Query:\n")
+  str(query)
   
   list(table = queryTable(activity$id, columns = query),
        column.names = attributes)
@@ -107,9 +110,9 @@ getIndicatorData <- function(activity) {
 
 #'
 #' @importFrom reshape2 melt
-getFormData <- function(activity, adminlevel.names, include.comments) {
+getFormData <- function(activity, adminlevels, include.comments) {
   
-  site <- getSiteData(activity, adminlevel.names, include.comments)
+  site <- getSiteData(activity, adminlevels, include.comments)
   site.data <- site$table
   
   if(nrow(site.data) == 0) {
@@ -147,7 +150,7 @@ getFormData <- function(activity, adminlevel.names, include.comments) {
   form.data <- merge(indicator.data, site.data, by = "site.id", all.x = TRUE)
   # Add form name and category:
   form.data$form <- activity$name
-  form.data$form.category <- na.if.null(activity$category)
+  form.data$form.category <- na.if.null(activity$category, "character")
   # Sort columns alphabetically to group related columns together:
   form.data <- form.data[, order(names(form.data))]
   # Rename the columns with attribute values:
@@ -176,10 +179,10 @@ getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE) {
   db.schema <- getDatabaseSchema(database.id)
   
   message("Fetching administrative levels...")
-  adminlevel.names <- vapply(getAdminLevels(db.schema$country$id), function(x) {
-    x$name
-  }, character(1L))
-  
+  adminlist <- getAdminLevels(db.schema$country$id)
+  adminlevels <-  vapply(adminlist, function(x) sprintf("E%010d.name", x$id), character(1L))
+  names(adminlevels) <- vapply(adminlist, function(x) x$name, character(1L))
+
   message(paste("Database contains ", length(db.schema$activities),
       " forms. Retrieving data per form...\n", sep = ""))
   
@@ -187,7 +190,7 @@ getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE) {
     # Check if the data in the form is reported monthly or just once:
     monthly <- switch(as.character(form$reportingFrequency), "0"=FALSE, "1"=TRUE)
     
-    form.data <- getFormData(form, adminlevel.names, include.comments)
+    form.data <- getFormData(form, adminlevels, include.comments)
     
     if (!monthly) {
       form.data$report.id <- rep(NA_character_, nrow(form.data))

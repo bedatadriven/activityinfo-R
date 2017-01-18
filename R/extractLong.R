@@ -40,7 +40,9 @@ getSiteData <- function(activity, adminlevels, include.comments) {
       stop("cannot create unique column name for administrative level '", admin.level, "'")
     }
 
-    query[[column.name]] <- as.character(adminlevels[admin.level])
+    query[[column.name]] <- sprintf("%s.name", adminlevels[admin.level])
+    query[[paste0(column.name, ".code")]] <- sprintf("%s.code", adminlevels[admin.level])
+    
   }
 
   # Translation table for the attributes (from identifier to full name):
@@ -55,10 +57,6 @@ getSiteData <- function(activity, adminlevels, include.comments) {
     # shorter URLs:
     query[[id]] <- id
   }
-  
-  cat("Query:\n")
-  str(query)
-  
   list(table = queryTable(activity$id, columns = query),
        column.names = attributes)
 }
@@ -180,7 +178,7 @@ getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE) {
   
   message("Fetching administrative levels...")
   adminlist <- getAdminLevels(db.schema$country$id)
-  adminlevels <-  vapply(adminlist, function(x) sprintf("E%010d.name", x$id), character(1L))
+  adminlevels <-  vapply(adminlist, function(x) sprintf("E%010d", x$id), character(1L))
   names(adminlevels) <- vapply(adminlist, function(x) x$name, character(1L))
 
   message(paste("Database contains ", length(db.schema$activities),

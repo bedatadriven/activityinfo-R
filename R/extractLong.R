@@ -87,11 +87,11 @@ getIndicatorData <- function(activity) {
     query[["site.id"]] <- "_id"
   }
   
-  # Translation table for the indicators (from identifier to full name):
+  # Translation table for the indicators from identifier to full name):
   indicators <- data.frame(
     id = vapply(activity$indicators, function(x) sprintf("i%010d", x$id), character(1L)),
-    name = vapply(activity$indicators, function(x) x$name, character(1L)),
-    units = vapply(activity$indicators, function(x) x$units, character(1L)),
+    name = vapply(activity$indicators, function(x) na.if.null(x$name, "character"), character(1L)),
+    units = vapply(activity$indicators, function(x) na.if.null(x$units, "character"), character(1L)),
     stringsAsFactors = FALSE
   )
   
@@ -201,18 +201,27 @@ getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE) {
   form.data <- form.data[!vapply(form.data, is.null, logical(1L))]
   
   # Find common column names for combining all results into a single table:
+  all.column.names <- Reduce(union, lapply(form.data, names))
   common.column.names <- Reduce(intersect, lapply(form.data, names))
   
-  # Combine all data into a single table:
-  values <- do.call(rbind, lapply(form.data, function(table) table[, common.column.names]))
-  
-  # Warn the user if any column(s) is or are missing in the combined result:
-  all.column.names <- unique(do.call(c, lapply(form.data, names)))
   missing.columns <- setdiff(all.column.names, common.column.names)
   if (length(missing.columns) > 0L) {
     warning("the following column(s) is or are not shared by all forms: ",
             paste(missing.columns, collapse = ", "))
   }
+  
+  # Add missing columns as NAs
+  form.data <- lapply(form.data, function(table) {
+    missing.columns <- setdiff(all.column.names, names(table))
+    for(missing.column in missing.columns) {
+      table[, missing.column] <- NA
+    }
+    table
+  })
+  
+  # Combine all data into a single table:
+  values <- do.call(rbind, form.data)
+  
   return(values)
 }
 

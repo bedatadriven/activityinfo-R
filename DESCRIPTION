@@ -1,11 +1,13 @@
 Package: activityinfo
 Type: Package
 Title: Query and update datasets from ActivityInfo.org
-Version: 0.5.1
-Date: 2014-05-09
+Version: 0.5.3
+Date: 2017-01-19
 Author: Alex Bertram <alex@bedatadriven.com>
 Maintainer: Alex Bertram <alex@bedatadriven.com>
 Description: Interface to ActivityInfo.org
 License: GPL-3
 Imports: httr, rjson, reshape2
 RoxygenNote: 5.0.1
+
+

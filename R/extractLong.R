@@ -185,15 +185,7 @@ getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE) {
       " forms. Retrieving data per form...\n", sep = ""))
   
   form.data <- lapply(db.schema$activities, function(form) {
-    # Check if the data in the form is reported monthly or just once:
-    monthly <- switch(as.character(form$reportingFrequency), "0"=FALSE, "1"=TRUE)
-    
     form.data <- getFormData(form, adminlevels, include.comments)
-    
-    if (!monthly) {
-      form.data$report.id <- rep(NA_character_, nrow(form.data))
-    }
-    
     form.data
   })
   

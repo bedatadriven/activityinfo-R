@@ -66,13 +66,7 @@ getIndicatorData <- function(activity) {
   
   # Ensure that we are dealing with a form instance from the database schema:
   stopifnot(is.activity(activity))
-  
-  # Return an empty result if the form has no indicators in its design:
-  if (length(activity$indicators) == 0L) {
-    warning("form '", activity$name, "' has no indicators")
-    return(list(table = data.frame()))
-  }
-  
+ 
   query <- list(site.id = "site")
   
   # Start and end date are report data if reporting frequency is "monthly":
@@ -113,23 +107,11 @@ getFormData <- function(activity, adminlevels, include.comments) {
   site <- getSiteData(activity, adminlevels, include.comments)
   site.data <- site$table
   
-  if(nrow(site.data) == 0) {
-    message(paste("Form '", activity$name,
-        "' has no reports. Skipping...", sep = ""))
-    return(invisible())
-  } else {
-    message(paste("Form '", activity$name,
-        "' has ", nrow(site.data), " reports.", sep = ""))
-  }
-  
+
+  message(paste("Form '", activity$name, "' has ", nrow(site.data), " reports.", sep = ""))
+
   indicators <- getIndicatorData(activity)
-  
-  if (nrow(indicators$table) == 0) {
-    message(paste("Form '", activity$name,
-        "' has no indicator values in any report. Skipping...", sep = ""))
-    return(invisible())
-  }
-  
+
   # Convert reported indicator values from a list to a data frame:
   indicator.data <- indicators$table
   # Reshape the table to create a separate row for each reported indicator value:
@@ -151,8 +133,8 @@ getFormData <- function(activity, adminlevels, include.comments) {
   # Merge site (meta) data and reported values:
   form.data <- merge(indicator.data, site.data, by = "site.id", all.x = TRUE)
   # Add form name and category:
-  form.data$form <- activity$name
-  form.data$form.category <- na.if.null(activity$category, "character")
+  form.data$form <- rep(activity$name, times = nrow(form.data))
+  form.data$form.category <- rep(na.if.null(activity$category, "character"), times = nrow(form.data))
   # Sort columns alphabetically to group related columns together:
   form.data <- form.data[, order(names(form.data))]
   # Rename the columns with attribute values:
@@ -196,9 +178,6 @@ getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE, co
     form.data
   })
   
-  # Remove forms without data entries:
-  form.data <- form.data[!vapply(form.data, is.null, logical(1L))]
-  
   # Find common column names for combining all results into a single table:
   all.column.names <- Reduce(union, lapply(form.data, names))
   common.column.names <- Reduce(intersect, lapply(form.data, names))
@@ -213,15 +192,16 @@ getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE, co
   form.data <- lapply(form.data, function(table) {
     missing.columns <- setdiff(all.column.names, names(table))
     for(missing.column in missing.columns) {
-      table[, missing.column] <- NA
+      table[, missing.column] <- rep(NA, times = nrow(table))
     }
     table
   })
   
   # Combine all data into a single table:
   values <- do.call(rbind, form.data)
-  values$database.id <- database.id
-  values$database <- db.schema$name
+  
+  values$database.id <- rep(database.id, times = nrow(values))
+  values$database <- rep(db.schema$name, times = nrow(values))
   
   # Apply column names
   for(i in seq_along(col.names)) {

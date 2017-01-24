@@ -134,7 +134,11 @@ getFormData <- function(activity, adminlevels, include.comments) {
   indicator.data <- indicators$table
   # Reshape the table to create a separate row for each reported indicator value:
   indicator.columns <- grep("^i\\d+", names(indicator.data), value = TRUE)
-  indicator.data <- melt(indicator.data,
+  
+  # Call melt.data.frame directly because if the old 'reshape' package
+  # is loaded, its entry in the global S3 table will overwrite that
+  # from reshape2. :-(
+  indicator.data <- reshape2:::melt.data.frame(indicator.data,
                                    measure.vars = indicator.columns,
                                    variable.name = "indicator.id",
                                    value.name = "indicator.value",
@@ -170,8 +174,11 @@ getFormData <- function(activity, adminlevels, include.comments) {
 #' and month, with columns for the site's location, the administrative levels,
 #' and for each of the single-valued attributes defined.
 #' 
+#' @param database.id the numeric id of the database 
+#' @param include.comments TRUE if narrative comments fields should also be included
+#' @param col.names a named character vector containing alternate names for the resulting table
 #' @export
-getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE) {
+getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE, col.names = NULL) {
   
   message("Fetching database schema...")
   db.schema <- getDatabaseSchema(database.id)
@@ -213,6 +220,13 @@ getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE) {
   
   # Combine all data into a single table:
   values <- do.call(rbind, form.data)
+  values$database.id <- database.id
+  values$database <- db.schema$name
+  
+  # Apply column names
+  for(i in seq_along(col.names)) {
+    names(values)[ names(values) == names(col.names)[i] ] <- col.names[i]
+  }
   
   return(values)
 }

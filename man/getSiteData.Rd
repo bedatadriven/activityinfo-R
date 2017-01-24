@@ -4,7 +4,7 @@
 \alias{getSiteData}
 \title{Fetch the sites for an activity as a data.frame}
 \usage{
-getSiteData(activity, adminlevel.names, include.comments)
+getSiteData(activity, adminlevels, include.comments)
 }
 \description{
 Fetch the sites for an activity as a data.frame

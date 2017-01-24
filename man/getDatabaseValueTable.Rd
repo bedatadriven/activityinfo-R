@@ -4,7 +4,15 @@
 \alias{getDatabaseValueTable}
 \title{Extract a full database in "long" format}
 \usage{
-getDatabaseValueTable(database.id = NA, include.comments = FALSE)
+getDatabaseValueTable(database.id = NA, include.comments = FALSE,
+  col.names = NULL)
+}
+\arguments{
+\item{database.id}{the numeric id of the database}
+
+\item{include.comments}{TRUE if narrative comments fields should also be included}
+
+\item{col.names}{a named character vector containing alternate names for the resulting table}
 }
 \description{
 The resulting data.frame includes a row for each reported indicator

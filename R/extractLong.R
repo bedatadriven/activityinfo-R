@@ -129,7 +129,10 @@ getFormData <- function(activity, adminlevels, include.comments) {
   
   indicator.metadata <- indicators$column.names
   names(indicator.metadata) <- paste("indicator", names(indicator.metadata), sep = ".")
-  indicator.data <- merge(indicator.data, indicator.metadata, by = "indicator.id", all.x = TRUE)
+  
+  if(nrow(indicator.metadata) > 0) {
+    indicator.data <- merge(indicator.data, indicator.metadata, by = "indicator.id", all.x = TRUE)
+  } 
   
   # Merge site (meta) data and reported values:
   form.data <- merge(indicator.data, site.data, by = "site.id", all.x = TRUE)

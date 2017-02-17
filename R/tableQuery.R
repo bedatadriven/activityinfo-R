@@ -76,7 +76,8 @@ queryTable <- function(form, columns,  ...) {
   )
   
   # order columns in the same order specified in the query
-  df <- df[, names(columns)]
+  df <- subset(df, subset = TRUE, select = names(columns))
   
+  stopifnot(is.data.frame(df))
   return(df)
 }

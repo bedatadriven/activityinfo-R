@@ -86,6 +86,7 @@ getIndicatorData <- function(activity) {
     id = vapply(activity$indicators, function(x) sprintf("i%010d", x$id), character(1L)),
     name = vapply(activity$indicators, function(x) na.if.null(x$name, "character"), character(1L)),
     units = vapply(activity$indicators, function(x) na.if.null(x$units, "character"), character(1L)),
+    category = vapply(activity$indicators, function(x) na.if.null(x$category, "character"), character(1L)),
     stringsAsFactors = FALSE
   )
   

@@ -14,7 +14,7 @@ queryTable <- function(form, columns,  ...) {
     form
   } else if (is.numeric(form)) {
     # accept an activityId
-    paste("a", form, sep="")
+    site.form.id(form)
   } else {
     # query the root of a form tree
     form$root

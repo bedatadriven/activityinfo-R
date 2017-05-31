@@ -49,6 +49,26 @@ postResource <- function(path, body) {
   fromJSON(json)
 }
 
+putResource <- function(path, body) {
+  
+  url <- paste(activityInfoRootUrl(), "resources", path, sep = "/")
+  
+  result <- PUT(url, body = body, encode = "json",  activityInfoAuthentication(), accept_json())
+  
+  if (result$status_code < 200 || result$status_code >= 300) {
+    stop(sprintf("Request for %s failed with status code %d %s: %s",
+                 url, result$status_code, http_status(result$status_code)$message,
+                 content(result, as = "text", encoding = "UTF-8")))
+  }
+  
+  json <- content(result, as = "text", encoding = "UTF-8")
+  if(length(json) > 0) {
+    invisible(NULL)
+  } else {
+    fromJSON(json)
+  }
+}
+
 #' getSites
 #' 
 #' Fetches a list of sites for the given activity. 

@@ -47,7 +47,7 @@ getSiteData <- function(activity, adminlevels, include.comments) {
 
   # Translation table for the attributes (from identifier to full name):
   attributes <- data.frame(
-    id = vapply(activity$attributeGroups, function(x) sprintf("Q%010d", x$id), character(1L)),
+    id = vapply(activity$attributeGroups, function(x) attribute.field.name(x$id), character(1L)),
     name = vapply(activity$attributeGroups, function(x) x$name, character(1L)),
     stringsAsFactors = FALSE
   )
@@ -71,19 +71,19 @@ getIndicatorData <- function(activity) {
   
   # Start and end date are report data if reporting frequency is "monthly":
   if (as.character(activity$reportingFrequency) == "1") {
-    formId <- sprintf("M%s", activity$id)
+    formId <- monthly.reports.form.id(activity$id)
     query[["site.id"]] <- "site"
     query[["start_date"]] <- "date1"
     query[["end_date"]] <- "date2"
     query[["report.id"]] <- "_id"
   } else {
-    formId <- sprintf("a%s", activity$id)
+    formId <- site.form.id(activity$id)
     query[["site.id"]] <- "_id"
   }
   
   # Translation table for the indicators from identifier to full name):
   indicators <- data.frame(
-    id = vapply(activity$indicators, function(x) sprintf("i%010d", x$id), character(1L)),
+    id = vapply(activity$indicators, function(x) indicator.field.name(x$id), character(1L)),
     name = vapply(activity$indicators, function(x) na.if.null(x$name, "character"), character(1L)),
     units = vapply(activity$indicators, function(x) na.if.null(x$units, "character"), character(1L)),
     category = vapply(activity$indicators, function(x) na.if.null(x$category, "character"), character(1L)),
@@ -171,7 +171,7 @@ getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE, co
   
   message("Fetching administrative levels...")
   adminlist <- getAdminLevels(db.schema$country$id)
-  adminlevels <-  vapply(adminlist, function(x) sprintf("E%010d", x$id), character(1L))
+  adminlevels <-  vapply(adminlist, function(x) admin.level.form.id(x$id), character(1L))
   names(adminlevels) <- vapply(adminlist, function(x) x$name, character(1L))
 
   message(paste("Database contains ", length(db.schema$activities),

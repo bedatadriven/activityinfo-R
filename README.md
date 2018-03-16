@@ -17,15 +17,6 @@ You can install the latest stable release directly from GitHub:
     library(devtools)
     install_github( "bedatadriven/activityinfo-R", ref = "release")
 
-## Development Version
-
-[![Build Status](https://jenkins.bedatadriven.com/buildStatus/icon?job=ActivityInfo/R-Client/ActivityInfo-R-Development)](https://jenkins.bedatadriven.com/job/ActivityInfo/R-Client/ActivityInfo-R-Development)
-
-You can also install the very very latest development version locally:
- 
-    install_github( "bedatadriven/activityinfo-R", ref = "development")
-
-
 Getting Started
 ---------------
 

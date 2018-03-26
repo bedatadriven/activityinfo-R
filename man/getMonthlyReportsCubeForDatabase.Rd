@@ -22,4 +22,3 @@ sites with results for the given months- if a site has no
 results provided for the given month, it will not appear in these
 results.
 }
-

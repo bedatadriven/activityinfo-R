@@ -9,4 +9,3 @@ deleteActivity(activityId)
 \description{
 Deletes an activity
 }
-

@@ -10,4 +10,3 @@ asAttributeGroupDataFrame(databaseSchema)
 Creates a data.frame containing a list of attribute groups
 and their properties from the given database schema
 }
-

@@ -9,4 +9,3 @@ cloneActivity(activity, targetDatabaseId)
 \description{
 Creates a copy of an existing activity
 }
-

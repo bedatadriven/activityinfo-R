@@ -10,4 +10,3 @@ asIndicatorDataFrame(databaseSchema)
 Creates a data.frame containing a list of indicators
 and their properties from the given database schema
 }
-

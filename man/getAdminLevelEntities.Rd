@@ -10,4 +10,3 @@ getAdminLevelEntities(id)
 Retrieves all entities belonging to an administrative level with the given
 identifier.
 }
-

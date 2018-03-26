@@ -19,4 +19,3 @@ The resulting data.frame includes a row for each reported indicator
 and month, with columns for the site's location, the administrative levels,
 and for each of the single-valued attributes defined.
 }
-

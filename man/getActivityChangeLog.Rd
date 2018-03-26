@@ -9,4 +9,3 @@ getActivityChangeLog(activityId)
 \description{
 Retrieves a data.frame containing all changes made to a given activity
 }
-

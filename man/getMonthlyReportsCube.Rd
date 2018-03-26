@@ -22,4 +22,3 @@ cube <- getMonthlyReportsCube(1064, month = '2014-06')
 merge(sites, cube)
 }
 }
-

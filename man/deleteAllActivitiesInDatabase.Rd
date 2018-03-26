@@ -9,4 +9,3 @@ deleteAllActivitiesInDatabase(databaseId)
 \description{
 Deletes all activities within a given database
 }
-

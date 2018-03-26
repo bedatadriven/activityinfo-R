@@ -29,4 +29,3 @@ id <- createDatabase(name="My Database in Bangladesh", countryId = "BD")
 See \url{http://en.wikipedia.org/wiki/ISO_3166-2} for two-letter
   country codes.
 }
-

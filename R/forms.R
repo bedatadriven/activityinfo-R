@@ -32,3 +32,12 @@ extractOldId <- function(s) {
     s
   }
 }
+
+#' Queries the schema of a form
+#' 
+#' @export
+#' @param the formId
+getFormSchema <- function(formId) {
+  stopifnot(is.character(formId))
+  getResource(sprintf("form/%s/schema", formId))
+}

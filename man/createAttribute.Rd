@@ -9,4 +9,3 @@ createAttribute(...)
 \description{
 Creates a new attribute
 }
-

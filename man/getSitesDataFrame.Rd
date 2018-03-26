@@ -23,4 +23,3 @@ nfi <- clusterDb$activities[[1]]
 df <- getSitesDataFrame(nfi, '2014-02')
 }
 }
-

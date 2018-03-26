@@ -9,4 +9,3 @@ deleteIndicator(indicatorId)
 \description{
 Deletes an indicator
 }
-

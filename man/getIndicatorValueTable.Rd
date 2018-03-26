@@ -22,4 +22,3 @@ depends on the reporting frequency of the activity:
   }
 In both cases the format is the same: YYYY-MM.
 }
-

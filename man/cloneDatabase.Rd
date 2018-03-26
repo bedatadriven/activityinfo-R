@@ -11,4 +11,3 @@ cloneDatabase(sourceDatabaseId, targetDatabaseId)
 Creates copies of all existing activities in another
 database
 }
-

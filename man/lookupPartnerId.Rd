@@ -17,4 +17,3 @@ the partner's numeric id
 \description{
 Retrieves a partner's id from a database by name
 }
-

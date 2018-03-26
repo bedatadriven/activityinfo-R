@@ -9,4 +9,3 @@ deleteAttributeGroup(attributeGroupId)
 \description{
 Deletes an attribute group
 }
-

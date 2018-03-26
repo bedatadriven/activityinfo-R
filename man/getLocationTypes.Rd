@@ -13,4 +13,3 @@ getLocationTypes(country)
 \description{
 Get location types within a country
 }
-

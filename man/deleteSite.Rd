@@ -9,4 +9,3 @@ deleteSite(siteId)
 \description{
 Deletes a site
 }
-

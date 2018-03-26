@@ -16,4 +16,3 @@ activityInfoLogin(userEmail, password)
 Configures the current session to use a user's email address and 
 password for authentication to ActivityInfo.org.
 }
-

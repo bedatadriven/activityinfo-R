@@ -38,4 +38,3 @@ If the user identified by the
 given email address does not yet have an ActivityInfo account, they will receive
 an email inviting them to create a new account and choose a password.
 }
-

@@ -14,4 +14,3 @@ getCube(filters = list(), dimensions = c("indicator", "site"))
 \description{
 Aggregates indicator values up to one or more dimensions.
 }
-

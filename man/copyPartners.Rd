@@ -18,4 +18,3 @@ Copies the partners linked to 'sourceDatabase' to each database
 in the vector 'targetDatabase'. Databases are identified by their numeric
 identifier and you must, of course, have access to all databases.
 }
-

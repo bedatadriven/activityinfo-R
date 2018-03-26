@@ -12,4 +12,3 @@ generateId(n = 1)
 \description{
 Generates a unique 31-bit integer id
 }
-

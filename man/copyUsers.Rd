@@ -16,4 +16,3 @@ copyUsers(sourceDatabase, targetDatabase)
 Copies users and their authorizations from a source to a target database. Any partners
 that are not yet present in the target database are copied from the source database.
 }
-

@@ -11,4 +11,3 @@ Retrieves a single resource from the given path.
 Remaining arguments are treated as query parameters
 and must be named
 }
-

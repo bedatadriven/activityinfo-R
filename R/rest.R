@@ -32,6 +32,9 @@ getResource <- function(path, queryParams = list(...), ...) {
   fromJSON(json)
 }
 
+#' @importFrom httr POST accept_json verbose content http_status
+#' @importFrom rjson fromJSON
+#' @export
 postResource <- function(path, body) {
 
   url <- paste(activityInfoRootUrl(), "resources", path, sep = "/")
@@ -49,6 +52,10 @@ postResource <- function(path, body) {
   fromJSON(json)
 }
 
+
+#' @importFrom httr PUT accept_json verbose content http_status
+#' @importFrom rjson fromJSON
+#' @export
 putResource <- function(path, body) {
   
   url <- paste(activityInfoRootUrl(), "resources", path, sep = "/")

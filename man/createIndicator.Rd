@@ -34,4 +34,3 @@ Returns the numeric id of the newly created indicator.
 \description{
 Creates a new Indicator
 }
-

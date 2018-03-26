@@ -15,4 +15,3 @@ the country's internal identifier used by AI.
 \description{
 Looks up the internal identifier for a country by code
 }
-

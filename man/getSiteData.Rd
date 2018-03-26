@@ -9,4 +9,3 @@ getSiteData(activity, adminlevels, include.comments)
 \description{
 Fetch the sites for an activity as a data.frame
 }
-

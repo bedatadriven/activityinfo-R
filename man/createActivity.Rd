@@ -30,4 +30,3 @@ Returns the numeric id of the newly created activity.
 \description{
 Creates a new activity
 }
-

@@ -12,4 +12,3 @@ getLocations(locationTypeId)
 \description{
 Gets the locations belonging to a location type
 }
-

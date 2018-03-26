@@ -13,4 +13,3 @@ form as a character.}
 \description{
 Queries a form collection as a flat, two-dimensional table.
 }
-

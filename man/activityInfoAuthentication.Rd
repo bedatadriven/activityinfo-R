@@ -11,4 +11,3 @@ activityInfoAuthentication(newValue)
 Constructs a httr::authentication object from saved credentials 
 from the user's home directory at ~/.activityinfo.credentials
 }
-

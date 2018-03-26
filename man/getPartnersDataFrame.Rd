@@ -16,4 +16,3 @@ is empty if no partners are registered in the database.
 \description{
 Fetch the partners registered in a database as a data.frame
 }
-

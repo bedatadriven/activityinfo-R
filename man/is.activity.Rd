@@ -11,4 +11,3 @@ is.activity(activity)
 Returns TRUE if the given object is an activity
 object included from getDatabaseSchema
 }
-

@@ -9,4 +9,3 @@ createSite(properties)
 \description{
 Creates a new site
 }
-

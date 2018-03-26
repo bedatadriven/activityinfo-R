@@ -9,4 +9,3 @@ createAttributeGroup(...)
 \description{
 Creates a new AttributeGroup
 }
-

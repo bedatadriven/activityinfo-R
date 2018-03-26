@@ -21,4 +21,3 @@ Returns the numeric id of the partner.
 Currently, partners are globally shared objects with an identity derived from their
 name.
 }
-

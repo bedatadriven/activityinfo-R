@@ -13,4 +13,3 @@ getAdminLevels(country)
 \description{
 Get administrative levels within a country
 }
-

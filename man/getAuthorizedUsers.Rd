@@ -12,4 +12,3 @@ getAuthorizedUsers(databaseId)
 \description{
 Retrieves a list of authorized users of the given database
 }
-

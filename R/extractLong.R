@@ -179,6 +179,14 @@ getDatabaseValueTable <- function(database.id = NA, include.comments = FALSE, co
   
   form.data <- lapply(db.schema$activities, function(form) {
     form.data <- getFormData(form, adminlevels, include.comments)
+    
+    # Check for duplicated enum field names, as this will cause errors during rbind() later
+    columns <- names(form.data)
+    if (any(duplicated(columns))) {
+      stop(paste("Duplicate field names found in Form '", form$name, 
+                 "'. Please correct and rerun extraction.", sep = ""))
+    }
+    
     form.data
   })
   

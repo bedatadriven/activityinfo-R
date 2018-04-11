@@ -122,7 +122,7 @@ getIndicatorValueTable <- function(databaseId) {
   
   # Join the indicator properties
   indicators <- asIndicatorDataFrame(db)
-  values <- merge(values, subset(indicators, select = c("indicatorId", "indicatorCategory", "units" )))
+  values <- merge(values, subset(indicators, select = c("indicatorId", "indicatorCategory", "units" )), all.x = TRUE)
   
   # Join the values to their sites
   merge(sites, values)

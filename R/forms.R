@@ -41,3 +41,12 @@ getFormSchema <- function(formId) {
   stopifnot(is.character(formId))
   getResource(sprintf("form/%s/schema", formId))
 }
+
+#' Queries the Form Tree of a Form
+#' 
+#' @export
+#' @param the formId
+getFormTree <- function(formId) {
+  stopifnot(is.character(formId))
+  getResource(paste("form", formId, "tree", sep = "/"))
+}

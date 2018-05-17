@@ -361,6 +361,12 @@ toSingleTable <- function(form.records) {
   values <- do.call(rbind, form.records)
 }
 
+reorderColumns <- function(primary.cols, table) {
+  other.cols <- lapply(colnames(table), function(col) {if (is.na(match(col, primary.cols))) return(col) })
+  other.cols <- unlist(Filter(Negate(is.null), other.cols))
+  return(table[, c(primary.cols, other.cols)])
+}
+
 #' Extract all Form Records, including all Sub-Form Records, in "long" format.
 #' 
 #' The Form Record Table is returned as a data.frame, with:
@@ -456,13 +462,17 @@ getFormRecordTable <- function(form.id = NA, col.names = NULL) {
     # Merge Root Form Dimensions Table with Sub Form Tables via an Inner Join
     sub.form.table <- merge(x = root.form.dim.table, y = sub.form.table, by.x = "recordId", by.y = "parentId")
     
-    # Finally, concatenate Sub Form Record Table with Root Form Record Table via a row concatenation
+    # Finally, concatenate Sub Form Record Table with Root Form Record Table via a row concatenation, and reorder columns
     record.table <- toSingleTable(list(root.form.table, sub.form.table))
+    inbuilt.subform.cols <- c("formName", "formId", "recordId", "subFormRecordId")
+    record.table <- reorderColumns(inbuilt.subform.cols, record.table)
     
   } else {
     
-    # No Sub-Form Records to merge, so set as Root Form Records Table
+    # No Sub-Form Records to merge, so set as Root Form Records Table and reorder columns
     record.table <- root.form.table
+    inbuilt.form.cols <- c("formName", "formId", "recordId")
+    record.table <- reorderColumns(inbuilt.form.cols, record.table)
     
   }
   
@@ -505,6 +515,7 @@ getDatabaseRecordTable <- function(database.id = NA, as.single.table = FALSE) {
     # add database id and database name fields
     values$databaseId <- rep(database.id, times = nrow(values))
     values$databaseName <- rep(db.schema$name, times = nrow(values))
+    values <- reorderColumns(c("databaseId", "databaseName"), values)
   } else {
     values <- form.records
   }
@@ -513,7 +524,8 @@ getDatabaseRecordTable <- function(database.id = NA, as.single.table = FALSE) {
 }
 
 
-#' Extract a full database in "long" format
+#' Extract a full database in "long" format. 
+#' USE ONLY WITH ACTIVITY-BASED DATABASES.
 #' 
 #' The resulting data.frame includes a row for each reported indicator
 #' and month, with columns for the site's location, the administrative levels,

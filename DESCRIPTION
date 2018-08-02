@@ -8,4 +8,4 @@ Maintainer: Alex Bertram <alex@bedatadriven.com>
 Description: Interface to ActivityInfo.org
 License: GPL-3
 Imports: httr, rjson, reshape2
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

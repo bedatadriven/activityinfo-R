@@ -2,7 +2,8 @@
 % Please edit documentation in R/extractLong.R
 \name{getDatabaseValueTable}
 \alias{getDatabaseValueTable}
-\title{Extract a full database in "long" format}
+\title{Extract a full database in "long" format. 
+USE ONLY WITH ACTIVITY-BASED DATABASES.}
 \usage{
 getDatabaseValueTable(database.id = NA, include.comments = FALSE,
   col.names = NULL)

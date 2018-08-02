@@ -6,8 +6,8 @@
 \usage{
 updateUserPermissions(databaseId, userEmail, userName, partner,
   allowView = TRUE, allowViewAll = FALSE, allowEdit = FALSE,
-  allowEditAll = FALSE, allowDesign = FALSE, allowManageUsers = FALSE,
-  allowManageAllUsers = FALSE)
+  allowEditAll = FALSE, allowDesign = FALSE,
+  allowManageUsers = FALSE, allowManageAllUsers = FALSE)
 }
 \arguments{
 \item{databaseId}{the id of the database}

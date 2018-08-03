@@ -38,7 +38,13 @@ request based on the `development` branch.
 Releasing
 ---------
 
-Releases are performed automatically by the [ActivityInfo-R-Release](https://jenkins.bedatadriven.com/job/ActivityInfo-R-Release) job
-on the BeDataDriven build server. Running this job will merge the `development` branch in the `release` branch, increment the version number,
-check the package, tag the release, and push to the `release` branch.
+Following a change to the `release` branch, generate the package documentation and export the required methods by running `roxygen`:
 
+```
+library(roxygen2)
+roxygenize()
+```
+
+Increment the release Version in [DECSRIPTION](DESCRIPTION) and commit the changed files to GitHub. Please see [here](https://cran.r-project.org/web/packages/roxygen2/vignettes/roxygen2.html) for more details on `roxygen`.
+
+Releases are provided to users directly from GitHub (see [Latest Release](#latest-release)). 

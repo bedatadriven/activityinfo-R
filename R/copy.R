@@ -39,9 +39,9 @@ copyPartners <- function(sourceDatabase, targetDatabase) {
     database.partners <- getPartnerNames(database)
     for (partner in partner.names) {
       if (!(partner %in% database.partners)) {
-        cat("Adding partner '", partner, "'' to database ", database,
+        cat("Updating partner '", partner, "'' to database ", database,
             "\n", sep="")
-        tryCatch(executeCommand("AddPartner",
+        tryCatch(executeCommand("UpdatePartner",
                                 databaseId=database,
                                 partner=list(name=partner)),
                  error=function(e) {

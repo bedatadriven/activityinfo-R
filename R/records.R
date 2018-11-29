@@ -10,10 +10,22 @@ updateRecord <- function(formId, recordId, fieldValues) {
   stopifnot(is.character(recordId))
   stopifnot(is.list(fieldValues))
   
-  putResource(sprintf("form/%s/record/%s", formId, recordId), list(
-    fieldValues = fieldValues
-  ))
+  txt <- list(
+    changes = list(
+      list(
+        formId = formId,
+        recordId = recordId,
+        fields = fieldValues
+      )
+    )
+  )
+  
+  url <- paste(activityInfoRootUrl(), "resources", "update", sep = "/")
+  
+  result <- POST(url, body = body, encode = "json",  activityInfoAuthentication(), accept_json())
+  
 }
+
 
 #' Creates a 'reference' field value
 #' 

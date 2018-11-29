@@ -306,7 +306,7 @@ deleteAttributeGroup <- function(attributeGroupId)
 #' @return Returns the numeric id of the partner. 
 #' @export 
 addPartner <- function(databaseId, partnerName, fullPartnerName = NULL) {
-  result <- executeCommand("AddPartner", 
+  result <- executeCommand("UpdatePartner", 
                           databaseId=databaseId,
                           partner=list(name=partnerName, fullName=fullPartnerName))
   result$newId

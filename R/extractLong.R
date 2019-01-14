@@ -87,6 +87,8 @@ getIndicatorData <- function(activity) {
     name = vapply(activity$indicators, function(x) na.if.null(x$name, "character"), character(1L)),
     units = vapply(activity$indicators, function(x) na.if.null(x$units, "character"), character(1L)),
     category = vapply(activity$indicators, function(x) na.if.null(x$category, "character"), character(1L)),
+    listHeader = vapply(activity$indicators, function(x) na.if.null(x$listHeader, "character"), character(1L)),
+    description = vapply(activity$indicators, function(x) na.if.null(x$description, "character"), character(1L)),
     stringsAsFactors = FALSE
   )
   

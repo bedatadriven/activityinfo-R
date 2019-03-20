@@ -8,8 +8,8 @@
 getPartnersDataFrame <- function(databaseId) {
   schema <- getDatabaseSchema(databaseId)
   
-  if (length(schema$partners)) {
-    do.call(rbind, lapply(schema$partners, function(partner) {
+  if (length(schema$databasePartners)) {
+    do.call(rbind, lapply(schema$databasePartners, function(partner) {
       data.frame(id = partner$id,
                  name = partner$name,
                  stringsAsFactors = FALSE)

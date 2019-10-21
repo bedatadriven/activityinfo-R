@@ -4,7 +4,7 @@
 \alias{addRecord}
 \title{Adds a new record}
 \usage{
-addRecord(formId, parentRecordId, fieldValues)
+addRecord(formId, parentRecordId = NA_character_, fieldValues)
 }
 \arguments{
 \item{formId}{the id of the form to which the record should be added}

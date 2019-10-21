@@ -26,9 +26,9 @@ updateRecord <- function(formId, recordId, fieldValues) {
 #' @param parentRecordId the id of this record's parent record, if the form is a subform
 #' @param fieldValues a named list of fields to change
 #' @export
-addRecord <- function(formId, parentRecordId, fieldValues) {
+addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
   stopifnot(is.character(formId))
-  stopifnot(is.character(recordId))
+  stopifnot(is.character(parentRecordId))
   stopifnot(is.list(fieldValues))
   
   executeTransaction(list(
@@ -63,7 +63,7 @@ executeTransaction <- function(changes) {
   
   url <- paste(activityInfoRootUrl(), "resources", "update", sep = "/")
   
-  result <- POST(url, body = list(changes = changes), encode = "json",  activityInfoAuthentication(), accept_json())
+  result <- POST(url, body = list(changes = changes), encode = "json",  activityInfoAuthentication(), accept_json(), verbose())
   if(result$status_code == 400) {
     stop(content(result, as = "text"))
   }

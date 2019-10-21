@@ -3,6 +3,9 @@
 #' @importFrom httr POST
 #' @importFrom rjson toJSON fromJSON
 executeCommand <- function(type, ...) {
+  
+  warning("The ActivityInfo v2 API will be retired on December 31st, 2019. Please migrate to v4 today!")
+  
   body <- list( type = type,
                 command = list(...))
 

@@ -5,8 +5,8 @@
 \title{Creates a new Indicator}
 \usage{
 createIndicator(activityId, name, category = NULL, listHeader = NULL,
-  description = NULL, type = "quantity", units,
-  aggregation = c("sum", "mean", "count"), sortOrder = NULL)
+  description = NULL, type = "quantity", units, aggregation = c("sum",
+  "mean", "count"), sortOrder = NULL)
 }
 \arguments{
 \item{activityId}{the numeric id of the activity to which this indicator

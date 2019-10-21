@@ -97,6 +97,10 @@ getDatabaseSchema <- function(databaseId) {
   schema
 }
 
+getDatabaseSchema <- function(databaseId) { 
+  schema <- getResource(paste("database", databaseId, sep="/"))
+  schema
+}
 
 #' Returns TRUE if the given object is an activity
 #' object included from getDatabaseSchema

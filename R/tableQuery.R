@@ -1,6 +1,6 @@
 
 
-#' Queries a form collection as a flat, two-dimensional table.
+#' Queries a form as a flat, two-dimensional table.
 #' 
 #' @param the form to query. This can be an object of type "tree", "class", or the id of the 
 #' form as a character. 
@@ -23,6 +23,10 @@ queryTable <- function(form, columns,  ...) {
   if(missing(columns)) {
     columns = list(...)
   }
+  
+  if(length(columns) == 0) {
+    return(parseColumnSet(getResource(sprintf("form/%s/query/columns", formId))))
+  }
 
   stopifnot(length(columns) > 0)
   
@@ -37,8 +41,17 @@ queryTable <- function(form, columns,  ...) {
   )
   
   columnSet <- postResource("query/columns", query)
+  df <- parseColumnSet(columnSet)
   
-  df <- as.data.frame(
+  # order columns in the same order specified in the query
+  df <- subset(df, subset = TRUE, select = names(columns))
+  
+  stopifnot(is.data.frame(df))
+  return(df)
+}
+
+parseColumnSet <- function(columnSet) {
+  as.data.frame(
     lapply(columnSet$columns, function(column) {
       switch(column$storage,
              constant = {
@@ -74,10 +87,4 @@ queryTable <- function(form, columns,  ...) {
     }),
     stringsAsFactors = FALSE
   )
-  
-  # order columns in the same order specified in the query
-  df <- subset(df, subset = TRUE, select = names(columns))
-  
-  stopifnot(is.data.frame(df))
-  return(df)
 }

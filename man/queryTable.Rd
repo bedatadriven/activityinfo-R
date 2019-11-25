@@ -2,7 +2,7 @@
 % Please edit documentation in R/tableQuery.R
 \name{queryTable}
 \alias{queryTable}
-\title{Queries a form collection as a flat, two-dimensional table.}
+\title{Queries a form as a flat, two-dimensional table.}
 \usage{
 queryTable(form, columns, ...)
 }
@@ -11,5 +11,5 @@ queryTable(form, columns, ...)
 form as a character.}
 }
 \description{
-Queries a form collection as a flat, two-dimensional table.
+Queries a form as a flat, two-dimensional table.
 }

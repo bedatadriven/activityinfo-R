@@ -92,70 +92,13 @@ getSites <- function(activityId, ...)
 #' @param databaseId database identifier
 #' @export
 getDatabaseSchema <- function(databaseId) { 
-  schema <- getResource(paste("database", databaseId, "schema", sep="/"))
+  schema <- getResource(paste("databases", databaseId, "schema", sep="/"))
   schema$id <- databaseId
   schema
 }
 
 getDatabaseSchema <- function(databaseId) { 
-  schema <- getResource(paste("database", databaseId, sep="/"))
+  schema <- getResource(paste("databases", databaseId, sep="/"))
   schema
-}
-
-#' Returns TRUE if the given object is an activity
-#' object included from getDatabaseSchema
-#' 
-is.activity <- function(activity) {
-  is.list(activity) &&
-    all(c("name",
-          "id",
-          "attributeGroups",
-          "reportingFrequency",
-          "indicators") %in% names(activity))
-}
-
-
-#' GetCountries
-#' 
-#' @export
-getCountries <- local({
-  
-  # this can be cached, no need to request
-  # multiple times per session
-  countries <- NULL
-  
-  function() {
-    if(is.null(countries)) {
-      countries <<- getResource("countries")
-    }
-    data.frame( id = extractField(countries, "id"),
-                code = extractField(countries, "code"),
-                name = extractField(countries, "name"))
-  }
-})
-
-#' Get location types within a country
-#' @param country the country's numeric id or an ISO-3166 alpha-2 code (like
-#'   'US' or 'SS' or 'RW')
-#' @export
-getLocationTypes <- function(country) {
-  countryId <- lookupCountryId(country)
-  getResource(paste("country", countryId, "locationTypes", sep="/"))
-}
-
-#' Get administrative levels within a country
-#' @param country the country's numeric id or an ISO-3166 alpha-2 code (like
-#'   'US' or 'SS' or 'RW')
-#' @export
-getAdminLevels <- function(country) {
-  countryId <- lookupCountryId(country)
-  getResource(paste("country", countryId, "adminLevels", sep="/"))
-}
-
-#' Gets the locations belonging to a location type
-#' @param locationTypeId 
-#' @export
-getLocations <- function(locationTypeId) {
-   getResource("locations", type = locationTypeId)
 }
 

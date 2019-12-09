@@ -258,6 +258,7 @@ toSingleTable <- function(form.records) {
   
   # Combine all data into a single table:
   values <- do.call(rbind, form.records)
+  values
 }
 
 reorderColumns <- function(primary.cols, table) {
@@ -399,18 +400,25 @@ getFormRecordTable <- function(form.id = NA, col.names = NULL) {
 #' @param as.single.table specify whether to merge all Form Record Tables into a single table
 #' @export
 getDatabaseRecordTable <- function(database.id = NA, as.single.table = FALSE) {
-  
-  message("Fetching database schema...")
+
+  message(sprintf("Fetching database schema for '%s'...", database.id))
   db.schema <- getDatabaseSchema(database.id)
-  
-  message(paste("Database contains ", length(db.schema$activities),
+
+  message(paste("Database contains ", length(db.schema$resources),
                 " forms. Retrieving data per form...\n", sep = ""))
 
-  form.records <- lapply(db.schema$activities, function(form) getFormRecordTable(site.form.id(form$id)))
-  
+  form.records <- lapply(db.schema$resources, function(f) {
+    if (f[["type"]] %in% c("FORM", "SUB_FORM")) {
+      queryTable(f[["id"]])
+    }
+  })
+
+  # remove 'NULL's from the list:
+  form.records <- Filter(Negate(is.null), form.records)
+
   if (as.single.table) {
     values <- toSingleTable(form.records)
-    
+
     # add database id and database name fields
     values$databaseId <- rep(database.id, times = nrow(values))
     values$databaseName <- rep(db.schema$name, times = nrow(values))
@@ -418,7 +426,7 @@ getDatabaseRecordTable <- function(database.id = NA, as.single.table = FALSE) {
   } else {
     values <- form.records
   }
-  
+
   return(values)
 }
 

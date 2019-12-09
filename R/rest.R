@@ -84,20 +84,15 @@ putResource <- function(path, body) {
 getSites <- function(activityId, ...)
   getResource("sites", activity = activityId, ...)
 
+
 #' getDatabaseSchema
-#' 
+#'
 #' Retrieves the schema (partners, activities, indicators and attributes) from
 #' for the given database
-#' 
+#'
 #' @param databaseId database identifier
 #' @export
-getDatabaseSchema <- function(databaseId) { 
-  schema <- getResource(paste("databases", databaseId, "schema", sep="/"))
-  schema$id <- databaseId
-  schema
-}
-
-getDatabaseSchema <- function(databaseId) { 
+getDatabaseSchema <- function(databaseId) {
   schema <- getResource(paste("databases", databaseId, sep="/"))
   schema
 }

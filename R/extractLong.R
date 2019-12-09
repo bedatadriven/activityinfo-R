@@ -421,13 +421,13 @@ getDatabaseRecordTable <- function(database.id = NA, as.single.table = FALSE) {
 
     # add database id and database name fields
     values$databaseId <- rep(database.id, times = nrow(values))
-    values$databaseName <- rep(db.schema$name, times = nrow(values))
+    values$databaseName <- rep(db.schema$label, times = nrow(values))
     values <- reorderColumns(c("databaseId", "databaseName"), values)
   } else {
     values <- form.records
   }
 
-  return(values)
+  values
 }
 
 

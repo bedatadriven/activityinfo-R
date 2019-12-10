@@ -19,6 +19,6 @@ Each Form Record Table is returned as a data.frame, with:
 -> Rows for every measured value, with the measure field name under "Measure" and the measured value under "Value"
 }
 \details{
-By default, returns a list of all Form Record Tables. 
+By default, returns a list of all Form Record Tables.
 If @param as.single.table is TRUE, all Form Record Tables will be concatenated into a single table, with missing values given as <NA>.
 }

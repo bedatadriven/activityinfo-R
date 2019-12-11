@@ -2,10 +2,11 @@
 % Please edit documentation in R/records.R
 \name{deleteRecord}
 \alias{deleteRecord}
-\title{Delete a single record}
+\title{Delete a record}
 \usage{
 deleteRecord(formId, recordId)
 }
 \description{
-Delete a single record
+This call deletes a single record for the given \code{formId} and
+\code{recordId}.
 }

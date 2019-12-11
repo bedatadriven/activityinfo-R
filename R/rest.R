@@ -8,7 +8,7 @@
 #'
 #' @importFrom httr GET accept_json verbose content http_status
 #' @importFrom rjson fromJSON
-#' @export
+#' @noRd
 getResource <- function(path, queryParams = list(...), ...) {
 
   queryString <- if(length(queryParams) == 0)
@@ -39,7 +39,7 @@ getResource <- function(path, queryParams = list(...), ...) {
 #'
 #' @importFrom httr POST accept_json verbose content http_status
 #' @importFrom rjson fromJSON
-#' @export
+#' @noRd
 postResource <- function(path, body) {
 
   url <- paste(activityInfoRootUrl(), "resources", path, sep = "/")
@@ -64,7 +64,7 @@ postResource <- function(path, body) {
 #'
 #' @importFrom httr PUT accept_json verbose content http_status
 #' @importFrom rjson fromJSON
-#' @export
+#' @noRd
 putResource <- function(path, body) {
 
   url <- paste(activityInfoRootUrl(), "resources", path, sep = "/")
@@ -88,7 +88,7 @@ putResource <- function(path, body) {
 #' getDatabaseSchema
 #'
 #' Retrieves the schema (partners, activities, indicators and attributes) from
-#' for the given database
+#' for the given database.
 #'
 #' @param databaseId database identifier
 #' @export

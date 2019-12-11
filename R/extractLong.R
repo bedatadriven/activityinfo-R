@@ -1,5 +1,20 @@
 
-#' getFormData
+#' Record table description section
+#'
+#' @details
+#' \itemize{
+#'   \item Columns for all Form Dimensions, including:
+#'     \itemize{
+#'       \item Sub-Form Name, Sub-Form Id, Sub-Form Record Id and Sub-Form Period (where applicable)
+#'       \item Reference Field Dimensions (where applicable)
+#'     }
+#'   \item Rows for every measured value, with the measure field name under \dQuote{Measure} and the measured value under \dQuote{Value}
+#' }
+#'
+#' @name form_database_record_table
+NULL
+
+#' Get form data
 #'
 #' @param activity activity
 #' @param adminlevels adminlevels
@@ -119,8 +134,9 @@ pastePrefix <- function(prefix, string, sep = ".") {
   }
 }
 
-#'
+
 #' @importFrom reshape2 melt
+#' @noRd
 createDataFrame <- function(records, dimensions, measures, as.value.table = TRUE) {
   if (is.element("parentId",names(records$columns))) {
     # Sub-Form - add subFormRecordId and parentId to data.frame
@@ -272,16 +288,13 @@ reorderColumns <- function(primary.cols, table) {
   return(table[, c(primary.cols, other.cols)])
 }
 
-#' Extract all Form Records, including all Sub-Form Records, in "long" format.
-#'
-#' The Form Record Table is returned as a data.frame, with:
-#' -> Columns for all Form Dimensions, including:
-#'    - Sub-Form Name, Sub-Form Id, Sub-Form Record Id and Sub-Form Period (where applicable)
-#'    - Reference Field Dimensions (where applicable)
-#' -> Rows for every measured value, with the measure field name under "Measure" and the measured value under "Value"
+#' Extract all Form Records, including all Sub-Form Records, in \dQuote{long}
+#' format
 #'
 #' @param form.id the full alphanumeric id of the form
-#' @param col.names a named character vector containing alternate names for the resulting table
+#' @param col.names a named character vector containing alternate names for the
+#'   resulting table
+#' @inherit form_database_record_table details
 #' @export
 getFormRecordTable <- function(form.id = NA, col.names = NULL) {
 
@@ -390,19 +403,18 @@ getFormRecordTable <- function(form.id = NA, col.names = NULL) {
 }
 
 
-#' Extract all Form Record Tables for a Database in "long" format.
-#'
-#' Each Form Record Table is returned as a data.frame, with:
-#' -> Columns for all Form Dimensions, including:
-#'    - Sub-Form Name, Sub-Form Id, Sub-Form Record Id and Sub-Form Period (where applicable)
-#'    - Reference Field Dimensions (where applicable)
-#' -> Rows for every measured value, with the measure field name under "Measure" and the measured value under "Value"
-#'
-#' By default, returns a list of all Form Record Tables.
-#' If @param as.single.table is TRUE, all Form Record Tables will be concatenated into a single table, with missing values given as <NA>.
+#' Extract all Form Record Tables for a Database in \dQuote{long} format
 #'
 #' @param database.id the numeric id of the database
-#' @param as.single.table specify whether to merge all Form Record Tables into a single table
+#' @param as.single.table specify whether to merge all Form Record Tables into a
+#'   single table
+#'
+#' @inherit form_database_record_table details
+#' @return
+#' By default, returns a list of all Form Record Tables.
+#' If \code{as.single.table} is set to \code{TRUE}, all Form Record Tables will
+#' be concatenated into a single table, with missing values given as
+#' \code{<NA>}.
 #' @export
 getDatabaseRecordTable <- function(database.id = NA, as.single.table = FALSE) {
 

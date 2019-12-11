@@ -2,23 +2,32 @@
 % Please edit documentation in R/extractLong.R
 \name{getDatabaseRecordTable}
 \alias{getDatabaseRecordTable}
-\title{Extract all Form Record Tables for a Database in "long" format.}
+\title{Extract all Form Record Tables for a Database in \dQuote{long} format}
 \usage{
 getDatabaseRecordTable(database.id = NA, as.single.table = FALSE)
 }
 \arguments{
 \item{database.id}{the numeric id of the database}
 
-\item{as.single.table}{specify whether to merge all Form Record Tables into a single table}
+\item{as.single.table}{specify whether to merge all Form Record Tables into a
+single table}
+}
+\value{
+By default, returns a list of all Form Record Tables.
+If \code{as.single.table} is set to \code{TRUE}, all Form Record Tables will
+be concatenated into a single table, with missing values given as
+\code{<NA>}.
 }
 \description{
-Each Form Record Table is returned as a data.frame, with:
--> Columns for all Form Dimensions, including:
-   - Sub-Form Name, Sub-Form Id, Sub-Form Record Id and Sub-Form Period (where applicable)
-   - Reference Field Dimensions (where applicable)
--> Rows for every measured value, with the measure field name under "Measure" and the measured value under "Value"
+Extract all Form Record Tables for a Database in \dQuote{long} format
 }
 \details{
-By default, returns a list of all Form Record Tables.
-If @param as.single.table is TRUE, all Form Record Tables will be concatenated into a single table, with missing values given as <NA>.
+\itemize{
+  \item Columns for all Form Dimensions, including:
+    \itemize{
+      \item Sub-Form Name, Sub-Form Id, Sub-Form Record Id and Sub-Form Period (where applicable)
+      \item Reference Field Dimensions (where applicable)
+    }
+  \item Rows for every measured value, with the measure field name under \dQuote{Measure} and the measured value under \dQuote{Value}
+}
 }

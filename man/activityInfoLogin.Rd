@@ -2,8 +2,8 @@
 % Please edit documentation in R/auth.R
 \name{activityInfoLogin}
 \alias{activityInfoLogin}
-\title{Configures the current session to use a user's email address and 
-password for authentication to ActivityInfo.org.}
+\title{Authenticate and store user credentials to authorize requests for the
+ActivityInfo API}
 \usage{
 activityInfoLogin(userEmail, password)
 }
@@ -13,6 +13,11 @@ activityInfoLogin(userEmail, password)
 \item{password}{The user's ActivityInfo password}
 }
 \description{
-Configures the current session to use a user's email address and 
-password for authentication to ActivityInfo.org.
+Configures the current session to use a user's email address and
+password for authentication to \href{www.activityinfo.org}{ActivityInfo.org}
+}
+\examples{
+\dontrun{
+activityInfoLogin("nouser@activityinfo.org", "pass")
+}
 }

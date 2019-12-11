@@ -2,10 +2,11 @@
 % Please edit documentation in R/auth.R
 \name{activityInfoRootUrl}
 \alias{activityInfoRootUrl}
-\title{activityInfoRootUrl}
+\title{Get or set the root url for the ActivityInfo}
 \usage{
 activityInfoRootUrl(new.url)
 }
 \description{
-gets or sets the root url used for this session
+This call gets or sets the root url used for this session, \strong{valid only
+during the session}.
 }

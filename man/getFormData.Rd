@@ -2,7 +2,7 @@
 % Please edit documentation in R/extractLong.R
 \name{getFormData}
 \alias{getFormData}
-\title{getFormData}
+\title{Get form data}
 \usage{
 getFormData(activity, adminlevels, include.comments)
 }
@@ -14,5 +14,5 @@ getFormData(activity, adminlevels, include.comments)
 \item{include.comments}{include.comments}
 }
 \description{
-getFormData
+Get form data
 }

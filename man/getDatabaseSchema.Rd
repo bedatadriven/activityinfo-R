@@ -11,5 +11,5 @@ getDatabaseSchema(databaseId)
 }
 \description{
 Retrieves the schema (partners, activities, indicators and attributes) from
-for the given database
+for the given database.
 }

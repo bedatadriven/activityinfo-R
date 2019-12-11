@@ -2,14 +2,14 @@
 
 
 #' Updates a single record
-#' 
+#'
 #' @param fieldValues a named list of fields to change
 #' @export
 updateRecord <- function(formId, recordId, fieldValues) {
   stopifnot(is.character(formId))
   stopifnot(is.character(recordId))
   stopifnot(is.list(fieldValues))
-  
+
   executeTransaction(list(
       list(
         formId = formId,
@@ -21,7 +21,7 @@ updateRecord <- function(formId, recordId, fieldValues) {
 }
 
 #' Adds a new record
-#' 
+#'
 #' @param formId the id of the form to which the record should be added
 #' @param parentRecordId the id of this record's parent record, if the form is a subform
 #' @param fieldValues a named list of fields to change
@@ -30,7 +30,7 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
   stopifnot(is.character(formId))
   stopifnot(is.character(parentRecordId))
   stopifnot(is.list(fieldValues))
-  
+
   executeTransaction(list(
     list(
       formId = formId,
@@ -41,13 +41,17 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
   ))
 }
 
-#' Delete a single record
-#' 
+#' Delete a record
+#'
+#' @description
+#' This call deletes a single record for the given \code{formId} and
+#' \code{recordId}.
+#'
 #' @export
 deleteRecord <- function(formId, recordId) {
   stopifnot(is.character(formId))
   stopifnot(is.character(recordId))
-  
+
   executeTransaction(changes = list(
     list(
       formId = formId,
@@ -58,11 +62,11 @@ deleteRecord <- function(formId, recordId) {
 }
 
 #' Executes a record transaction
-#' 
+#' @noRd
 executeTransaction <- function(changes) {
-  
+
   url <- paste(activityInfoRootUrl(), "resources", "update", sep = "/")
-  
+
   result <- POST(url, body = list(changes = changes), encode = "json",  activityInfoAuthentication(), accept_json(), verbose())
   if(result$status_code == 400) {
     stop(content(result, as = "text"))
@@ -70,17 +74,20 @@ executeTransaction <- function(changes) {
   invisible(result)
 }
 
-
-#' Creates a 'reference' field value
-#' 
-#' @export
+#' Create a reference field value
+#'
+#' @description
+#' This call creates a 'reference' field value for the given \code{formId} and
+#' \code{recordId}.
+#'
 #' @param formId the id of the form
 #' @param recordId the id of the record
+#' @export
 reference <- function(formId, recordId) {
   stopifnot(is.character(formId))
   stopifnot(is.character(recordId))
 
-  sprintf("%s:%s", formId, recordId)  
+  sprintf("%s:%s", formId, recordId)
 }
 
 

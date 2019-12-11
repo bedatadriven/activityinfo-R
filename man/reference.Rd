@@ -2,7 +2,7 @@
 % Please edit documentation in R/records.R
 \name{reference}
 \alias{reference}
-\title{Creates a 'reference' field value}
+\title{Create a reference field value}
 \usage{
 reference(formId, recordId)
 }
@@ -12,5 +12,6 @@ reference(formId, recordId)
 \item{recordId}{the id of the record}
 }
 \description{
-Creates a 'reference' field value
+This call creates a 'reference' field value for the given \code{formId} and
+\code{recordId}.
 }

@@ -85,15 +85,6 @@ putResource <- function(path, body) {
   }
 }
 
-#' getSites
-#'
-#' Fetches a list of sites for the given activity.
-#'
-#' @export
-getSites <- function(activityId, ...)
-  getResource("sites", activity = activityId, ...)
-
-
 #' getDatabaseSchema
 #'
 #' Retrieves the schema (partners, activities, indicators and attributes) from

@@ -1,7 +1,7 @@
 
-# ActivityInfo API R Client <a href="https://www.activityinfo.org/"><img src="https://www.activityinfo.org/about/assets/images/logo-activityinfo.png" align="right" width="60"/></a>
+# ActivityInfo API R Client <a href="https://www.activityinfo.org/"><img src="https://www.activityinfo.org/about/assets/images/logo-activityinfo.png" align="right" width="50"/></a>
 
-Provides access to ActivityInfo databases through R 
+An *R* API client package providing access to the *ActivityInfo API*.
 
 ## Installation
 

@@ -10,3 +10,7 @@ License: GPL-3
 Imports: httr, rjson, reshape2
 Encoding: UTF-8
 RoxygenNote: 6.1.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

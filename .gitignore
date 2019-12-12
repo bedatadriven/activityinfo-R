@@ -4,3 +4,4 @@
 *.Rproj
 *.Rproj.out
 .Rbuildignore
+inst/doc

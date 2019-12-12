@@ -1,0 +1,120 @@
+---
+title: "Introduction to ActivityInfo API"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to ActivityInfo API}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This introductory vignette is about the *ActivityInfo API R Client* 
+that is an *R* package to access 
+to the *ActivityInfo API*. 
+With this client, you can programmatically obtain and modify 
+your data.
+
+For the problems related to *ActivityInfo* itself, not API, please read the
+[ActivityInfo Documentation](help.activityinfo.org) thoroughly or contact us.
+
+## 1. Install the R client
+
+First, you should install *ActivityInfo API R client* in your system.
+
+```{r, eval=FALSE}
+# install.packages("devtools")
+devtools::install_github("bedatadriven/activityinfo-R")
+```
+
+If you want to install the older v3 version, use 
+`devtools::install_github("bedatadriven/activityinfo-R", ref = "v3")` 
+but please note that that version will be completely removed 
+after 16th January 2020.
+
+Then, put the library call at the top of your script file.
+
+```{r}
+library(activityinfo)
+```
+
+## 2. Authentication
+
+In order to access to the *ActivityInfo API*, an authentication process has first
+to be done.
+
+```{r, eval=FALSE}
+activityInfoLogin(userEmail, password)
+```
+
+After the authentication process has been successfully completed, a token file
+named *`r basename(activityinfo:::credentialsFile)`* will be written to your 
+home directory. Don't share or publish this token file and preserve securely
+as it contains your username and password.
+
+Before start working on the API calls, do not forget to restart your *R* session
+to have changes applied.
+
+## 3. Databases
+
+In order to get the database schemas that you have access to, use
+`getDatabaseSchema(databaseId)` call, which actually retrieves
+"`/resources/database/{databaseId}`" from the API.
+
+```{r}
+db_schema <- getDatabaseSchema("ck35o0kja3")
+head(db_schema)
+```
+
+## 4. Forms
+
+In order to get the form or sub-form schemas that you have access to, use
+`getFormSchema(databaseId)` call, which actually retrieves
+"`resources/form/{id}/schema`" from the API.
+
+```{r}
+form_schema <- getFormSchema("ck35pixlz9")
+head(form_schema, 4)
+```
+
+## 5. Querying
+
+#### 5.1. Querying databases/forms in "long" format 
+
+In the ActivityInfo API, this call requests
+"`resources/form/{formId}/query/rows`" (or `database` and `databaseId`) under
+the hood. The same call can be requested with `query/rows`; however, since *R*
+stores its data in column major format, there should generally be no reason to
+use `query/rows` from *R*.
+
+```{r, warning=FALSE}
+records <- getDatabaseRecordTable("ck35o0kja3", as.single.table = TRUE)
+head(records)
+```
+
+#### 5.2. Query individual forms as data.frame
+
+It's also possible to query individual forms as a `data.frame`. With the
+`columns` argument, it's possible to specify the query parameters for which
+columns to fetch and that can also be used to rename the column names.
+
+```{r}
+qt <- queryTable("ck2ll1o1ec", columns = c(
+  id = "_id",
+  sum = "Parent.sum",
+  sqm = "[Square Meters]"
+))
+head(qt)
+```
+
+The notation used in the columns text values are based on the
+*ActivityInfo Query Language* and more information can be read in the 
+[Formulas Manual](http://help.activityinfo.org/m/77022).
+

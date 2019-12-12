@@ -1,12 +1,26 @@
 
-
-#' Queries a form as a flat, two-dimensional table.
-#' 
-#' @param the form to query. This can be an object of type "tree", "class", or the id of the 
-#' form as a character. 
+#' Queries a form as a flat, two-dimensional table
+#'
+#' @param the form to query. This can be an object of type "tree", "class", or the id of the
+#' form as a character.
+#' @param columns select columns
+#' @examples \dontrun{
+#' queryTable("a2145507918", columns = c(
+#' id="_id",
+#' name="Name",
+#' campId="camp",
+#' camp="Camp.Name",
+#' governorate="Camp.Governorate.Name",
+#' teachers="teachers",
+#' students="students",
+#' type="[Type of School]"
+#' ))
+#' }
+#' @references
+#' \href{ActivityInfo Formulas Manual}{http://help.activityinfo.org/m/77022}
 #' @export
 queryTable <- function(form, columns,  ...) {
-  
+
   formId <- if (inherits(form, "formtree")) {
     # query the root form of a tree contained in a formtree result
     attr(form, "tree")$root
@@ -19,17 +33,17 @@ queryTable <- function(form, columns,  ...) {
     # query the root of a form tree
     form$root
   }
-    
+
   if(missing(columns)) {
     columns = list(...)
   }
-  
+
   if(length(columns) == 0) {
     return(parseColumnSet(getResource(sprintf("form/%s/query/columns", formId))))
   }
 
   stopifnot(length(columns) > 0)
-  
+
   query <- list(
     rowSources = list(
       list(rootFormId = formId)
@@ -39,13 +53,13 @@ queryTable <- function(form, columns,  ...) {
            expression = as.character(columns[[i]]))
     })
   )
-  
+
   columnSet <- postResource("query/columns", query)
   df <- parseColumnSet(columnSet)
-  
+
   # order columns in the same order specified in the query
   df <- subset(df, subset = TRUE, select = names(columns))
-  
+
   stopifnot(is.data.frame(df))
   return(df)
 }

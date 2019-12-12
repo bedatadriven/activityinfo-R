@@ -2,14 +2,33 @@
 % Please edit documentation in R/tableQuery.R
 \name{queryTable}
 \alias{queryTable}
-\title{Queries a form as a flat, two-dimensional table.}
+\title{Queries a form as a flat, two-dimensional table}
 \usage{
 queryTable(form, columns, ...)
 }
 \arguments{
-\item{the}{form to query. This can be an object of type "tree", "class", or the id of the 
+\item{columns}{select columns}
+
+\item{the}{form to query. This can be an object of type "tree", "class", or the id of the
 form as a character.}
 }
 \description{
-Queries a form as a flat, two-dimensional table.
+Queries a form as a flat, two-dimensional table
+}
+\examples{
+\dontrun{
+queryTable("a2145507918", columns = c(
+id="_id",
+name="Name",
+campId="camp",
+camp="Camp.Name",
+governorate="Camp.Governorate.Name",
+teachers="teachers",
+students="students",
+type="[Type of School]"
+))
+}
+}
+\references{
+\href{ActivityInfo Formulas Manual}{http://help.activityinfo.org/m/77022}
 }

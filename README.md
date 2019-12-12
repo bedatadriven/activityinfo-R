@@ -1,50 +1,32 @@
 
-ActivityInfo R Client
-=====================
+# ActivityInfo API R Client <a href="https://www.activityinfo.org/"><img src="https://www.activityinfo.org/about/assets/images/logo-activityinfo.png" align="right" width="60"/></a>
 
 Provides access to ActivityInfo databases through R 
 
-Installation
-------------
-
-## Latest Release
-
-[![Build Status](https://jenkins.bedatadriven.com/buildStatus/icon?job=ActivityInfo/R-Client/ActivityInfo-R-Client)](https://jenkins.bedatadriven.com/job/ActivityInfo/R-Client/ActivityInfo-R-Client)
+## Installation
 
 You can install the latest stable release directly from GitHub:
 
-    install.packages("devtools")
-    library(devtools)
-    install_github( "bedatadriven/activityinfo-R", ref = "release")
-
-Getting Started
----------------
-
-Once the package is installed, you can authenticate interactively
-using the activityInfoLogin() function
-
-
-    library(activityinfo)
-    activityInfoLogin()
-
-You will be prompted to save your password locally. 
-
-Contributing
-------------
-
-Please commit new work against the `development` branch or open a pull
-request based on the `development` branch.
-
-Releasing
----------
-
-Following a change to the `release` branch, generate the package documentation and export the required methods by running `roxygen`:
-
-```
-library(roxygen2)
-roxygenize()
+```r
+# install.packages("devtools")
+devtools::install_github("bedatadriven/activityinfo-R")
 ```
 
-Increment the release Version in [DECSRIPTION](DESCRIPTION) and commit the changed files to GitHub. Please see [here](https://cran.r-project.org/web/packages/roxygen2/vignettes/roxygen2.html) for more details on `roxygen`.
+If you want to install the older v3 version, use 
+`devtools::install_github("bedatadriven/activityinfo-R", ref = "v3")` 
+but please note that that version will be completely removed 
+after 16th January 2020.
 
-Releases are provided to users directly from GitHub (see [Latest Release](#latest-release)). 
+## Getting started
+
+See the vignettes:
+
++ Introduction to ActivityInfo API
+
+Other resources:
+
++ [Webinar] [Development Track: ActivityInfo API with R](https://bedatadriven.wistia.com/medias/sj5143awy0)
+
+## License
+
+GPL-3

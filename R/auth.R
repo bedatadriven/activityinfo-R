@@ -6,7 +6,7 @@ credentials <- environment()
 #' Get or set the root url for the ActivityInfo
 #'
 #' @description
-#' This call gets or sets the root url used for this session, \strong{valid only
+#' This call gets or sets the root url used for a session, \emph{valid only
 #' during the session}.
 #'
 #' @export

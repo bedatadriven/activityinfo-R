@@ -13,3 +13,8 @@ getDatabaseSchema(databaseId)
 Retrieves the schema (partners, activities, indicators and attributes) from
 for the given database.
 }
+\examples{
+\dontrun{
+getDatabaseSchema("ck2k93muu2")
+}
+}

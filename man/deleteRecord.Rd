@@ -6,6 +6,11 @@
 \usage{
 deleteRecord(formId, recordId)
 }
+\arguments{
+\item{formId}{a form id}
+
+\item{recordId}{a record id}
+}
 \description{
 This call deletes a single record for the given \code{formId} and
 \code{recordId}.

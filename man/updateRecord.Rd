@@ -7,6 +7,10 @@
 updateRecord(formId, recordId, fieldValues)
 }
 \arguments{
+\item{formId}{a form id}
+
+\item{recordId}{a record id}
+
 \item{fieldValues}{a named list of fields to change}
 }
 \description{

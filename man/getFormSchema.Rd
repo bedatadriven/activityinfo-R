@@ -7,8 +7,13 @@
 getFormSchema(formId)
 }
 \arguments{
-\item{the}{formId}
+\item{formId}{formId}
 }
 \description{
 Queries the schema of a form
+}
+\examples{
+\dontrun{
+getFormSchema("ck2lt9wp3g")
+}
 }

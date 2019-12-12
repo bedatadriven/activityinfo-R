@@ -1,8 +1,8 @@
 
-
-
 #' Updates a single record
 #'
+#' @param formId a form id
+#' @param recordId a record id
 #' @param fieldValues a named list of fields to change
 #' @export
 updateRecord <- function(formId, recordId, fieldValues) {
@@ -46,6 +46,9 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
 #' @description
 #' This call deletes a single record for the given \code{formId} and
 #' \code{recordId}.
+#'
+#' @param formId a form id
+#' @param recordId a record id
 #'
 #' @export
 deleteRecord <- function(formId, recordId) {

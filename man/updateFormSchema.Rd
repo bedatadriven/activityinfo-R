@@ -6,6 +6,9 @@
 \usage{
 updateFormSchema(schema)
 }
+\arguments{
+\item{schema}{a form schema}
+}
 \description{
 Updates a form schema
 }

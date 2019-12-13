@@ -1,0 +1,104 @@
+---
+title: "Analyze and visualize ActivityInfo Data"
+author: "BeDataDriven B.V."
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{analyze-and-visualize-activityinfo-data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4
+)
+```
+
+*R* is known to be a very powerful language for the analysis and visualization.
+For visualizing data, there are better existing solutions that provide quite bit
+of interactivity with the *ActivityInfo* data e.g. *ActivityInfo*'s built-in
+visualization tools, *Power BI*, *Tableau* etc.
+
+However, there are number of things one can only do with *R* like advanced
+analysis such as prediction, statistical analysis, text mining and so on.
+
+*R* is a batteries-included language that has many built-in calls for many
+statistical analysis. Besides, it has external package system that one of the
+best ones is `ggplot` that provides powerful graphics to the users.
+
+```{r, message=FALSE}
+library(activityinfo)
+```
+
+## Build a regression model
+
+We have an example fake dataset illustrating the building
+maintainance of the high schools in the Netherlands.
+
+We first pull the data from *ActivityInfo* and we then use *R* calls to perform
+analyses. The `schools` table below is the saved & cleaned version of the data
+pulled via the *ActivityInfo API R* client's `queryTable()` call.
+
+```{r}
+pat <- system.file("extdata", "schools.csv", package = "activityinfo")
+schools <- read.csv(pat, stringsAsFactors = FALSE)
+head(schools)
+```
+
+As an advanced analysis, we try to predict the building value based on the
+square meters of the building. For this analysis we use a linear regression
+model. On the one column, we have a high school that it has the square meters of
+the building and on the other column, we have a building value information.
+
+```{r}
+library(ggplot2)
+
+ggplot(schools, aes(square_meters_of_school, building_value)) +
+  geom_point(aes(color = as.factor(is_painted))) +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_y_continuous(labels = scales::dollar_format(scale = 1/1e6,
+                                                    prefix = "\u20ac",
+                                                    suffix = "M")) +
+  scale_color_discrete(name = "The building painted",
+                     breaks = c(1, 0),
+                     labels = c("Yes", "No")) +
+  labs(title = "Building value vs. sqm of building",
+       x = "Square meters of building",
+       y = "Building value") +
+  theme_minimal()
+```
+
+## Text analysis
+
+We count the number of words in the description field, which is a multi-line
+narrative field in the *ActivityInfo*, and produce a bar chart.
+
+```{r, message=FALSE}
+library(quanteda)
+
+n_tokens <- ntoken(char_tolower(schools$situation_description), remove_punct = TRUE)
+n_tokens <- as.integer(n_tokens)
+df <- data.frame(
+  school = schools$school_name, 
+  n_tokens = n_tokens,
+  stringsAsFactors = FALSE
+)
+df
+```
+
+
+```{r, fig.height = 3}
+ggplot(df, aes(x = reorder(school, n_tokens), y = n_tokens)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  theme_minimal()
+```
+
+For deeper information how the textual data stored 
+in the *ActivityInfo* is analyzed, 
+please check the [QualMiner project](https://github.com/bedatadriven/QualMiner).
+

@@ -1,6 +1,11 @@
 ---
 title: "Introduction to ActivityInfo API"
-output: rmarkdown::html_vignette
+author: "BeDataDriven B.V."
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Introduction to ActivityInfo API}
   %\VignetteEngine{knitr::rmarkdown}

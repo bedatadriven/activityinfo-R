@@ -1,0 +1,30 @@
+"school_name", "date_of_school_establishment", "date_of_visit", "type", "situation_description", "building_value", "square_meters_of_school", "is_painted"
+"Amsterdam High School", "1982-01-01", "2019-12-04", "Paint", "Lorem ipsum dolor sit amet,
+                                    consectetur adipiscing elit,
+                                    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", 1100000, 1000, 1
+"Tilburg High School", "1986-01-02", "2019-12-05", "Brick", "Lorem ipsum dolor sit amet,
+                                    consectetur adipiscing elit,
+                                    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut", 750000, 500, 0
+"Breda High School", "1882-01-03", "2019-12-06", "Paint", "Lorem ipsum dolor sit amet,
+                                    consectetur adipiscing elit,
+                                    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. U", 2750000, 2000, 1
+"Rotterdam High School", "1922-01-04", "2019-12-07", "Paint", "Lorem ipsum dolor sit amet,
+                                    consectetur adipiscing elit,
+                                    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. U", 1250000, 1200, 1
+"Haarlem High School", "1860-01-05", "2019-12-08", "Paint", "Lorem ipsum dolor sit amet,
+                                    consectetur adipiscing elit,
+                                    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. U", 975000, 1000, 1
+"The Hague High School", "1982-01-06", "2019-12-09", "Paint", "Lorem ipsum dolor sit amet,
+                                    consectetur adipiscing elit,
+                                    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. U", 850000, 550, 1
+"Utrecht High School", "1989-01-07", "2019-12-10", "Brick", "Lorem ipsum dolor sit amet,
+                                    consectetur adipiscing elit,
+                                    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. U", 1500000, 1300, 0
+"Wateringen High School", "1990-01-08", "2019-12-11", "Paint", "Lorem ipsum dolor sit", 2e+06, 2030, 1
+"Haarlem High School", "2000-01-09", "2019-12-12", "Paint", "Lorem", 750000, 1450, 1
+"Edam High School", "2010-01-10", "2019-12-13", "Paint", "Loremst laborum.Lorem ipsum dol", 975000, 700, 1
+"Gouda High School", "1970-01-11", "2019-12-14", "Brick", "Lorem ipsum dolo", 1500000, 950, 0
+"Volendam High School", "1970-01-12", "2019-12-15", "Brick", "Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                                    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. U", 1350000, 1021, 0
+"Delft High School", "1935-01-13", "2019-12-16", "Paint", "Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                                    sed do eiusmod tempor incididunt ut l", 2500000, 2300, 1

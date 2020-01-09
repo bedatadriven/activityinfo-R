@@ -64,6 +64,19 @@ deleteRecord <- function(formId, recordId) {
   ))
 }
 
+#' Gets the list of changes to a record
+#' 
+#' @description 
+#' This calls retrieves a list of all changes to the record, and the users
+#' who are 
+#' 
+#' @param formId a form id
+#' @param recordId a record id
+#' @export
+getRecordHistory <- function(formId, recordId) {
+  getResource(paste("form", formId, "record", recordId, "history", sep = "/"))
+}
+
 #' Executes a record transaction
 #' @noRd
 executeTransaction <- function(changes) {

@@ -85,18 +85,3 @@ putResource <- function(path, body) {
   }
 }
 
-#' getDatabaseSchema
-#'
-#' Retrieves the schema (partners, activities, indicators and attributes) from
-#' for the given database.
-#'
-#' @param databaseId database identifier
-#' @examples \dontrun{
-#' getDatabaseSchema("ck2k93muu2")
-#' }
-#' @export
-getDatabaseSchema <- function(databaseId) {
-  schema <- getResource(paste("databases", databaseId, sep="/"))
-  schema
-}
-

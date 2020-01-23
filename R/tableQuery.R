@@ -67,7 +67,7 @@ queryTable <- function(form, columns,  ...) {
 parseColumnSet <- function(columnSet) {
   as.data.frame(
     lapply(columnSet$columns, function(column) {
-      switch(column$storage,
+      cv <- switch(column$storage,
              constant = {
                if (is.null(column$value)) {
                  rep(switch(column$type,
@@ -93,11 +93,17 @@ parseColumnSet <- function(columnSet) {
              empty = {
                rep(switch(column$type,
                           STRING = NA_character_,
-                          NUMBER = NA_real_),
+                          NUMBER = NA_real_,
+                          NA),
                    columnSet$rows)
              },
              stop("unknown storage mode '", column$storage, "'")
       )
+      if(length(cv) != columnSet$rows) {
+        str(column)
+        stop("Internal error: Column length is inconsistent. Contact support@activityinfo.org")
+      }
+      cv
     }),
     stringsAsFactors = FALSE
   )

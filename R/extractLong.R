@@ -1,468 +1,52 @@
 
-#' Record table description section
-#'
-#' @details
-#' \itemize{
-#'   \item Columns for all Form Dimensions, including:
-#'     \itemize{
-#'       \item Sub-Form Name, Sub-Form Id, Sub-Form Record Id and Sub-Form Period (where applicable)
-#'       \item Reference Field Dimensions (where applicable)
-#'     }
-#'   \item Rows for every measured value, with the measure field name under \dQuote{Measure} and the measured value under \dQuote{Value}
-#' }
-#'
-#' @name form_database_record_table
-NULL
 
-#' Get form data
+#' Extract all quantities from a database in \dQuote{long} format
 #'
-#' @param activity activity
-#' @param adminlevels adminlevels
-#' @param include.comments include.comments
-#'
-#' @importFrom reshape2 melt
+#' @param database.id the CUID of the database (e.g., "ck2yrizmo2" or "d00000006583")
+#' @param folder.id (optional) the id of the folder or form to include. If omitted, the whole database will be included in the export.
+#' @return a single data.frame with quantity values in rows, and dimensions in columns.
 #' @export
-getFormData <- function(activity, adminlevels, include.comments) {
+getQuantityTable <- function(databaseId = NA, folderId) {
 
-  site <- getSiteData(activity, adminlevels, include.comments)
-  site.data <- site$table
-
-
-  message(paste("Form '", activity$name, "' has ", nrow(site.data), " reports.", sep = ""))
-
-  indicators <- getIndicatorData(activity)
-
-  # Convert reported indicator values from a list to a data frame:
-  indicator.data <- indicators$table
-  # Reshape the table to create a separate row for each reported indicator value:
-  indicator.columns <- grep("^i\\d+", names(indicator.data), value = TRUE)
-
-  # Call melt.data.frame directly because if the old 'reshape' package
-  # is loaded, its entry in the global S3 table will overwrite that
-  # from reshape2. :-(
-  indicator.data <- reshape2:::melt.data.frame(indicator.data,
-                                   measure.vars = indicator.columns,
-                                   variable.name = "indicator.id",
-                                   value.name = "indicator.value",
-                                   na.rm = TRUE)
-
-  indicator.metadata <- indicators$column.names
-  names(indicator.metadata) <- paste("indicator", names(indicator.metadata), sep = ".")
-
-  if(nrow(indicator.metadata) > 0) {
-    indicator.data <- merge(indicator.data, indicator.metadata, by = "indicator.id", all.x = TRUE)
-  }
-
-  # Merge site (meta) data and reported values:
-  form.data <- merge(indicator.data, site.data, by = "site.id", all.x = TRUE)
-  # Add form name and category:
-  form.data$form <- rep(activity$name, times = nrow(form.data))
-  form.data$form.category <- rep(na.if.null(activity$category, "character"), times = nrow(form.data))
-  # Sort columns alphabetically to group related columns together:
-  form.data <- form.data[, order(names(form.data))]
-  # Rename the columns with attribute values:
-  names(form.data) <- vapply(names(form.data), function(colname) {
-    if (colname %in% site$column.names$id) {
-      site$column.names$name[match(colname, site$column.names$id)]
-    } else {
-      colname
-    }
-  }, character(1L), USE.NAMES = FALSE)
-
-  form.data
-}
-
-getFormDimensions <- function(form, path = NULL, prefix = NULL) {
-  dimensions <- vector("list", length(form$elements))
-  dimensions <- setNames(dimensions, lapply(form$elements, function(field) pastePrefix(prefix,field$label)))
-
-  for (field in form$elements) {
-    if (is.type(field,"subform")) {
-      # exclude subform fields
-      next
-    } else if (is.measure(field)) {
-      # exclude measure fields
-      next
-    } else if (is.type(field, "reference")) {
-      # exclude reference fields
-      next
-    } else if (is.type(field, "geoArea")) {
-      # exclude geoarea fields
-      next
-    } else if (is.type(field, "geopoint")) {
-      # need to add lat/long coordinates
-      dimensions[[paste(pastePrefix(prefix, field$label),"latitude",  sep = ".")]] <- paste(pastePrefix(path,field$id),"latitude",sep = ".")
-      dimensions[[paste(pastePrefix(prefix, field$label),"longitude", sep = ".")]] <-  paste(pastePrefix(path,field$id),"longitude",sep = ".")
-    } else {
-      dimensions[[pastePrefix(prefix,field$label)]] <- pastePrefix(path,field$id)
-    }
-  }
-  Filter(Negate(is.null), dimensions)
-}
-
-getFormMeasures <- function(form, path = NULL, prefix = NULL) {
-  measures <- vector("list", length(form$elements))
-  measures <- setNames(measures, lapply(form$elements, function(field) pastePrefix(prefix, field$label)))
-
-  for (field in form$elements) {
-    if (is.measure(field)) {
-      measures[[pastePrefix(prefix,field$label)]] <- pastePrefix(path,field$id)
-    }
-  }
-  Filter(Negate(is.null), measures)
-}
-
-is.type <- function(field, type) {
-  if (identical(field$type,type)) {
-    return(TRUE)
-  }
-  return(FALSE)
-}
-
-is.measure <- function(field) {
-  if (identical(field$type, "quantity") || identical(field$type, "calculated")) {
-    return(TRUE)
-  }
-  return(FALSE)
-}
-
-pastePrefix <- function(prefix, string, sep = ".") {
-  if (!is.null(prefix)) {
-    return(paste(prefix,string,sep = sep))
+  stopifnot(is.character(databaseId))
+  
+  if(missing(folderId)) {
+    parentId <- databaseId
   } else {
-    return(string)
+    parentId <- folderId
   }
-}
-
-
-#' @importFrom reshape2 melt
-#' @noRd
-createDataFrame <- function(records, dimensions, measures, as.value.table = TRUE) {
-  if (is.element("parentId",names(records$columns))) {
-    # Sub-Form - add subFormRecordId and parentId to data.frame
-    df <- data.frame(c(as.data.columns(list(subFormRecordId = records$columns[["subFormRecordId"]], parentId = records$columns[["parentId"]]), records$rows),
-                       as.data.columns(records$columns[names(dimensions)], records$rows),
-                       as.data.columns(records$columns[names(measures)], records$rows)),
-                     check.names = FALSE)
-  } else {
-    # Form - include all columns in data.frame
-    df <- data.frame(c(as.data.columns(list(recordId = records$columns[["recordId"]]), records$rows),
-                       as.data.columns(records$columns[names(dimensions)], records$rows),
-                       as.data.columns(records$columns[names(measures)], records$rows)),
-                     check.names = FALSE)
-  }
-
-  # If user has request a value table, melt data.frame so that measures occur in separate row entries
-  if (as.value.table) {
-    df <- reshape2:::melt.data.frame(df,
-                                     measure.vars = names(measures),
-                                     variable.name = "Measure",
-                                     value.name = "Value",
-                                     na.rm = TRUE)
-  }
-  return(df)
-}
-
-as.data.columns <- function(columns, nrows) {
-  data.columns <- vector("list", length(columns))
-  data.columns <- setNames(data.columns, names(columns))
-  for (colName in names(columns)) {
-    data.columns[[colName]] <- as.data.column(columns[[colName]])
-  }
-  data.columns
-}
-
-as.data.column <- function(column, nrows) {
-  if (identical(column$storage, "empty")) {
-    col <- rep(NA, times = nrows)
-  } else {
-    col <- unname(Map(nullToNA,column$value))
-  }
-  unlist(col)
-}
-
-nullToNA <- function(val) {
-  if (is.null(val)) {
-    return(NA)
-  } else {
-    return(val)
-  }
-}
-
-# Recursively called function to derefence each referenced form on the tree,
-# and return all dimensions for each of the forms
-dereference <- function(form, form.tree, path = NULL, prefix = NULL) {
-  dimensions <- lapply(form$elements, function(field) {
-    if (is.type(field, "reference")) {
-      return(lapply(field$typeParameters$range, function (reference) {
-        reference.form <- form.tree$forms[[reference$formId]]
-        reference.form.path <- pastePrefix(path,reference$formId,sep = ".")
-        reference.form.prefix <- pastePrefix(prefix,reference.form$label,sep = ".")
-        return(list(getFormDimensions(reference.form, reference.form.path, reference.form.prefix),
-                    dereference(reference.form, form.tree, reference.form.path, reference.form.prefix)))
-      }))
+  
+  request <- list(type = "exportDatabaseForms",
+                  descriptor = list(
+                    databaseId = databaseId,
+                    folderId = parentId,
+                    format = "LONG",
+                    fileFormat = "TEXT"
+                  ))
+  
+  job <- postResource("jobs", request)
+  
+  while(TRUE) {
+    status <- activityinfo:::getResource(sprintf("jobs/%s", job$id))
+    message("Generating export...")
+    if(identical(status$state, "completed")) {
+      break;
     }
-  })
-  as.pairlist(unlist(dimensions))
-}
-
-getSubFormRecords <- function(sub.form.id, form.tree, as.value.table) {
-  # Get Form Metadata
-  sub.form.schema <- form.tree$forms[[sub.form.id]]
-  sub.form.name <- sub.form.schema$label
-
-  # Get Sub-Form Dimensions (only include period field if present) and Measures
-  sub.form.dimensions <- list()
-  for (field in sub.form.schema$elements) {
-    if (identical(field$id,"period")) {
-      sub.form.dimensions <- list("period" = field$id)
+    if(!identical(status$state, "started")) {
+      stop("Error generating export.")
     }
+    Sys.sleep(2)
   }
-  sub.form.measures <- getFormMeasures(sub.form.schema)
-
-  # Fetch Records for all Fields defined by the Sub-Form Dimensions and Measures
-  # Also include the Sub-Form Record Id and the Parent Record Id of each Record on the Sub-Form
-  columns <- c(subFormRecordId = "[_id]",
-               parentId = "[parent]",
-               sub.form.dimensions,
-               sub.form.measures)
-  sub.form.records <- postResource(paste("query","columns", sep = "/"),
-                                   constructBody(sub.form.id, columns))
-  message(paste("Sub-Form ",sub.form.name, " has ", sub.form.records$rows, " records.", sep = ""))
-
-  if (sub.form.records$rows == 0) {
-    return(NULL)
-  }
-
-  # Convert Sub-Form Records to data.frame
-  sub.form.table <- createDataFrame(sub.form.records,
-                                    sub.form.dimensions,
-                                    sub.form.measures,
-                                    as.value.table)
-
-  # Add Sub-Form Id and Name columns
-  sub.form.table$formId <- rep(sub.form.id, nrow(sub.form.table))
-  sub.form.table$formName <- rep(sub.form.name, nrow(sub.form.table))
-
-  return(list(id = sub.form.id,
-              schema = sub.form.schema,
-              dimensions = sub.form.dimensions,
-              measures = sub.form.measures,
-              records = sub.form.records,
-              table = sub.form.table))
+  
+  downloadUrl <- paste(activityInfoRootUrl(), status$result$downloadUrl, sep="/")
+  
+  read.table(downloadUrl, 
+             sep = "\u001F", 
+             quote = "", 
+             comment.char = "", 
+             na.strings = "", 
+             stringsAsFactors = FALSE, 
+             encoding = "UTF-8", 
+             header = TRUE)
 }
 
-constructBody <- function(form.id, columns) {
-  list(columns = lapply(names(columns), function(name) list(id = name, expression = columns[[name]])),
-       rowSources = lapply(form.id, function(id) list(rootFormId = id)))
-}
-
-toSingleTable <- function(form.records) {
-  # Find common column names for combining all results into a single table:
-  all.column.names <- Reduce(union, lapply(form.records, names))
-  common.column.names <- Reduce(intersect, lapply(form.records, names))
-
-  missing.columns <- setdiff(all.column.names, common.column.names)
-  if (length(missing.columns) > 0L) {
-    warning("the following column(s) is or are not shared by all forms: ",
-            paste(missing.columns, collapse = ", "))
-  }
-
-  # Add missing columns as NAs
-  form.records <- lapply(form.records, function(table) {
-    missing.columns <- setdiff(all.column.names, names(table))
-    for(missing.column in missing.columns) {
-      table[, missing.column] <- rep(NA, times = nrow(table))
-    }
-    table
-  })
-
-  # Combine all data into a single table:
-  values <- do.call(rbind, form.records)
-  values
-}
-
-reorderColumns <- function(primary.cols, table) {
-  other.cols <- lapply(colnames(table), function(col) {if (is.na(match(col, primary.cols))) return(col) })
-  other.cols <- unlist(Filter(Negate(is.null), other.cols))
-  return(table[, c(primary.cols, other.cols)])
-}
-
-#' Extract all Form Records, including all Sub-Form Records, in \dQuote{long}
-#' format
-#'
-#' @param form.id the full alphanumeric id of the form
-#' @param col.names a named character vector containing alternate names for the
-#'   resulting table
-#' @inherit form_database_record_table details
-#' @export
-getFormRecordTable <- function(form.id = NA, col.names = NULL) {
-
-  if(!is.character(form.id)) {
-    stop("Must give Form Id as full alphanumeric id, e.g. aXXXXXXXXXX")
-  }
-
-  message("\nFetching Form Tree...")
-  form.tree <- getFormTree(form.id)
-  root.form <- form.tree$forms[[form.tree$root]]
-
-  # Get Root Form Dimensions and Measures
-  root.form.dimensions <- getFormDimensions(root.form)
-  root.form.measures <- getFormMeasures(root.form)
-
-  # Dereference any referenced Forms on the tree
-  referenced.dimensions <- dereference(root.form, form.tree)
-
-  message("Fetching Root Form Records...")
-
-  # Fetch Records for all Fields defined by the Root Form Dimensions and Measures, as well as any dereferenced Dimensions we found.
-  # Also include the Record Id of each Record on the Root Form
-  columns <- c("recordId" = "[_id]",
-               root.form.dimensions,
-               root.form.measures,
-               referenced.dimensions)
-  root.form.records <- postResource(paste("query","columns", sep = "/"),
-                                    constructBody(form.id, columns))
-  message(paste("Form ",root.form$label, " has ", root.form.records$rows, " records.", sep = ""))
-
-  if (root.form.records$rows == 0) {
-    # Return empty data.frame
-    df <- createDataFrame(root.form.records,
-                           c(root.form.dimensions, referenced.dimensions),
-                           root.form.measures,
-                           as.value.table = FALSE)
-    return(df[FALSE,])
-  }
-
-  message("Fetching Sub-Form Records...")
-  sub.forms <- lapply(root.form$elements, function (element) {
-    if (is.type(element, "subform")) {
-      return(getSubFormRecords(element$typeParameters$formId,
-                               form.tree,
-                               as.value.table = TRUE))
-    }
-  })
-  # Filter out any Sub-Forms with no Records
-  sub.forms <- Filter(Negate(is.null), sub.forms)
-
-  # Create Root Form data.frame
-  root.form.table <- createDataFrame(root.form.records,
-                                     c(root.form.dimensions, referenced.dimensions),
-                                     root.form.measures,
-                                     as.value.table = TRUE)
-
-  # Add Root Form Id and Root Form Name
-  root.form.table$formId <- rep(form.id, times = nrow(root.form.table))
-  root.form.table$formName <- rep(root.form$label, times = nrow(root.form.table))
-
-  # Check whether we need to concatenate Sub-Form Records
-  if (length(sub.forms) > 0) {
-
-    # Create Root Form data.frame _without_ measures
-    root.form.dim.table <- createDataFrame(root.form.records,
-                                           c(root.form.dimensions, referenced.dimensions),
-                                           list(),
-                                           as.value.table = FALSE)
-
-    # Find common Sub-Form column names for combining all results into a single table, and add missing columns as NAs
-    sub.form.column.names <- Reduce(union, lapply(sub.forms, function(sub.form) names(sub.form$table)))
-    sub.forms <- lapply(sub.forms, function(sub.form) {
-      missing.columns <- setdiff(sub.form.column.names, names(sub.form$table))
-      for (missing.column in missing.columns) {
-        sub.form$table[, missing.column] <- rep(NA, times = nrow(sub.form$table))
-      }
-      sub.form
-    })
-
-    # Merge all Sub-Form Tables into one via a row concatenation
-    sub.form.table <- do.call(rbind, lapply(sub.forms, function(sub.form) sub.form$table))
-
-    # Merge Root Form Dimensions Table with Sub Form Tables via an Inner Join
-    sub.form.table <- merge(x = root.form.dim.table, y = sub.form.table, by.x = "recordId", by.y = "parentId")
-
-    # Finally, concatenate Sub Form Record Table with Root Form Record Table via a row concatenation, and reorder columns
-    record.table <- toSingleTable(list(root.form.table, sub.form.table))
-    inbuilt.subform.cols <- c("formName", "formId", "recordId", "subFormRecordId")
-    record.table <- reorderColumns(inbuilt.subform.cols, record.table)
-
-  } else {
-
-    # No Sub-Form Records to merge, so set as Root Form Records Table and reorder columns
-    record.table <- root.form.table
-    inbuilt.form.cols <- c("formName", "formId", "recordId")
-    record.table <- reorderColumns(inbuilt.form.cols, record.table)
-
-  }
-
-  # Apply column names
-  for(i in seq_along(col.names)) {
-    names(record.table)[ names(record.table) == names(col.names)[i] ] <- col.names[i]
-  }
-
-  return(record.table)
-}
-
-
-#' Extract all Form Record Tables for a Database in \dQuote{long} format
-#'
-#' @param database.id the numeric id of the database
-#' @param as.single.table specify whether to merge all Form Record Tables into a
-#'   single table
-#'
-#' @inherit form_database_record_table details
-#' @return
-#' By default, returns a list of all Form Record Tables.
-#' If \code{as.single.table} is set to \code{TRUE}, all Form Record Tables will
-#' be concatenated into a single table, with missing values given as
-#' \code{<NA>}.
-#' @export
-getDatabaseRecordTable <- function(database.id = NA, as.single.table = FALSE) {
-
-  message(sprintf("Fetching database schema for '%s'...", database.id))
-  db.schema <- getDatabaseSchema(database.id)
-
-  message(paste("Database contains ", length(db.schema$resources),
-                " forms. Retrieving data per form...\n", sep = ""))
-
-  form.records <- lapply(db.schema$resources, function(f) {
-    if (f[["type"]] %in% c("FORM", "SUB_FORM")) {
-      queryTable(f[["id"]])
-    }
-  })
-
-  # remove 'NULL's from the list:
-  form.records <- Filter(Negate(is.null), form.records)
-
-  if (as.single.table) {
-    values <- toSingleTable(form.records)
-
-    # add database id and database name fields
-    values$databaseId <- rep(database.id, times = nrow(values))
-    values$databaseName <- rep(db.schema$label, times = nrow(values))
-    values <- reorderColumns(c("databaseId", "databaseName"), values)
-  } else {
-    values <- form.records
-  }
-
-  values
-}
-
-
-makeColumnName <- function(s, prefix = NULL) {
-
-  stopifnot(is.character(s))
-
-  s <- gsub("\\s+|\\.+|-+", "_", trimws(tolower(s)))
-  s <- gsub("#", "nr", s)
-
-  if (is.null(prefix)) {
-    make.names(s)
-  } else {
-    make.names(paste(prefix, s, sep = ""))
-  }
-}
-
-
-na.if.null <- function(x, mode) {
-  if (is.null(x)) as.vector(NA, mode) else x
-}

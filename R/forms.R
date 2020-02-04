@@ -33,6 +33,21 @@ extractOldId <- function(s) {
   }
 }
 
+
+changeName <- function(x, from, to) {
+  if (is.null(names(x))) return(x)
+
+  stopifnot(is.character(from))
+  stopifnot(is.character(to))
+
+  name.index <- which(names(x) == from)
+
+  # rename first occurrence of 'from' name:
+  if (length(name.index) > 0) names(x)[name.index[1]] <- to[1]
+
+  x
+}
+
 #' Queries the schema of a form
 #'
 #' @param formId formId
@@ -84,11 +99,37 @@ print.formSchema <- function(schema) {
   }
 }
 
-#' Flatten form schema as a table
+#' Flatten form field to a table
 #'
-#' @param form.schema A list returned by \code{getFormSchema}.
+#' @param element a \code{formField} element as found in a form schema.
+#' @param ... additional arguments passed on to \code{\link{data.frame}}.
+#' @param stringsAsFactors should character vectors be converted to factors?
 #' @export
-as.data.frame.formSchema <- function(form) {
+as.data.frame.formField <- function(element, ..., stringsAsFactors = FALSE) {
+
+  nulls <- sapply(element, is.null)
+  element[nulls] <- NA_character_
+
+  ## add 'key' if not exists:
+  if (!"key" %in% names(element)) {
+    element[["key"]] <- NA_character_
+  }
+
+  ## exclude typeParameters sub-list (if exists):
+  if ("typeParameters" %in% names(element)) {
+    element <- element[-which(names(element) == "typeParameters")]
+  }
+
+  data.frame(unclass(element), ..., stringsAsFactors = stringsAsFactors)
+}
+
+#' Flatten form schema to a table
+#'
+#' @param form.schema A list returned by \code{\link{getFormSchema}}.
+#' @param ... additional arguments passed on to \code{\link{as.data.frame}}.
+#' @param stringsAsFactors should character vectors be converted to factors?
+#' @export
+as.data.frame.formSchema <- function(form, ..., stringsAsFactors = FALSE) {
 
   ## pop elements list
   form.sans.elements <- form[-which(names(form) == "elements")]
@@ -98,55 +139,42 @@ as.data.frame.formSchema <- function(form) {
   if (is.null(form.sans.elements[["subFormKind"]])) {
     form.sans.elements[["subFormKind"]] <- NA_character_
   }
+
+  form.sans.elements <- changeName(form.sans.elements, from = "parentFormId", to = "formParentId")
+  form.sans.elements <- changeName(form.sans.elements, from = "id", to = "formId")
+  form.sans.elements <- changeName(form.sans.elements, from = "label", to = "formLabel")
+
+  # convert each of the form fields to a data frame:
+  elements <- do.call(rbind, lapply(form$elements, as.data.frame, stringsAsFactors = stringsAsFactors))
+
+  elements <- changeName(elements, from = "id", to = "fieldId")
+  elements <- changeName(elements, from = "label", to = "fieldLabel")
+  elements <- changeName(elements, from = "code", to = "fieldCode")
+  elements <- changeName(elements, from = "type", to = "fieldType")
+  elements <- changeName(elements, from = "description", to = "fieldDescription")
+  elements <- changeName(elements, from = "required", to = "fieldRequired")
   
-  elements <- do.call(rbind, lapply(seq_along(form$elements), function(j) {
-    element <- form$elements[[j]]
-    ## turn NULL to NA:
-    nulls <- sapply(element, is.null)
-    element[nulls] <- NA_character_
-    ## add 'key' if not exists:
-    if (!"key" %in% names(element)) {
-      element[["key"]] <- NA_character_
-    }
-    ## exclude typeParameters sub-list (if exists):
-    if ("typeParameters" %in% names(element)) {
-      element <- element[-which(names(element) == "typeParameters")]
-    }
-    data.frame(element,
-               stringsAsFactors = FALSE)
-  }))
-  
-  res <- data.frame(
-    as.data.frame(form.sans.elements, stringsAsFactors = FALSE),
-    elements,
-    stringsAsFactors = FALSE
+  res <- cbind(
+    as.data.frame(form.sans.elements, ..., stringsAsFactors = stringsAsFactors),
+    elements
   )
   
-  ## remove rows where code is NA:
-  res <- res[!is.na(res$code), ]
-  
-  ### prettify data --------------------------------------- ###
-  ## drop columns:
+  # remove columns:
   remove.cols <-
     c(
       "schemaVersion",
       "subFormKind",
-      "label",
-      "id.1",
       "relevanceCondition",
       "visible",
       "key"
     )
-  res <- res[, !(names(res) %in% remove.cols)]
-  ## reorder columns:
-  first.cols <- c("databaseId", "id")
+  res <- res[, setdiff(names(res), remove.cols)]
+
+  # reorder columns:
+  first.cols <- c("databaseId", "formId", "formLabel")
   res <- res[, c(first.cols, setdiff(names(res), first.cols))]
-  ## rename columns:
-  colnames(res)[which(colnames(res) == "id")] <- "formId"
-  colnames(res)[which(colnames(res) == "label.1")] <- "question"
-  
-  data.frame(res, stringsAsFactors = FALSE)
-  
+
+  res
 }
 
 #' Updates a form schema

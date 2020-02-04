@@ -2,13 +2,17 @@
 % Please edit documentation in R/forms.R
 \name{as.data.frame.formSchema}
 \alias{as.data.frame.formSchema}
-\title{Flatten form schema as a table}
+\title{Flatten form schema to a table}
 \usage{
-\method{as.data.frame}{formSchema}(form)
+\method{as.data.frame}{formSchema}(form, ..., stringsAsFactors = FALSE)
 }
 \arguments{
-\item{form.schema}{A list returned by \code{getFormSchema}.}
+\item{...}{additional arguments passed on to \code{\link{as.data.frame}}.}
+
+\item{stringsAsFactors}{should character vectors be converted to factors?}
+
+\item{form.schema}{A list returned by \code{\link{getFormSchema}}.}
 }
 \description{
-Flatten form schema as a table
+Flatten form schema to a table
 }

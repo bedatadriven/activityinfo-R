@@ -3,7 +3,7 @@
 
 ## [4.3] - 2020-02-04
 
-- Replace getDatabaseRecordTable() with 
+- Replace getDatabaseRecordTable() with getQuantityTable(databaseId, folderId)
 
 ## [4.2] - 2020-01-23
 

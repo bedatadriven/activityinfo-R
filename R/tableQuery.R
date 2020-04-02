@@ -64,6 +64,8 @@ queryTable <- function(form, columns,  ...) {
   return(df)
 }
 
+na.if.null <- function(x) if(is.null(x)) NA else x
+
 parseColumnSet <- function(columnSet) {
   as.data.frame(
     lapply(columnSet$columns, function(column) {

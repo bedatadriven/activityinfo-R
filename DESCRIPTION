@@ -1,8 +1,8 @@
 Package: activityinfo
 Type: Package
 Title: Query and update datasets from ActivityInfo.org
-Version: 4.3
-Date: 2017-05-31
+Version: 4.4
+Date: 2020-04-02
 Author: Alex Bertram <alex@bedatadriven.com>
 Maintainer: Alex Bertram <alex@bedatadriven.com>
 Description: Interface to ActivityInfo.org

@@ -86,3 +86,25 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
     
   }
 }
+
+#' deleteDatabaseUser
+#' 
+#' Deletes a user from a database
+#' 
+#' @param databaseId the id of the database
+#' @param userId the (numeric) id of the user to remove from the database.
+#' 
+#' @export
+deleteDatabaseUser <- function(databaseId, userId) {
+  
+  url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, sep = "/")
+  
+  response <- DELETE(url, activityinfo:::activityInfoAuthentication())
+  
+  if(response$status_code != 200) {
+    stop(sprintf("Request for %s failed with status code %d %s: %s",
+                 url, response$status_code, http_status(response$status_code)$message,
+                 content(response, as = "text", encoding = "UTF-8")))  
+  }
+}
+  

@@ -17,3 +17,6 @@
 
 
 ## [4.6]
+
+### Fixed
+- queryTable() fails in some cases with missing values

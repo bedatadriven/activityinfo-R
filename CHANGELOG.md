@@ -9,3 +9,11 @@
 
 ### Fixed
 - queryTable() will fail with error for empty boolean columns
+
+## [4.5] - 2020-03-02
+
+### Added
+- Add getDatabaseUsers(), addDatabaseUser(), and deleteDatabaseUser() for managing users
+
+
+## [4.6]

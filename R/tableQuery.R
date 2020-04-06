@@ -56,6 +56,13 @@ queryTable <- function(form, columns,  ...) {
 
   columnSet <- postResource("query/columns", query)
   df <- parseColumnSet(columnSet)
+  
+  # make sure we have a column for each name
+  for(cn in names(columns)) {
+    if(!(cn %in% names(df))) {
+      df[[cn]] <- NA
+    }
+  }
 
   # order columns in the same order specified in the query
   df <- subset(df, subset = TRUE, select = names(columns))
@@ -87,7 +94,7 @@ parseColumnSet <- function(columnSet) {
                                 STRING = "character",
                                 NUMBER = "double",
                                 BOOLEAN = "logical")
-                 vapply(column$values, na.if.null, vector(mode, 1L), mode = mode)
+                 as.vector(sapply(column$values, na.if.null), mode = mode)
                } else {
                  column$values
                }

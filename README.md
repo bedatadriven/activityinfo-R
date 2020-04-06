@@ -12,10 +12,6 @@ You can install the latest stable release directly from GitHub:
 devtools::install_github("bedatadriven/activityinfo-R")
 ```
 
-If you want to install the older v3 version, use 
-`devtools::install_github("bedatadriven/activityinfo-R", ref = "v3")` 
-but please note that that version will be completely removed 
-after 16th January 2020.
 
 ## Getting started
 

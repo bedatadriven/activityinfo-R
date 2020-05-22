@@ -20,3 +20,8 @@
 
 ### Fixed
 - queryTable() fails in some cases with missing values
+
+## [4.7]
+
+### Fixed
+- updated getQuantityTable() to match updated Export Jobs API

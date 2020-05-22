@@ -94,6 +94,7 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
 #' @param databaseId the id of the database
 #' @param userId the (numeric) id of the user to remove from the database.
 #' 
+#' @importFrom httr DELETE
 #' @export
 deleteDatabaseUser <- function(databaseId, userId) {
   

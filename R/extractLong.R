@@ -5,6 +5,7 @@
 #' @param database.id the CUID of the database (e.g., "ck2yrizmo2" or "d00000006583")
 #' @param folder.id (optional) the id of the folder or form to include. If omitted, the whole database will be included in the export.
 #' @return a single data.frame with quantity values in rows, and dimensions in columns.
+#' @importFrom httr GET write_disk
 #' @export
 getQuantityTable <- function(databaseId = NA, folderId) {
 
@@ -38,9 +39,12 @@ getQuantityTable <- function(databaseId = NA, folderId) {
     Sys.sleep(2)
   }
   
+  tempFile <- tempfile()
   downloadUrl <- paste(activityInfoRootUrl(), status$result$downloadUrl, sep="/")
   
-  read.table(downloadUrl, 
+  GET(downloadUrl, write_disk(tempFile, overwrite=TRUE), activityInfoAuthentication())
+  
+  read.table(tempFile, 
              sep = "\u001F", 
              quote = "", 
              comment.char = "", 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/databases.R
 \name{addDatabaseUser}
 \alias{addDatabaseUser}
-\title{inviteUser}
+\title{addDatabaseUser}
 \usage{
 addDatabaseUser(
   databaseId,

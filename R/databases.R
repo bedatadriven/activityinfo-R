@@ -43,7 +43,28 @@ getDatabaseUsers <- function(databaseId) {
   users
 }
 
-#' inviteUser
+#' getDatabaseUser
+#' 
+#' Retrieves a user's role and permissions
+#' 
+#' @export
+getDatabaseUser <- function(databaseId, userId) {
+  url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "grants",  sep="/")
+  result <- GET(url, activityInfoAuthentication(), accept_json())
+  
+  if(result$status_code == 200) {
+    return(fromJSON(content(result, as = "text", encoding = "UTF-8")))
+  } else if(result$status_code == 404) {
+    return(NULL)
+  } else {
+    stop(sprintf("Request for %s failed with status code %d %s: %s",
+                 url, result$status_code, http_status(result$status_code)$message,
+                 content(result, as = "text", encoding = "UTF-8")))
+  }
+}
+
+
+#' addDatabaseUser
 #' 
 #' Invites a user to a database.
 #' 
@@ -107,5 +128,29 @@ deleteDatabaseUser <- function(databaseId, userId) {
                  url, response$status_code, http_status(response$status_code)$message,
                  content(response, as = "text", encoding = "UTF-8")))  
   }
+}
+
+#' updateUserRole
+#' 
+#' Updates a user's role in the database
+#' 
+#' @param databaseId the id of the database
+#' @param userId the (numeric) id of the user to update
+#' @param assignment the as
+#' 
+#' @importFrom httr DELETE
+#' @export
+updateUserRole <- function(databaseId, userId, assignment) {
+
+  url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "role", sep = "/")
+  request <- list(assignments = list(assignment))
+  
+  response <- POST(url, body = request, encode = "json", activityInfoAuthentication(), accept_json())
+  if(response$status_code != 200) {
+    stop(sprintf("Request for %s failed with status code %d %s: %s",
+                 url, response$status_code, http_status(response$status_code)$message,
+                 content(response, as = "text", encoding = "UTF-8")))  
+  }
+  invisible(NULL)
 }
   

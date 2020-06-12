@@ -25,3 +25,11 @@
 
 ### Fixed
 - updated getQuantityTable() to match updated Export Jobs API
+- fixed deleteDatabaseUser()
+
+## [4.8]
+
+### Added
+
+- Add getDatabaseUser(), updateUserRole()
+

@@ -33,3 +33,10 @@
 
 - Add getDatabaseUser(), updateUserRole()
 
+
+## [4.9]
+
+### Fixed
+
+- Ensure `queryTable()` functions correctly if column names include spaces
+

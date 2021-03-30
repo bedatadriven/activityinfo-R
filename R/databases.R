@@ -153,4 +153,58 @@ updateUserRole <- function(databaseId, userId, assignment) {
   }
   invisible(NULL)
 }
+
+#' Updates a role's definition in the database
+#' 
+#' @param databaseId the id of the database
+#' @param role the role definition, 
+#' 
+#' 
+#' @export
+#' @examples \dontrun{
+#' updateRole("cxy123", list(
+#    id = "rp",
+#    label = "Reporting partner",
+#   permissions = list(
+#   list(
+#     operation = "VIEW",
+#     filter = "ck5dxt1712 == @user.partner"),
+#   list(
+#     operation = "EDIT_RECORD",
+#     filter = "ck5dxt1712 == @user.partner",
+#     securityCategories = list()
+#   ),
+#   list(
+#     operation = "EXPORT_RECORDS"
+#   )
+# ),
+# parameters = list(
+#   list(
+#     parameterId = "partner",
+#     label = "Partner",
+#     range = "ck5dxt1712"
+#   )
+# ),
+# filters = list(
+#   list(id = "partner",         
+#        label = "partner is user's partner", 
+#        filter = "ck5dxt1712 == @user.partner")
+# )
+# ))
+#' 
+#' }
+#' 
+updateRole <- function(databaseId, role) {
+  
+  url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, sep = "/")
+  
+  request <- list(roleUpdates = list(role))
+  response <- POST(url, body = request, encode = "json", activityInfoAuthentication(), accept_json())
+  if(response$status_code != 200) {
+    stop(sprintf("Request for %s failed with status code %d %s: %s",
+                 url, response$status_code, http_status(response$status_code)$message,
+                 content(response, as = "text", encoding = "UTF-8")))  
+  }
+  invisible(NULL)
+}
   

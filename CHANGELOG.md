@@ -40,3 +40,9 @@
 
 - Ensure `queryTable()` functions correctly if column names include spaces
 
+
+## [4.10]
+
+## Added
+
+- Add updateRole(), which allows updating the definition of a role within a database.

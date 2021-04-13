@@ -46,3 +46,9 @@
 ## Added
 
 - Add updateRole(), which allows updating the definition of a role within a database.
+
+## [4.11]
+
+## Added
+
+- Add getDatabases(), which list all databases the user owns or has been shared with.

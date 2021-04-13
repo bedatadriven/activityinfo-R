@@ -1,6 +1,16 @@
 
 
 
+#' getDatabases()
+#' 
+#' Retrieves a list of databases the authenticated user owns, or has been shared with
+#' 
+#' @export
+getDatabases <- function() {
+  getResource("databases")
+}
+
+
 #' getDatabaseSchema
 #'
 #' Retrieves the schema (partners, activities, indicators and attributes) from
@@ -13,6 +23,7 @@
 #' @export
 #' @noRd
 getDatabaseSchema <- function(databaseId) {
+  .Deprecated("getDatabaseTree")
   getDatabaseTree(databaseId)
 }
 

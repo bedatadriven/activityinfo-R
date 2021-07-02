@@ -52,3 +52,10 @@
 ## Added
 
 - Add getDatabases(), which list all databases the user owns or has been shared with.
+
+
+## [4.12]
+
+## Fixed
+
+- addDatabaseUser() should respect roleResources argument

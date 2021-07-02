@@ -86,9 +86,13 @@ getDatabaseUser <- function(databaseId, userId) {
 #' @param roleId the id of the role to assign to the user
 #' @param roleParameters a named list containing the role parameter values
 #' @param roleResources a list of folders in which this role should be assigned (or the databaseId if they should have this role in the whole database)
+#'
+#' 
 #' 
 #' @export
-addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId, roleParameters = list(), roleResources = list(databaseId)) {
+addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId,
+                            roleParameters = list(), 
+                            roleResources = list(databaseId)) {
   
   request <- list(email = email,
                   name = name,
@@ -96,7 +100,7 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
                   role = list(
                     id = roleId,
                     parameters = roleParameters,
-                    resources = as.list(databaseId)
+                    resources = roleResources
                   ))
   
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", sep = "/")

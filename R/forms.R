@@ -177,6 +177,28 @@ as.data.frame.formSchema <- function(form, ..., stringsAsFactors = FALSE) {
   res
 }
 
+#' Adds a new form to a database
+#' @param databaseId the id of the database 
+#' @param schema the schema of the form to add
+#' @param folderId the id of the folder to which this form should be added  
+#' @export
+addForm <- function(databaseId, schema, folderId = databaseId) {
+  
+  schema$databaseId <- databaseId
+  
+  request <- list(
+    formResource = list(id = schema$id,
+                        parentId = databaseId,
+                        type = "FORM",
+                        label = schema$label,
+                        visibility = "PRIVATE"),
+    formClass = schema)
+  
+  postResource(sprintf("databases/%s/forms", databaseId), request)
+  
+}
+
+
 #' Updates a form schema
 #'
 #' @param schema a form schema

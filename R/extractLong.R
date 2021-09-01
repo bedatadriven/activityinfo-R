@@ -17,27 +17,12 @@ getQuantityTable <- function(databaseId = NA, folderId) {
     parentId <- folderId
   }
   
-  request <- list(type = "exportDatabaseForms",
-                  descriptor = list(
-                    databaseId = databaseId,
-                    folderId = parentId,
-                    format = "LONG",
-                    fileFormat = "TEXT"
-                  ))
-  
-  job <- postResource("jobs", request)
-  
-  while(TRUE) {
-    status <- activityinfo:::getResource(sprintf("jobs/%s", job$id))
-    message("Generating export...")
-    if(identical(status$state, "completed")) {
-      break;
-    }
-    if(!identical(status$state, "started")) {
-      stop("Error generating export.")
-    }
-    Sys.sleep(2)
-  }
+  status <- executeJob( "exportDatabaseForms", list(
+    databaseId = databaseId,
+    folderId = parentId,
+    format = "LONG",
+    fileFormat = "TEXT"
+  ))
   
   tempFile <- tempfile()
   downloadUrl <- paste(activityInfoRootUrl(), status$result$downloadUrl, sep="/")
@@ -54,3 +39,25 @@ getQuantityTable <- function(databaseId = NA, folderId) {
              header = TRUE)
 }
 
+executeJob <- function(type, descriptor) {
+  
+  request <- list(type = type,
+                  descriptor = descriptor)
+  
+  job <- postResource("jobs", request)
+  
+  while(TRUE) {
+    status <- activityinfo:::getResource(sprintf("jobs/%s", job$id))
+    message(sprintf("Waiting for %s job to complete: %d%%", type, status$percentComplete))
+    if(identical(status$state, "completed")) {
+      break;
+    }
+    if(!identical(status$state, "started")) {
+      stop(sprintf("Job failed. Code: %s, Message: %s", 
+                   status$error$code, 
+                   status$error$message))
+    }
+    Sys.sleep(2)
+  }
+  status
+}

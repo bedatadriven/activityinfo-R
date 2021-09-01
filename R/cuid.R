@@ -24,8 +24,8 @@ cuid <- local({
   counter <- 1L
   function() {
     time <- as.double(Sys.time()) * 1000L
-   # random <- round(runif(1, min = 0, max = 2^63))
-    result <- paste0(base36(time), base36(counter))
+    random <- round(runif(1, min = 0, max = 2^31))
+    result <- paste0("c", base36(random), base36(time), base36(counter))
     count <<- counter + 1L
     result
   }

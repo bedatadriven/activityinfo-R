@@ -59,3 +59,12 @@
 ## Fixed
 
 - addDatabaseUser() should respect roleResources argument
+
+## [4.13]
+
+## Added
+- addForm() to add a new form to an existing database
+- Started tools for importing large datasets. Not yet 
+
+## Fixed
+- Updated cuid() to include a random component.

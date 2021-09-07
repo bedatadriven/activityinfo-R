@@ -9,9 +9,7 @@ updateRole(databaseId, role)
 \arguments{
 \item{databaseId}{the id of the database}
 
-\item{role}{the role definition, 
-
-The role should be in the format}
+\item{role}{the role definition,}
 }
 \description{
 Updates a role's definition in the database

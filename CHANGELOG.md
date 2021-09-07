@@ -43,28 +43,33 @@
 
 ## [4.10]
 
-## Added
+### Added
 
 - Add updateRole(), which allows updating the definition of a role within a database.
 
 ## [4.11]
 
-## Added
+### Added
 
 - Add getDatabases(), which list all databases the user owns or has been shared with.
 
 
 ## [4.12]
 
-## Fixed
+### Fixed
 
 - addDatabaseUser() should respect roleResources argument
 
 ## [4.13]
 
-## Added
+### Added
 - addForm() to add a new form to an existing database
 - Started tools for importing large datasets. Not yet 
 
-## Fixed
+### Fixed
 - Updated cuid() to include a random component.
+
+## [4.14]
+
+### Added
+- includeBlanks parameter for getQuantityTable()

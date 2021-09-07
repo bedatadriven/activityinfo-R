@@ -4,10 +4,11 @@
 #'
 #' @param database.id the CUID of the database (e.g., "ck2yrizmo2" or "d00000006583")
 #' @param folder.id (optional) the id of the folder or form to include. If omitted, the whole database will be included in the export.
+#' @param includeBlanks if TRUE, the export will include a row for quantity fields with blank values. Default is FALSE.
 #' @return a single data.frame with quantity values in rows, and dimensions in columns.
 #' @importFrom httr GET write_disk
 #' @export
-getQuantityTable <- function(databaseId = NA, folderId) {
+getQuantityTable <- function(databaseId = NA, folderId, includeBlanks = FALSE) {
 
   stopifnot(is.character(databaseId))
   
@@ -21,6 +22,7 @@ getQuantityTable <- function(databaseId = NA, folderId) {
     databaseId = databaseId,
     folderId = parentId,
     format = "LONG",
+    includeBlanks = includeBlanks,
     fileFormat = "TEXT"
   ))
   
@@ -48,7 +50,11 @@ executeJob <- function(type, descriptor) {
   
   while(TRUE) {
     status <- activityinfo:::getResource(sprintf("jobs/%s", job$id))
-    message(sprintf("Waiting for %s job to complete: %d%%", type, status$percentComplete))
+    pct <- as.integer(status$percentComplete)
+    if(is.na(pct) || length(pct) != 1) {
+      pct <- 0L
+    }
+    message(sprintf("Waiting for %s job to complete: %d%%", type, pct))
     if(identical(status$state, "completed")) {
       break;
     }

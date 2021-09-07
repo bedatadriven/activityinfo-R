@@ -4,9 +4,11 @@
 \alias{getQuantityTable}
 \title{Extract all quantities from a database in \dQuote{long} format}
 \usage{
-getQuantityTable(databaseId = NA, folderId)
+getQuantityTable(databaseId = NA, folderId, includeBlanks = FALSE)
 }
 \arguments{
+\item{includeBlanks}{if TRUE, the export will include a row for quantity fields with blank values. Default is FALSE.}
+
 \item{database.id}{the CUID of the database (e.g., "ck2yrizmo2" or "d00000006583")}
 
 \item{folder.id}{(optional) the id of the folder or form to include. If omitted, the whole database will be included in the export.}

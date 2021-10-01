@@ -73,3 +73,9 @@
 
 ### Added
 - includeBlanks parameter for getQuantityTable()
+
+## [4.15]
+
+### Fixed
+- cuid() fails with error
+

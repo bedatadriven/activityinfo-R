@@ -49,10 +49,15 @@ changeName <- function(x, from, to) {
 }
 
 #' Queries the schema of a form
+#' 
+#' The result has a class "formSchema" and can be transformed to 
+#' data.frame using `as.data.frame()`
+#' 
 #'
 #' @param formId formId
 #' @examples \dontrun{
-#' getFormSchema("ck2lt9wp3g")
+#' formSchema <- getFormSchema("ck2lt9wp3g")
+#' formSchemaTable <- as.data.frame(getFormSchema("ck2lt9wp3g"))
 #' }
 #' @export
 getFormSchema <- function(formId) {
@@ -109,11 +114,19 @@ as.data.frame.formField <- function(element, ..., stringsAsFactors = FALSE) {
 
   nulls <- sapply(element, is.null)
   element[nulls] <- NA_character_
+  
+  if(element$type == "reference") {
+    element["referencedFormId"] <- element$typeParameters$range[[1]]$formId  
+  } else {
+    element["referencedFormId"] <- NA_character_
+  }
 
   ## add 'key' if not exists:
   if (!"key" %in% names(element)) {
     element[["key"]] <- NA_character_
   }
+  
+  
 
   ## exclude typeParameters sub-list (if exists):
   if ("typeParameters" %in% names(element)) {

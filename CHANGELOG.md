@@ -79,3 +79,8 @@
 ### Fixed
 - cuid() fails with error
 
+## [4.16]
+
+### Added 
+- Add 'referencedFormId' to data frame version of getFormSchema()
+

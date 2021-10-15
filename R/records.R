@@ -78,15 +78,21 @@ getRecordHistory <- function(formId, recordId) {
 }
 
 #' Executes a record transaction
+#'
+#' @importFrom httr modify_url POST content message_for_status
 #' @noRd
 executeTransaction <- function(changes) {
 
-  url <- paste(activityInfoRootUrl(), "resources", "update", sep = "/")
+  url <- modify_url(activityInfoRootUrl(), path = c("resources", "update"))
 
-  result <- POST(url, body = list(changes = changes), encode = "json",  activityInfoAuthentication(), accept_json(), verbose())
-  if(result$status_code == 400) {
+  result <- POST(url, body = list(changes = changes), encode = "json",  activityInfoAuthentication(), accept_json())
+
+  if(result$status_code != 200) {
     stop(content(result, as = "text"))
+  } else {
+    message_for_status(result)
   }
+
   invisible(result)
 }
 

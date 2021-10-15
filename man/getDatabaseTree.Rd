@@ -15,6 +15,6 @@ user.
 }
 \examples{
 \dontrun{
-getDatabaseSchema("ck2k93muu2")
+getDatabaseTree("ck2k93muu2")
 }
 }

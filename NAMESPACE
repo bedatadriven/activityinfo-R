@@ -2,6 +2,7 @@
 
 S3method(as.data.frame,formField)
 S3method(as.data.frame,formSchema)
+S3method(print,databaseTree)
 S3method(print,formSchema)
 export(activityInfoLogin)
 export(activityInfoRootUrl)

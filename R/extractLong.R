@@ -7,6 +7,7 @@
 #' @param includeBlanks if TRUE, the export will include a row for quantity fields with blank values. Default is FALSE.
 #' @return a single data.frame with quantity values in rows, and dimensions in columns.
 #' @importFrom httr GET write_disk
+#' @importFrom utils read.table
 #' @export
 getQuantityTable <- function(databaseId = NA, folderId, includeBlanks = FALSE) {
 
@@ -49,7 +50,7 @@ executeJob <- function(type, descriptor) {
   job <- postResource("jobs", request)
   
   while(TRUE) {
-    status <- activityinfo:::getResource(sprintf("jobs/%s", job$id))
+    status <- getResource(sprintf("jobs/%s", job$id))
     pct <- as.integer(status$percentComplete)
     if(is.na(pct) || length(pct) != 1) {
       pct <- 0L

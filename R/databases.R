@@ -153,7 +153,7 @@ deleteDatabaseUser <- function(databaseId, userId) {
 
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, sep = "/")
 
-  response <- DELETE(url, activityinfo:::activityInfoAuthentication())
+  response <- DELETE(url, activityInfoAuthentication())
 
   if(response$status_code != 200) {
     stop(sprintf("Request for %s failed with status code %d %s: %s",
@@ -195,34 +195,34 @@ updateUserRole <- function(databaseId, userId, assignment) {
 #' @export
 #' @examples \dontrun{
 #' updateRole("cxy123", list(
-#    id = "rp",
-#    label = "Reporting partner",
-#   permissions = list(
-#   list(
-#     operation = "VIEW",
-#     filter = "ck5dxt1712 == @user.partner"),
-#   list(
-#     operation = "EDIT_RECORD",
-#     filter = "ck5dxt1712 == @user.partner",
-#     securityCategories = list()
-#   ),
-#   list(
-#     operation = "EXPORT_RECORDS"
-#   )
-# ),
-# parameters = list(
-#   list(
-#     parameterId = "partner",
-#     label = "Partner",
-#     range = "ck5dxt1712"
-#   )
-# ),
-# filters = list(
-#   list(id = "partner",
-#        label = "partner is user's partner",
-#        filter = "ck5dxt1712 == @user.partner")
-# )
-# ))
+#'    id = "rp",
+#'    label = "Reporting partner",
+#'   permissions = list(
+#'   list(
+#'     operation = "VIEW",
+#'     filter = "ck5dxt1712 == @user.partner"),
+#'   list(
+#'     operation = "EDIT_RECORD",
+#'     filter = "ck5dxt1712 == @user.partner",
+#'     securityCategories = list()
+#'   ),
+#'   list(
+#'     operation = "EXPORT_RECORDS"
+#'   )
+#' ),
+#' parameters = list(
+#'   list(
+#'     parameterId = "partner",
+#'     label = "Partner",
+#'     range = "ck5dxt1712"
+#'   )
+#' ),
+#' filters = list(
+#'   list(id = "partner",
+#'        label = "partner is user's partner",
+#'        filter = "ck5dxt1712 == @user.partner")
+#' )
+#' ))
 #'
 #' }
 #'
@@ -237,5 +237,5 @@ updateRole <- function(databaseId, role) {
                  url, response$status_code, http_status(response$status_code)$message,
                  content(response, as = "text", encoding = "UTF-8")))
   }
-  invisible(NULL)
+  invisible()
 }

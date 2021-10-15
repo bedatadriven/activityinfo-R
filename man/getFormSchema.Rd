@@ -7,7 +7,10 @@
 getFormSchema(formId)
 }
 \arguments{
-\item{formId}{formId}
+\item{formId}{the form identifier}
+}
+\value{
+A list with class \sQuote{formSchema}.
 }
 \description{
 Queries the schema of a form

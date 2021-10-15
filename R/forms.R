@@ -50,10 +50,11 @@ changeName <- function(x, from, to) {
 
 #' Queries the schema of a form
 #'
-#' @param formId formId
+#' @param formId the form identifier
 #' @examples \dontrun{
 #' getFormSchema("ck2lt9wp3g")
 #' }
+#' @return A list with class \sQuote{formSchema}.
 #' @export
 getFormSchema <- function(formId) {
   stopifnot(is.character(formId))
@@ -80,7 +81,7 @@ print.formSchema <- function(schema) {
   if(!is.null(schema$parentFormId)) {
     cat(sprintf("  parentFormId: %s\n", schema$parentFormId))
   }
-  cat(sprintf("  elements:\n", length(schema$elements)))
+  cat(sprintf("  elements: %d\n", length(schema$elements)))
   
   for(field in schema$elements) {
     cat(sprintf("    %s: %s\n", field$id, field$label))
@@ -204,9 +205,27 @@ updateFormSchema <- function(schema) {
 
 #' Queries the Form Tree of a Form
 #'
+#' @param formId the form identifier
+#' @return A list with class \sQuote{formTree}.
 #' @export
-#' @param the formId
 getFormTree <- function(formId) {
   stopifnot(is.character(formId))
-  getResource(paste("form", formId, "tree", sep = "/"))
+  tree <- getResource(paste("form", formId, "tree", sep = "/"))
+
+  # enforce some types to make other operations easier:
+  tree$forms <- lapply(tree$forms, function(form) {
+	  schema <- form$schema
+    schema$elements <- lapply(schema$elements, function(e) {
+      e$key <- identical(e$key, TRUE)
+      e$required <- identical(e$required, TRUE)
+      class(e) <- "formField"
+      e
+    })
+
+    class(schema) <- "formSchema"
+    schema
+  })
+
+  class(tree) <- "formTree"
+  tree
 }

@@ -6,18 +6,17 @@
 #' Remaining arguments are treated as query parameters
 #' and must be named
 #'
-#' @importFrom httr GET accept_json verbose content http_status
+#' @importFrom httr GET accept_json verbose content http_status modify_url
 #' @importFrom rjson fromJSON
 #' @noRd
 getResource <- function(path, queryParams = list(...), ...) {
 
-  queryString <- if(length(queryParams) == 0)
-                    NULL
-                  else
-                    paste(names(queryParams), queryParams, collapse="&", sep="=")
-
-  url <- paste(activityInfoRootUrl(), "resources", path, sep = "/")
-  url <- paste(url, queryString, sep="?")
+  url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
+  url <- if (length(queryParams) == 0) {
+    url
+  } else {
+    modify_url(url, query = queryParams)
+  }
 
   result <- GET(url, activityInfoAuthentication(), accept_json())
 

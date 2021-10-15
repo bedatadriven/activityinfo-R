@@ -4,6 +4,7 @@
 #' @param the form to query. This can be an object of type "tree", "class", or the id of the
 #' form as a character.
 #' @param columns select columns
+#' @param truncate.strings TRUE if longer strings should be truncated to 128 characters
 #' @examples \dontrun{
 #' queryTable("a2145507918", columns = c(
 #' id="_id",
@@ -19,7 +20,7 @@
 #' @references
 #' \href{ActivityInfo Formulas Manual}{http://help.activityinfo.org/m/77022}
 #' @export
-queryTable <- function(form, columns,  ...) {
+queryTable <- function(form, columns,  ..., truncate.strings = TRUE) {
 
   formId <- if (inherits(form, "formtree")) {
     # query the root form of a tree contained in a formtree result
@@ -35,7 +36,7 @@ queryTable <- function(form, columns,  ...) {
   }
 
   if(missing(columns)) {
-    columns = list(...)
+    columns <- list(...)
   }
 
   if(length(columns) == 0) {
@@ -43,6 +44,8 @@ queryTable <- function(form, columns,  ...) {
   }
 
   stopifnot(length(columns) > 0)
+  
+  names(columns) <- make.names(names(columns), unique = TRUE)
 
   query <- list(
     rowSources = list(
@@ -51,11 +54,19 @@ queryTable <- function(form, columns,  ...) {
     columns = lapply(seq_along(columns), function(i) {
       list(id = names(columns)[i],
            expression = as.character(columns[[i]]))
-    })
+    }),
+    truncateStrings = truncate.strings
   )
 
   columnSet <- postResource("query/columns", query)
   df <- parseColumnSet(columnSet)
+  
+  # make sure we have a column for each name
+  for(cn in names(columns)) {
+    if(!(cn %in% names(df))) {
+      df[[cn]] <- NA
+    }
+  }
 
   # order columns in the same order specified in the query
   df <- subset(df, subset = TRUE, select = names(columns))
@@ -63,6 +74,8 @@ queryTable <- function(form, columns,  ...) {
   stopifnot(is.data.frame(df))
   return(df)
 }
+
+na.if.null <- function(x) if(is.null(x)) NA else x
 
 parseColumnSet <- function(columnSet) {
   as.data.frame(
@@ -85,7 +98,7 @@ parseColumnSet <- function(columnSet) {
                                 STRING = "character",
                                 NUMBER = "double",
                                 BOOLEAN = "logical")
-                 vapply(column$values, na.if.null, vector(mode, 1L), mode = mode)
+                 as.vector(sapply(column$values, na.if.null), mode = mode)
                } else {
                  column$values
                }

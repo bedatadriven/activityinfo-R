@@ -49,10 +49,15 @@ changeName <- function(x, from, to) {
 }
 
 #' Queries the schema of a form
+#' 
+#' The result has a class "formSchema" and can be transformed to 
+#' data.frame using `as.data.frame()`
+#' 
 #'
 #' @param formId the form identifier
 #' @examples \dontrun{
-#' getFormSchema("ck2lt9wp3g")
+#' formSchema <- getFormSchema("ck2lt9wp3g")
+#' formSchemaTable <- as.data.frame(getFormSchema("ck2lt9wp3g"))
 #' }
 #' @return A list with class \sQuote{formSchema}.
 #' @export
@@ -110,11 +115,19 @@ as.data.frame.formField <- function(element, ..., stringsAsFactors = FALSE) {
 
   nulls <- sapply(element, is.null)
   element[nulls] <- NA_character_
+  
+  if(element$type == "reference") {
+    element["referencedFormId"] <- element$typeParameters$range[[1]]$formId  
+  } else {
+    element["referencedFormId"] <- NA_character_
+  }
 
   ## add 'key' if not exists:
   if (!"key" %in% names(element)) {
     element[["key"]] <- NA_character_
   }
+  
+  
 
   ## exclude typeParameters sub-list (if exists):
   if ("typeParameters" %in% names(element)) {
@@ -177,6 +190,28 @@ as.data.frame.formSchema <- function(form, ..., stringsAsFactors = FALSE) {
 
   res
 }
+
+#' Adds a new form to a database
+#' @param databaseId the id of the database 
+#' @param schema the schema of the form to add
+#' @param folderId the id of the folder to which this form should be added  
+#' @export
+addForm <- function(databaseId, schema, folderId = databaseId) {
+  
+  schema$databaseId <- databaseId
+  
+  request <- list(
+    formResource = list(id = schema$id,
+                        parentId = databaseId,
+                        type = "FORM",
+                        label = schema$label,
+                        visibility = "PRIVATE"),
+    formClass = schema)
+  
+  postResource(sprintf("databases/%s/forms", databaseId), request)
+  
+}
+
 
 #' Updates a form schema
 #'

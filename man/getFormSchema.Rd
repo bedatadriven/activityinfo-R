@@ -13,10 +13,12 @@ getFormSchema(formId)
 A list with class \sQuote{formSchema}.
 }
 \description{
-Queries the schema of a form
+The result has a class "formSchema" and can be transformed to 
+data.frame using `as.data.frame()`
 }
 \examples{
 \dontrun{
-getFormSchema("ck2lt9wp3g")
+formSchema <- getFormSchema("ck2lt9wp3g")
+formSchemaTable <- as.data.frame(getFormSchema("ck2lt9wp3g"))
 }
 }

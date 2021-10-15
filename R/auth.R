@@ -12,7 +12,7 @@ credentials <- environment()
 #' @export
 activityInfoRootUrl <- local({
 
-  url <- "https://v4.activityinfo.org"
+  url <- "https://www.activityinfo.org"
 
   function(new.url) {
     if(!missing(new.url)) {

@@ -84,3 +84,12 @@
 ### Added 
 - Add 'referencedFormId' to data frame version of getFormSchema()
 
+## [4.17]
+
+### Added
+- Add `queryReportResults()` function to get a pivot table as a data frame. (#12)
+
+### Fixed
+- If there is no credentials file, authentication is now anonymous instead of failing unexpectedly. (#3)
+- `getResource()` (internal) now correctly encodes query parameters. (#10)
+- Updating records no longer has the `verbose` option enabled to remove excessive logging. (#11)

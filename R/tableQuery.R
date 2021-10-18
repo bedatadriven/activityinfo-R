@@ -36,7 +36,7 @@ queryTable <- function(form, columns,  ..., truncate.strings = TRUE) {
   }
 
   if(missing(columns)) {
-    columns = list(...)
+    columns <- list(...)
   }
 
   if(length(columns) == 0) {
@@ -113,7 +113,8 @@ parseColumnSet <- function(columnSet) {
              stop("unknown storage mode '", column$storage, "'")
       )
       if(length(cv) != columnSet$rows) {
-        str(column)
+        # TODO: replace usage of 'str' with something that prints a summary of the column to the console
+        #str(column)
         stop("Internal error: Column length is inconsistent. Contact support@activityinfo.org")
       }
       cv

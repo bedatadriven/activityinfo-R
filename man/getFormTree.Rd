@@ -7,7 +7,10 @@
 getFormTree(formId)
 }
 \arguments{
-\item{the}{formId}
+\item{formId}{the form identifier}
+}
+\value{
+A list with class \sQuote{formTree}.
 }
 \description{
 Queries the Form Tree of a Form

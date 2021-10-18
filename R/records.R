@@ -10,14 +10,15 @@ updateRecord <- function(formId, recordId, fieldValues) {
   stopifnot(is.character(recordId))
   stopifnot(is.list(fieldValues))
 
-  executeTransaction(list(
-      list(
-        formId = formId,
-        recordId = recordId,
-        fields = fieldValues
-      )
+  changes <- list(
+    list(
+      formId = formId,
+      recordId = recordId,
+      fields = fieldValues
     )
   )
+
+  postResource(path = "update", body = list(changes = changes), task = "update record")
 }
 
 #' Adds a new record
@@ -31,14 +32,16 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
   stopifnot(is.character(parentRecordId))
   stopifnot(is.list(fieldValues))
 
-  executeTransaction(list(
+  changes <- list(
     list(
       formId = formId,
       recordId = cuid(),
       parentRecordId = parentRecordId,
       fields = fieldValues
     )
-  ))
+  )
+
+  postResource(path = "update", body = list(changes = changes), task = "add record")
 }
 
 #' Delete a record
@@ -55,13 +58,15 @@ deleteRecord <- function(formId, recordId) {
   stopifnot(is.character(formId))
   stopifnot(is.character(recordId))
 
-  executeTransaction(changes = list(
+  changes <- list(
     list(
       formId = formId,
       recordId = recordId,
       deleted = TRUE
     )
-  ))
+  )
+
+  postResource(path = "update", body = list(changes = changes), task = "delete record")
 }
 
 #' Gets the list of changes to a record
@@ -77,18 +82,6 @@ getRecordHistory <- function(formId, recordId) {
   getResource(paste("form", formId, "record", recordId, "history", sep = "/"))
 }
 
-#' Executes a record transaction
-#' @noRd
-executeTransaction <- function(changes) {
-
-  url <- paste(activityInfoRootUrl(), "resources", "update", sep = "/")
-
-  result <- POST(url, body = list(changes = changes), encode = "json",  activityInfoAuthentication(), accept_json(), verbose())
-  if(result$status_code == 400) {
-    stop(content(result, as = "text"))
-  }
-  invisible(result)
-}
 
 #' Create a reference field value
 #'

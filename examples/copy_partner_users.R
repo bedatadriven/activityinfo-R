@@ -56,7 +56,7 @@ for(user in users) {
       stop(sprintf("Partner '%s' missing in target database", partnerMapping$name[partnerRow]))
     }
     
-    parameters = list()
+    parameters <- list()
     parameters[[toPartnerParameter$parameterId]] <- toPartnerRef
   
     result <- addDatabaseUser(toDatabaseId, user$email, user$name, roleId = toRole$id, roleParameters = parameters)

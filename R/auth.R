@@ -12,7 +12,7 @@ credentials <- environment()
 #' @export
 activityInfoRootUrl <- local({
 
-  url <- "https://v4.activityinfo.org"
+  url <- "https://www.activityinfo.org"
 
   function(new.url) {
     if(!missing(new.url)) {
@@ -28,6 +28,8 @@ activityInfoRootUrl <- local({
 
 #' Constructs a httr::authentication object from saved credentials
 #' from the user's home directory at ~/.activityinfo.credentials
+#'
+#' @importFrom httr authenticate
 #' @noRd
 activityInfoAuthentication <- local({
 
@@ -42,22 +44,22 @@ activityInfoAuthentication <- local({
 
       # Look for credentials first in ~/.activityinfo.credentials
       if(is.null(credentials) && file.exists(credentialsFile)) {
-        cat(sprintf("Reading username:password from %s...\n", path.expand(path=credentialsFile)))
-        line <- readLines("~/.activityinfo.credentials", warn=FALSE)[1]
-        if(nchar(line) > 2 && grepl(line, pattern=".+:.+")) {
+        cat(sprintf("Reading username:password from %s...\n", path.expand(path = credentialsFile)))
+        line <- readLines("~/.activityinfo.credentials", warn = FALSE)[1]
+        if(nchar(line) > 2 && grepl(line, pattern = ".+:.+")) {
           credentials <<- line
         } else {
-          cat(sprintf("...file exists, but is empty or improperly formatted.\n", path.expand(path=credentialsFile)))
+          cat(sprintf("...file exists, but is empty or improperly formatted.\n", path.expand(path = credentialsFile)))
         }
       }
 
-      if(is.null(credentialsFile)) {
+      if(is.null(credentials)) {
         warning("Connecting to activityinfo.org anonymously...")
         NULL
 
       } else {
         userPass <- unlist(strsplit(credentials, ":"))
-        httr::authenticate(userPass[1], userPass[2], type = "basic")
+        authenticate(userPass[1], userPass[2], type = "basic")
       }
     }
   }

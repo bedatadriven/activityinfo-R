@@ -93,3 +93,8 @@
 - If there is no credentials file, authentication is now anonymous instead of failing unexpectedly. (#3)
 - `getResource()` (internal) now correctly encodes query parameters. (#10)
 - Updating records no longer has the `verbose` option enabled to remove excessive logging. (#11)
+
+## [4.18]
+
+### Fixed
+- Incorrect empty return values when performing POST and PUT requests. (#14)

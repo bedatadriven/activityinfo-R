@@ -98,3 +98,8 @@
 
 ### Fixed
 - Incorrect empty return values when performing POST and PUT requests. (#14)
+
+## [4.19]
+
+### Added
+- Formula column in as.data.frame.formSchema for calculated fields

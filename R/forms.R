@@ -121,6 +121,11 @@ as.data.frame.formField <- function(element, ..., stringsAsFactors = FALSE) {
   } else {
     element["referencedFormId"] <- NA_character_
   }
+  if(element$type == "calculated") {
+    element["formula"] <- element$typeParameters$formula
+  } else {
+    element["formula"] <- NA_character_
+  }
 
   ## add 'key' if not exists:
   if (!"key" %in% names(element)) {

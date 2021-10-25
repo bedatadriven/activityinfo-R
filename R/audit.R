@@ -1,10 +1,12 @@
+AUDIT_LOG_EVENT_TYPES <- c("RECORD", "FORM", "FOLDER", "DATABASE", "LOCK", "USER_PERMISSION", "ROLE")
 
 
 #' Query the audit log of a database
 #'
 #' @param databaseId the database identifier.
-#' @param before a (UNIX) timestamp (in milliseconds) to filter result before a given time; defaults to the time of the
-#' query.
+#' @param before a \emph{Date}, \emph{POSIX}, or (UNIX) timestamp (in milliseconds) to filter result before a given
+#' time; defaults to the time of the query.
+#' @param after an optional \emph{Date}, \emph{POSIX} or numeric value representing a UNIX timestamp (in milliseconds).
 #' @param resoureId a resource (i.e. form or folder) identifier to filter on.
 #' @param typeFilter a character string with the event type to filter on; default is none.
 #'
@@ -32,37 +34,79 @@
 #' @return A data frame with the results of the query and with three attributes as described in the \emph{Details}
 #' section.
 #' @export
-queryAuditLog <- function(databaseId, before = as.numeric(Sys.time())*1000, resourceId = NULL, typeFilter = NULL) {
+queryAuditLog <- function(databaseId, before = Sys.time(), after = NULL, resourceId = NULL, typeFilter = NULL) {
 
+  before <- datetime_to_epoch(before, milliseconds = TRUE)
   stopifnot(is.numeric(before))
 
   if (!is.null(typeFilter)) {
-    typeFilter <- intersect(typeFilter, c("RECORD", "FORM", "FOLDER", "DATABASE", "LOCK", "USER_PERMISSION", "ROLE"))
+    typeFilter <- intersect(typeFilter, AUDIT_LOG_EVENT_TYPES)
     typeFilter <- if (length(typeFilter) == 0L) NULL else typeFilter
   }
 
-  payload <- list(resourceFilter = resourceId,
-                  typeFilter = as.list(typeFilter),
-                  startTime = before)
+  path <- sprintf("databases/%s/audit", databaseId)
 
-  result <- postResource(sprintf("databases/%s/audit", databaseId), body = payload, task = "query audit log")
+  # internal function to repeate queries if necessary:
+  query_audit_log <- function(before) {
+    payload <- list(resourceFilter = resourceId,
+                    typeFilter = as.list(typeFilter),
+                    startTime = before)
 
-  events <- do.call(rbind, lapply(result$events, function(event) {
-    event <- lapply(event, na_for_null)
-    if ("user" %in% names(event)) {
-      event$user.id <- event$user$id
-      event$user.name <- event$user$name
-      event$user.email <- event$user$email
-      event$user <- NULL
+    result <- postResource(path = path, body = payload, task = "query audit log")
+
+    # exit gracefully if there are no events in the audit log:
+    if (length(result$events) == 0L) return()
+
+    events <- do.call(rbind, lapply(result$events, function(event) {
+      event <- lapply(event, na_for_null)
+      if ("user" %in% names(event)) {
+        event$user.id <- event$user$id
+        event$user.name <- event$user$name
+        event$user.email <- event$user$email
+        event$user <- NULL
+      }
+      as.data.frame(event, stringsAsFactors = FALSE)
+    }))
+
+    # attach query metadata to the result:
+    attr(events, "databaseId") <- databaseId
+    attr(events, "moreEvents") <- as.logical(result$moreEvents)
+    attr(events, "startTime") <- as.numeric(result$startTime)
+    attr(events, "endTime") <- as.numeric(result$endTime)
+
+    events
+  }
+
+  events <- query_audit_log(before)
+  if (is.null(events)) {
+    warning("no events found in the audit log")
+    return()
+  }
+
+  if (!is.null(after)) {
+    after <- datetime_to_epoch(after, milliseconds = TRUE)
+    stopifnot(is.numeric(after))
+
+    if (after > before) stop("the 'after' argument cannot be greater than 'before'")
+
+    r <- events
+    while (isTRUE(attr(r, "moreEvents")) && min(r$time) > after) {
+      r <- query_audit_log(before = attr(r, "endTime"))
+      events <- rbind(events, r)
     }
 
-    as.data.frame(event, stringsAsFactors = FALSE)
-  }))
+    # there are more events if there are queried events before 'after' OR if the last query has the moreEvents attribute
+    # set to TRUE:
+    attr(events, "moreEvents") <- events$time < after || attr(r, "moreEvents")
 
-  attr(events, "databaseId") <- databaseId
-  attr(events, "moreEvents") <- as.logical(result$moreEvents)
-  attr(events, "startTime") <- as.numeric(result$startTime)
-  attr(events, "endTime") <- as.numeric(result$endTime)
+    attr(events, "startTime") <- before
+    attr(events, "endTime") <- after
+
+    # remove events which come before the 'after' timestamp:
+    events <- events[events$time >= after,]
+  }
+
+  events$time <- epoch_to_datetime(events$time, milliseconds = TRUE)
 
   events
 }
@@ -72,7 +116,45 @@ queryAuditLog <- function(databaseId, before = as.numeric(Sys.time())*1000, reso
 #'
 #' @param x an R object
 #'
+#' @return Logical NA if \code{x} is \code{NULL}, otherwise \code{x}.
 #' @noRd
 na_for_null <- function(x) {
   if (is.null(x)) NA else x
+}
+
+
+#' Convert a date or POSIX object to a UNIX epoch
+#'
+#' @param x an R object
+#' @param milliseconds a logical value to indicate if the timestamp should be in milliseconds; default is \code{TRUE}.
+#'
+#' @return Either \code{x} itself or a UNIX timestamp if \code{x} has either the \emph{Date} or the \emph{POSIX} class.
+#' @noRd
+datetime_to_epoch <- function(x, milliseconds = TRUE) {
+  if (isTRUE(milliseconds)) c <- 1000 else c <- 1
+
+  # Date or POSIX* class:
+  if (inherits(x, "Date") || inherits(x, "POSIXct")) {
+    x <- as.POSIXlt(x)
+    return(as.double(x) * c)
+  }
+
+  # any other class:
+  x
+}
+
+
+#' Convert a UNIX epoch to a POSIXlt object
+#'
+#' @param x A numeric value which represents a UNIX epoch
+#' @param milliseconds A logical to indicate if \code{x} is in milliseconds, or not.
+#'
+#' @return An object of class \emph{POSIXlt}.
+#' @noRd
+epoch_to_datetime <- function(x, milliseconds = TRUE) {
+  stopifnot(is.numeric(x))
+
+  if (isTRUE(milliseconds)) c <- 1000 else c <- 1
+
+  as.POSIXlt(x / c, origin = "1970-01-01")
 }

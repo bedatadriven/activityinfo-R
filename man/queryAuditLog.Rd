@@ -6,7 +6,8 @@
 \usage{
 queryAuditLog(
   databaseId,
-  before = as.numeric(Sys.time()) * 1000,
+  before = Sys.time(),
+  after = NULL,
   resourceId = NULL,
   typeFilter = NULL
 )
@@ -14,8 +15,10 @@ queryAuditLog(
 \arguments{
 \item{databaseId}{the database identifier.}
 
-\item{before}{a (UNIX) timestamp (in milliseconds) to filter result before a given time; defaults to the time of the
-query.}
+\item{before}{a \emph{Date}, \emph{POSIX}, or (UNIX) timestamp (in milliseconds) to filter result before a given
+time; defaults to the time of the query.}
+
+\item{after}{an optional \emph{Date}, \emph{POSIX} or numeric value representing a UNIX timestamp (in milliseconds).}
 
 \item{typeFilter}{a character string with the event type to filter on; default is none.}
 

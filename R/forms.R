@@ -131,8 +131,6 @@ as.data.frame.formField <- function(element, ..., stringsAsFactors = FALSE) {
   if (!"key" %in% names(element)) {
     element[["key"]] <- NA_character_
   }
-  
-  
 
   ## exclude typeParameters sub-list (if exists):
   if ("typeParameters" %in% names(element)) {
@@ -184,8 +182,7 @@ as.data.frame.formSchema <- function(form, ..., stringsAsFactors = FALSE) {
       "schemaVersion",
       "subFormKind",
       "relevanceCondition",
-      "visible",
-      "key"
+      "visible"
     )
   res <- res[, setdiff(names(res), remove.cols)]
 

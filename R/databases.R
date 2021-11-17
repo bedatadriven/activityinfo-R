@@ -46,7 +46,8 @@ getDatabaseTree <- function(databaseId) {
 
 
 #' @export
-print.databaseTree <- function(tree) {
+print.databaseTree <- function(x, ...) {
+  tree <- x
   cat("Database Tree Object\n")
   cat(sprintf("  label:        %s\n", tree$label))
   cat(sprintf("  databaseId:   %s\n", tree$databaseId))

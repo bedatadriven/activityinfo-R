@@ -103,3 +103,12 @@
 
 ### Added
 - Formula column in as.data.frame.formSchema for calculated fields
+
+## [4.20]
+
+### Added
+- New funtion `queryAuditLog()` which returns events from a database audit log in the form of a data frame. (#16)
+- The result of `as.data.frame.formSchema()` now includes a `key` column to indicate if the key property is enabled on a field. (#17)
+
+### Fixed
+- S3 method name consistency (#15)

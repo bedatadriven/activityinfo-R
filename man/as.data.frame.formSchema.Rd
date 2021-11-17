@@ -4,14 +4,16 @@
 \alias{as.data.frame.formSchema}
 \title{Flatten form schema to a table}
 \usage{
-\method{as.data.frame}{formSchema}(form, ..., stringsAsFactors = FALSE)
+\method{as.data.frame}{formSchema}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
+\item{x}{an object of class \emph{formSchema} as returned by \code{\link{getFormSchema}}.}
+
+\item{row.names}{NULL or a character vector giving the row names for the data frame. Missing values are not allowed.}
+
+\item{optional}{logical, if \code{TRUE} then converting column names is optional.}
+
 \item{...}{additional arguments passed on to \code{\link{as.data.frame}}.}
-
-\item{stringsAsFactors}{should character vectors be converted to factors?}
-
-\item{form.schema}{A list returned by \code{\link{getFormSchema}}.}
 }
 \description{
 Flatten form schema to a table

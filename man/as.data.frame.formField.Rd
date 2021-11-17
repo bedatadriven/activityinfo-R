@@ -4,14 +4,16 @@
 \alias{as.data.frame.formField}
 \title{Flatten form field to a table}
 \usage{
-\method{as.data.frame}{formField}(element, ..., stringsAsFactors = FALSE)
+\method{as.data.frame}{formField}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{element}{a \code{formField} element as found in a form schema.}
+\item{x}{an object of class \emph{formField} element as found in a form schema.}
 
-\item{...}{additional arguments passed on to \code{\link{data.frame}}.}
+\item{row.names}{NULL or a character vector giving the row names for the data frame. Missing values are not allowed.}
 
-\item{stringsAsFactors}{should character vectors be converted to factors?}
+\item{optional}{logical, if \code{TRUE} then converting column names is optional.}
+
+\item{...}{additional arguments passed on to \code{\link{as.data.frame}}.}
 }
 \description{
 Flatten form field to a table

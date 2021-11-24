@@ -7,7 +7,7 @@
 queryTable(form, columns, ..., truncate.strings = TRUE)
 }
 \arguments{
-\item{columns}{select columns}
+\item{columns}{select columns, see Details}
 
 \item{truncate.strings}{TRUE if longer strings should be truncated to 128 characters}
 
@@ -16,6 +16,22 @@ form as a character.}
 }
 \description{
 Queries a form as a flat, two-dimensional table
+}
+\details{
+To select columns, you can use
+\itemize{
+  \item \code{_id} to get the record identifier,
+  \item \code{_lastEditTime} to get the (Unix) timestamp (in seconds),
+  \item the identifier of the form field (e.g. \code{ck849fbaw4}),
+  \item the field code (e.g. \code{TOT_BNF}),
+  \item the field label, enclosed in brackets if it contains spaces (e.g. \code{[Type of school]})
+}
+If you want to select a column in a reference form or in a parent form, use a period to create a path to the desired
+column. For example:
+\itemize{
+  \item \code{parent._id} will select the identifier of the parent record and
+  \item \code{Camp.Name} will select the \sQuote{Name} field in the \sQuote{Camp} form.
+}
 }
 \examples{
 \dontrun{
@@ -32,5 +48,5 @@ type="[Type of School]"
 }
 }
 \references{
-\href{ActivityInfo Formulas Manual}{http://help.activityinfo.org/m/77022}
+Unix time, Wikipedia \url{https://en.wikipedia.org/wiki/Unix_time}
 }

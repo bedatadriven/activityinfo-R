@@ -3,8 +3,24 @@
 #'
 #' @param the form to query. This can be an object of type "tree", "class", or the id of the
 #' form as a character.
-#' @param columns select columns
+#' @param columns select columns, see Details
 #' @param truncate.strings TRUE if longer strings should be truncated to 128 characters
+#' @details To select columns, you can use
+#' \itemize{
+#'   \item \code{_id} to get the record identifier,
+#'   \item \code{_lastEditTime} to get the (Unix) timestamp (in seconds),
+#'   \item the identifier of the form field (e.g. \code{ck849fbaw4}),
+#'   \item the field code (e.g. \code{TOT_BNF}),
+#'   \item the field label, enclosed in brackets if it contains spaces (e.g. \code{[Type of school]})
+#' }
+#' If you want to select a column in a reference form or in a parent form, use a period to create a path to the desired
+#' column. For example:
+#' \itemize{
+#'   \item \code{parent._id} will select the identifier of the parent record and
+#'   \item \code{Camp.Name} will select the \sQuote{Name} field in the \sQuote{Camp} form.
+#' }
+#' @references
+#' Unix time, Wikipedia \url{https://en.wikipedia.org/wiki/Unix_time}
 #' @examples \dontrun{
 #' queryTable("a2145507918", columns = c(
 #' id="_id",
@@ -17,8 +33,6 @@
 #' type="[Type of School]"
 #' ))
 #' }
-#' @references
-#' \href{ActivityInfo Formulas Manual}{http://help.activityinfo.org/m/77022}
 #' @export
 queryTable <- function(form, columns,  ..., truncate.strings = TRUE) {
 

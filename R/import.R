@@ -17,7 +17,16 @@ stageImport <- function(text) {
   
   response <- fromJSON(content(result, as = "text", encoding = "UTF-8"))
   
-  PUT(response$uploadUrl, body = text, encode = "raw")
+  uploadUrl <- response$uploadUrl
+  if(!grepl(uploadUrl, pattern = "^https://")) {
+    uploadUrl <- paste0(activityInfoRootUrl(), uploadUrl)
+  }
+  
+  putResult <- PUT(uploadUrl, body = text, encode = "raw", activityInfoAuthentication())
+  if(putResult$status_code != 200) {
+    stop("Failed to stage import file at ", uploadUrl, ": status = ", putResult$status_code)
+  }
+  
   
   response$importId
 }

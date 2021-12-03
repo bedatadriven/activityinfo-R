@@ -77,9 +77,10 @@ postResource <- function(path, body, task = NULL) {
   message_for_status(result)
 
   json <- content(result, as = "text", encoding = "UTF-8")
-  if(length(json) > 0) return(fromJSON(json))
-
-  invisible()
+  if(nzchar(json))  {
+    return(invisible())
+  }
+  fromJSON(json)
 }
 
 #' putResource

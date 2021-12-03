@@ -104,6 +104,7 @@
 ### Added
 - Formula column in as.data.frame.formSchema for calculated fields
 
+
 ## [4.20]
 
 ### Added
@@ -112,3 +113,7 @@
 
 ### Fixed
 - S3 method name consistency (#15)
+
+## [4.21]
+- Fixed regression in postResource() affecting updateRecords()
+- Fixed regression caused by addition of dataEntryVisible and tableVisible properties to form schema (#20)

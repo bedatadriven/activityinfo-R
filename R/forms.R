@@ -191,8 +191,7 @@ as.data.frame.formSchema <- function(form, ..., stringsAsFactors = FALSE) {
     c(
       "schemaVersion",
       "subFormKind",
-      "relevanceCondition",
-      "key"
+      "relevanceCondition"
     )
   res <- res[, setdiff(names(res), remove.cols)]
 

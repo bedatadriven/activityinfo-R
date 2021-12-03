@@ -78,7 +78,7 @@ queryTable <- function(form, columns,  ..., truncate.strings = TRUE) {
   # make sure we have a column for each name
   for(cn in names(columns)) {
     if(!(cn %in% names(df))) {
-      df[[cn]] <- NA
+      df[[cn]] <- rep(NA, times = nrow(df))
     }
   }
 

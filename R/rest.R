@@ -77,7 +77,7 @@ postResource <- function(path, body, task = NULL) {
   message_for_status(result)
 
   json <- content(result, as = "text", encoding = "UTF-8")
-  if(nzchar(json))  {
+  if(!nzchar(json))  {
     return(invisible())
   }
   fromJSON(json)

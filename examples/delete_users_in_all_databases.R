@@ -8,17 +8,19 @@
 ## b@example.com
 
 library(activityinfo)
-activityInfoLogin()
+# activityInfoLogin(userEmail = "u@example.com", "XYZAPITOKEN")
 
 databases <- getDatabases()
 
 emailsToDelete <- tolower(readLines("to_delete.txt"))
 
-users <- getDatabaseUsers(databaseId)
-
-for(user in users) {
-  if(tolower(user$email) %in% emailsToDelete) {
-    cat(sprintf("Deleting %s...\n", user$email))
-    #deleteDatabaseUser(databaseId, user$userId)
+for(database in databases) {
+  users <- getDatabaseUsers(database$databaseId)
+  
+  for(user in users) {
+    if(tolower(user$email) %in% emailsToDelete) {
+      cat(sprintf("Deleting %s...\n", user$email))
+      # deleteDatabaseUser(database$databaseId, user$userId)
+    }
   }
 }

@@ -77,8 +77,13 @@ getFormSchema <- function(formId) {
   schema
 }
 
+#' Pretty print a form schema
+#'
+#' @param x an object of class \code{formSchema}.
+#' @param ... ignored
 #' @export
-print.formSchema <- function(schema) {
+print.formSchema <- function(x, ...) {
+  schema <- x
   cat("Form Schema Object\n")
   cat(sprintf("  id:           %s\n", schema$id))
   cat(sprintf("  label:        %s\n", schema$label))
@@ -107,12 +112,16 @@ print.formSchema <- function(schema) {
 
 #' Flatten form field to a table
 #'
-#' @param element a \code{formField} element as found in a form schema.
-#' @param ... additional arguments passed on to \code{\link{data.frame}}.
-#' @param stringsAsFactors should character vectors be converted to factors?
+#' @param x an object of class \emph{formField} element as found in a form schema.
+#' @param row.names NULL or a character vector giving the row names for the data frame. Missing values are not allowed.
+#' @param optional logical, if \code{TRUE} then converting column names is optional.
+#' @param ... additional arguments passed on to \code{\link{as.data.frame}}.
+#' @details Note that if \code{stringsAsFactors} is not explicitly set to \code{TRUE}, then this method uses
+#' \code{FALSE} as a default, not \code{default.stringsAsFactors()}.
 #' @export
-as.data.frame.formField <- function(element, ..., stringsAsFactors = FALSE) {
+as.data.frame.formField <- function(x, row.names = NULL, optional = FALSE, ...) {
 
+  element <- x
   nulls <- sapply(element, is.null)
   element[nulls] <- NA_character_
   
@@ -145,16 +154,36 @@ as.data.frame.formField <- function(element, ..., stringsAsFactors = FALSE) {
     element <- element[-which(names(element) == "typeParameters")]
   }
 
-  data.frame(unclass(element), ..., stringsAsFactors = stringsAsFactors)
+  args <- list(...)
+  if (is.null(args$stringsAsFactors)) {
+    # set 'stringsToFactors' to FALSE if not explicitly set by the user:
+    stringsAsFactors <- FALSE
+  } else {
+    stringsAsFactors <- args$stringsAsFactors
+  }
+
+  as.data.frame(unclass(element), row.names = row.names, optional = optional, stringsAsFactors = stringsAsFactors)
 }
 
 #' Flatten form schema to a table
 #'
-#' @param form.schema A list returned by \code{\link{getFormSchema}}.
+#' @param x an object of class \emph{formSchema} as returned by \code{\link{getFormSchema}}.
+#' @param row.names NULL or a character vector giving the row names for the data frame. Missing values are not allowed.
+#' @param optional logical, if \code{TRUE} then converting column names is optional.
 #' @param ... additional arguments passed on to \code{\link{as.data.frame}}.
-#' @param stringsAsFactors should character vectors be converted to factors?
+#' @details Note that if \code{stringsAsFactors} is not explicitly set to \code{TRUE}, then this method uses
+#' \code{FALSE} as a default, not \code{default.stringsAsFactors()}.
 #' @export
-as.data.frame.formSchema <- function(form, ..., stringsAsFactors = FALSE) {
+as.data.frame.formSchema <- function(x, row.names = NULL, optional = FALSE, ...) {
+
+  form <- x
+  args <- list(...)
+  if (is.null(args$stringsAsFactors)) {
+    # set 'stringsToFactors' to FALSE if not explicitly set by the user:
+    stringsAsFactors <- FALSE
+  } else {
+    stringsAsFactors <- args$stringsAsFactors
+  }
 
   ## pop elements list
   form.sans.elements <- form[-which(names(form) == "elements")]
@@ -170,7 +199,7 @@ as.data.frame.formSchema <- function(form, ..., stringsAsFactors = FALSE) {
   form.sans.elements <- changeName(form.sans.elements, from = "label", to = "formLabel")
 
   # convert each of the form fields to a data frame:
-  elements <- do.call(rbind, lapply(form$elements, as.data.frame, stringsAsFactors = stringsAsFactors))
+  elements <- do.call(rbind, lapply(form$elements, as.data.frame, row.names = row.names, optional = optional, stringsAsFactors = stringsAsFactors))
 
   elements <- changeName(elements, from = "id", to = "fieldId")
   elements <- changeName(elements, from = "label", to = "fieldLabel")
@@ -179,10 +208,9 @@ as.data.frame.formSchema <- function(form, ..., stringsAsFactors = FALSE) {
   elements <- changeName(elements, from = "description", to = "fieldDescription")
   elements <- changeName(elements, from = "required", to = "fieldRequired")
   elements <- changeName(elements, from = "key", to = "key")
-  
-  
+
   res <- cbind(
-    as.data.frame(form.sans.elements, ..., stringsAsFactors = stringsAsFactors),
+    as.data.frame(form.sans.elements, row.names = row.names, optional = optional, stringsAsFactors = stringsAsFactors),
     elements
   )
   

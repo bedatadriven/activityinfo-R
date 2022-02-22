@@ -18,6 +18,17 @@ message_for_status <- function(x, task = NULL) {
   invisible(response)
 }
 
+checkForError <- function(response, task = "<unset>") {
+  if(status_code(result) >= 400) {
+    e <- content(result)
+    if(is.list(e) && !is.null(e$code) && !is.null(e$message)) {
+      stop(sprintf("Request %s failed with code %s: %s", task, e$code, e$message)) 
+    } else {
+      stop(sprintf("Request %s failed with status %d: %s", task, status_code(result), deparse(e)))
+    }
+  }
+}
+
 
 #' Get a resource by path
 #'
@@ -41,6 +52,8 @@ getResource <- function(path, queryParams = list(...), ...) {
 
   result <- GET(url, activityInfoAuthentication(), accept_json())
 
+  checkForError(result)
+  
   if (result$status_code != 200) {
     stop(sprintf("Request for %s failed with status code %d %s: %s",
                  url, result$status_code, http_status(result$status_code)$message,
@@ -59,20 +72,21 @@ getResource <- function(path, queryParams = list(...), ...) {
 #' @param path path
 #' @param body body
 #'
-#' @importFrom httr POST accept_json content stop_for_status modify_url
+#' @importFrom httr POST accept_json content stop_for_status status_code modify_url
 #' @importFrom rjson fromJSON
 #' @noRd
 postResource <- function(path, body, task = NULL) {
 
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
-
+  
+  if (is.null(task)) task <- sprintf("perform POST request to %s", url)
+  
   message("Sending POST request to ", url)
 
   result <- POST(url, body = body, encode = "json",  activityInfoAuthentication(), accept_json())
 
-  if (is.null(task)) task <- sprintf("perform POST request to %s", url)
-  stop_for_status(result, task = task)
-
+  checkForError(result, task)
+  
   # also display (short) success message:
   message_for_status(result)
 
@@ -101,8 +115,9 @@ putResource <- function(path, body, task = NULL) {
   result <- PUT(url, body = body, encode = "json",  activityInfoAuthentication(), accept_json())
 
   if (is.null(task)) task <- sprintf("perform PUT request to %s", url)
-  stop_for_status(result, task = task)
-
+  
+  checkForError(result, task)
+  
   # also display (short) success message:
   message_for_status(result)
 

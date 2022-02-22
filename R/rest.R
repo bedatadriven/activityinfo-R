@@ -18,7 +18,7 @@ message_for_status <- function(x, task = NULL) {
   invisible(response)
 }
 
-checkForError <- function(response, task = "<unset>") {
+checkForError <- function(result, task = "<unset>") {
   if(status_code(result) >= 400) {
     e <- content(result)
     if(is.list(e) && !is.null(e$code) && !is.null(e$message)) {

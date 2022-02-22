@@ -18,3 +18,7 @@
 \description{
 Flatten form schema to a table
 }
+\details{
+Note that if \code{stringsAsFactors} is not explicitly set to \code{TRUE}, then this method uses
+\code{FALSE} as a default, not \code{default.stringsAsFactors()}.
+}

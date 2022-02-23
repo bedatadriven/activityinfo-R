@@ -171,7 +171,7 @@ deleteDatabaseUser <- function(databaseId, userId) {
 #' @param userId the (numeric) id of the user to update
 #' @param assignment the as
 #'
-#' @importFrom httr DELETE
+#' @importFrom httr POST
 #' @export
 updateUserRole <- function(databaseId, userId, assignment) {
 
@@ -187,6 +187,110 @@ updateUserRole <- function(databaseId, userId, assignment) {
   invisible(NULL)
 }
 
+
+#' permissions
+#' 
+#' Helper method to create a list of permissions for a role or grant.
+#' 
+#' Each argument may either be TRUE or FALSE.
+#' 
+#' The view, add_record, edit_record, and delete_record permissions may instead
+#' be a formula that conditions the permission on the values of the record.
+#' 
+#' @param resourceId The id of the form, subform, or folder.
+#' @param view View the resource, whether a form, folder, or database.
+#' @param add_record Add a record within a form contained by this folder or form
+#' @param edit_record Edit a record's values within a form contained by this folder or form.
+#' @param delete_record Delete a record within this form.
+#' @param bulk_delete  Bulk record delete within this form
+#' @param export_records Export Records from a form, folder or database.
+#' @param manage_users Grant permissions to a user to this database, folder, or form.
+#' @param lock_records Add, modify, or remove locks on records.
+#' @param add_resource  Create a new Resource (Form or Folder)
+#' @param edit_resource  Edit a Resource's schema, structure, attributes or data.
+#' @param delete_resource Delete a Resource (Form or Folder)
+#' @param manage_collection_links  Manage (open/close) collection links for the given form
+#' @param audit Access the Audit logs for a database (or a subset)
+#' @param share_reports Allow the user to share reports with other roles in the database.
+#' @param publish_reports Allows the user to publish reports.
+#' @param manage_roles Add, modify and delete roles
+#' @export
+#' 
+permissions <- function(
+                  view = TRUE, 
+                  add_record = FALSE,
+                  edit_record = FALSE, 
+                  delete_record = FALSE,
+                  export_records = FALSE,
+                  lock_records = FALSE,
+                  add_resource = FALSE,
+                  edit_resource = FALSE,
+                  delete_resource = FALSE,
+                  manage_collection_links = FALSE,
+                  manage_users = FALSE,
+                  manage_roles = FALSE,
+                  manage_reference_data = FALSE,
+                  audit = FALSE,
+                  share_reports = FALSE,
+                  publish_reports = FALSE) {
+  
+  operations <- names(formals())
+  permissions <- lapply(operations, function(operation) {
+    v <- eval(as.name(operation))
+    if(length(v) != 1 || is.na(v) || !(is.logical(v) || is.character(v))) {
+      stop(sprintf("Invalid value for operation '%s': %s", operation, deparse(v)))
+    }
+    v
+  })
+  names(permissions) <- operations
+  granted <- sapply(permissions, function(p) p == TRUE || is.character(p))
+  lapply(operations[granted], function(operation) {
+    p <- list(operation = toupper(operation))
+    v <- permissions[[operation]]
+    cat(deparse(v), "\n")    
+    if(is.character(v)) {
+      p$filter <- as.character(v)
+    }
+    p
+  })
+}
+
+
+
+
+#' updateUserGrant
+#'
+#' Adds or updates a grant for a user to a specific resource.
+#'
+#' @param databaseId the id of the database
+#' @param userId the (numeric) id of the user to update
+#' @param resourceId the id of the form or folder 
+#' @param permissions the permissions to grant to the user for the given resource
+#' @export
+#' @examples \dontrun{
+#' updateGrant(databaseId = "cxy123", user = 165, 
+#'     permissions(add_record = TRUE,
+#'                 edit_record = TRUE,
+#'                 delete_record = TRUE))
+#' }
+#'
+#' @importFrom httr POST
+#' @export
+updateGrant <- function(databaseId, userId, resourceId, permissions) {
+  
+  path <- paste("databases", databaseId, "users", userId, "grants", sep = "/")
+  request <- list(grantUpdates = list(
+    list(
+      resourceId = resourceId,
+      operations = permissions
+    )
+  ))
+  
+  postResource(path, body = request, task = "updateGrant")
+  
+  invisible(NULL)
+}
+
 #' Updates a role's definition in the database
 #'
 #' @param databaseId the id of the database
@@ -198,45 +302,30 @@ updateUserRole <- function(databaseId, userId, assignment) {
 #' updateRole("cxy123", list(
 #'    id = "rp",
 #'    label = "Reporting partner",
-#'   permissions = list(
-#'   list(
-#'     operation = "VIEW",
-#'     filter = "ck5dxt1712 == @user.partner"),
-#'   list(
-#'     operation = "EDIT_RECORD",
-#'     filter = "ck5dxt1712 == @user.partner",
-#'     securityCategories = list()
-#'   ),
-#'   list(
-#'     operation = "EXPORT_RECORDS"
-#'   )
-#' ),
-#' parameters = list(
-#'   list(
-#'     parameterId = "partner",
-#'     label = "Partner",
-#'     range = "ck5dxt1712"
-#'   )
-#' ),
-#' filters = list(
-#'   list(id = "partner",
+#'    permissions = permissions(
+#'       view = "ck5dxt1712 == @user.partner",
+#'       edit_record = "ck5dxt1712 == @user.partner",
+#'       export_records = TRUE),
+#'    parameters = list(
+#'      list(
+#'        parameterId = "partner",
+#'        label = "Partner",
+#'        range = "ck5dxt1712"
+#'      )
+#'    ),
+#'    filters = list(
+#'      list(id = "partner",
 #'        label = "partner is user's partner",
 #'        filter = "ck5dxt1712 == @user.partner")
-#' )
-#' ))
-#'
+#'      )
+#'  ))
 #' }
 #'
 updateRole <- function(databaseId, role) {
 
-  url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, sep = "/")
-
+  path <- paste("databases", databaseId, sep = "/")
   request <- list(roleUpdates = list(role))
-  response <- POST(url, body = request, encode = "json", activityInfoAuthentication(), accept_json())
-  if(response$status_code != 200) {
-    stop(sprintf("Request for %s failed with status code %d %s: %s",
-                 url, response$status_code, http_status(response$status_code)$message,
-                 content(response, as = "text", encoding = "UTF-8")))
-  }
+  postResource(path, request, task = "updateRole")
+  
   invisible()
 }

@@ -117,3 +117,7 @@
 ## [4.21]
 - Fixed regression in postResource() affecting updateRecords()
 - Fixed regression caused by addition of dataEntryVisible and tableVisible properties to form schema (#20)
+
+## [4.22]
+- Improved display of error messages from the API
+- Added updateGrant() and permissions() functions

@@ -121,3 +121,7 @@
 ## [4.22]
 - Improved display of error messages from the API
 - Added updateGrant() and permissions() functions
+
+## [4.23]
+- Added getRecord() to fetch an individual record
+- Added getAttachment() to fetch an attached file

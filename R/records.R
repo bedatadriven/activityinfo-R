@@ -82,6 +82,52 @@ getRecordHistory <- function(formId, recordId) {
   getResource(paste("form", formId, "record", recordId, "history", sep = "/"))
 }
 
+#' Gets a single record
+#' 
+#' @param formId a form id
+#' @param recordId the record Id
+#' @export
+#' 
+getRecord <- function(formId, recordId) {
+  getResource(sprintf("form/%s/record/%s", formId, recordId))
+}
+
+#' Gets an attachment
+#' 
+#' Retrieve an attachment and store it to a temporary file. The name
+#' of the temporary file is returned.
+#' 
+#' @param formId a form id
+#' @param recordId the record Id
+#' @param fieldId the attachment field id
+#' @param blobId the attachment blob id
+#' @export
+#' 
+getAttachment <- function(formId, recordId, fieldId, blobId, extension) {
+  url <- modify_url(activityInfoRootUrl(), path = sprintf("resources/form/%s/record/%s/field/%s/blob/%s/signature.png", 
+                                                          formId, 
+                                                          recordId,
+                                                          fieldId,
+                                                          blobId))
+  message("Sending GET request to ", url)
+  
+  tmp <- tempfile()
+  
+  result <- GET(url, activityInfoAuthentication(), accept_json(), write_disk(tmp))
+  
+  checkForError(result)
+  
+  if (result$status_code != 200) {
+    stop(sprintf("Request for %s failed with status code %d %s: %s",
+                 url, result$status_code, http_status(result$status_code)$message,
+                 content(result, as = "text", encoding = "UTF-8")))
+  } else {
+    message_for_status(result)
+  }
+  
+  tmp
+}
+
 
 #' Create a reference field value
 #'
@@ -98,5 +144,6 @@ reference <- function(formId, recordId) {
 
   sprintf("%s:%s", formId, recordId)
 }
+
 
 

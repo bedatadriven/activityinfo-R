@@ -1,0 +1,60 @@
+---
+title: Consent Form
+output: pdf_document
+params:
+    record_id: c936mr1l2ysvl0p7	
+---
+
+```{r setup, include=FALSE, echo=FALSE, message=FALSE, results='hide'}
+
+# This R Markdown file will generate a consent form in PDF format, using the
+# name, date, and attached signature.
+
+# This example uses a public form on ActivityInfo.org so you should be able
+# to 'knit' this file directly to see the output.
+
+# You can render this document from another R script (or a Shiny app for example)
+# by running:
+# rmarkdown::render(input = "consent.Rmd", parameters = list(record_id = "cxyz"))
+
+
+library(activityinfo)
+
+# Define the form and field ids. This needs to be updated
+# to match the field ids in your own form!
+formId <- "cepck8hl2ysuzs73"
+nameFieldId <- "c3g1axl2ysvhcg6"
+dateFieldId <- "c99kiydl2ysv9f34"
+attachmentFieldId <- "c6ji06zl2ysvd6g5"
+
+# Retrieve the individual record.
+record <- getRecord(formId, params$record_id)
+
+# Download the signature, which is stored as a signature
+attachments <- record$fields[[attachmentFieldId]]
+stopifnot(length(attachments) > 0)
+signatureFile <- getAttachment(formId,
+                           params$record_id,
+                           attachmentFieldId,
+                           attachments[[1]]$blobId)
+
+# Copy the temp file to a file in the working directory. Temporary files
+# are cleaned up after the R process exits and before converting the pdf
+
+file.copy(signatureFile, "signature.png")
+
+
+```
+
+I, `r record$fields[[nameFieldId]]`, hereby consent to the organization to use my personal data
+for the purposes of delivering humanitarian relief. 
+
+Signed,
+
+```{r, echo=FALSE}
+# All defaults
+knitr::include_graphics("signature.png", dpi = 150)
+```
+
+
+On `r record$fields[[dateFieldId]]`

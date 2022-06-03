@@ -125,3 +125,8 @@
 ## [4.23]
 - Added getRecord() to fetch an individual record
 - Added getAttachment() to fetch an attached file
+
+## [4.24]
+- Added relocateForm() to move a form from one database to another
+- Added submitPending() to submit rescued offline records to the server
+

@@ -303,3 +303,19 @@ getFormTree <- function(formId) {
   class(tree) <- "formTree"
   tree
 }
+
+#' Relocating a form moves the form, together with all of its subforms,
+#' records, and record history, to a new database.
+#'
+#' In order to relocate a form, the user must have "delete" permission in the
+#' source database, and permission to add new forms in the target database.
+#' 
+#' @param formId the id of the form to move
+#' @param databaseId the id of the database to which the form should be moved.
+#' @export
+relocateForm <- function(formId, newDatabaseId) {
+  
+  postResource(sprintf("/form/%s/database", formId),
+                              body = list(databaseId = newDatabaseId))
+  
+}

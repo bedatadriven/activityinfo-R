@@ -16,5 +16,6 @@ getAttachment(formId, recordId, fieldId, blobId, extension)
 \item{blobId}{the attachment blob id}
 }
 \description{
-Retrieve an attachment and store it to a temporary file.
+Retrieve an attachment and store it to a temporary file. The name
+of the temporary file is returned.
 }

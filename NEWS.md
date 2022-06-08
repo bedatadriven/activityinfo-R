@@ -1,6 +1,4 @@
 
-# Changelog
-
 ## [4.3] - 2020-02-04
 
 - Replace getDatabaseRecordTable() with getQuantityTable(databaseId, folderId)

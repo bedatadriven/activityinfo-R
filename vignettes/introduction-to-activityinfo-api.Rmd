@@ -28,7 +28,7 @@ With this client, you can programmatically obtain and modify
 your data.
 
 For the problems related to *ActivityInfo* itself, not API, please read the
-[ActivityInfo Documentation](help.activityinfo.org) thoroughly or contact us.
+[ActivityInfo Documentation](https://www.activityinfo.org/support/index.html) thoroughly or contact us.
 
 ## 1. Install the R client
 
@@ -38,11 +38,6 @@ First, you should install *ActivityInfo API R client* in your system.
 # install.packages("devtools")
 devtools::install_github("bedatadriven/activityinfo-R")
 ```
-
-If you want to install the older v3 version, use 
-`devtools::install_github("bedatadriven/activityinfo-R", ref = "v3")` 
-but please note that that version will be completely removed 
-after 16th January 2020.
 
 Then, put the library call at the top of your script file.
 
@@ -121,5 +116,5 @@ head(qt)
 
 The notation used in the columns text values are based on the
 *ActivityInfo Query Language* and more information can be read in the 
-[Formulas Manual](http://help.activityinfo.org/m/77022).
+[Formulas Manual](https://www.activityinfo.org/support/docs/m/77022/index.html).
 

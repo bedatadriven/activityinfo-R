@@ -67,3 +67,14 @@ testthat::test_that("the function gives an error if the input 'form' parameter i
   testthat::expect_error( suppressWarnings(suppressMessages(activityinfo::queryTable(form = "INVALID"))) )
 })
 
+
+testthat::test_that("the loaded 'cvhp7v7l45jy5av3.csv' file and the retrieved data.frame from the Activityinfo API are identical", {
+
+  output = suppressWarnings(suppressMessages(activityinfo::queryTable(form = FORM_ID)))
+  dat_csv = utils::read.csv(file = pth_csv, stringsAsFactors = F, header = T, colClasses = c('character', 'numeric', rep('character', 2), 'numeric', rep('character', 4)))
+  dat_csv$Serial.number = gsub("['’]", "", dat_csv$Serial.number)
+
+  testthat::expect_true( identical(x = dat_csv, y = output) )
+})
+
+

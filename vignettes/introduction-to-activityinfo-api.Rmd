@@ -15,7 +15,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = FALSE
 )
 ```
 
@@ -28,7 +29,7 @@ With this client, you can programmatically obtain and modify
 your data.
 
 For the problems related to *ActivityInfo* itself, not API, please read the
-[ActivityInfo Documentation](https://www.activityinfo.org/support/index.html) thoroughly or contact us.
+[ActivityInfo Documentation](https://www.activityinfo.org/support/docs/index.html) thoroughly or contact us.
 
 ## 1. Install the R client
 

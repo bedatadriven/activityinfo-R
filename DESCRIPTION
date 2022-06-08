@@ -9,8 +9,13 @@ Description: An interface to ActivityInfo.org, which is an information managemen
 License: GPL-3
 Imports: stats, utils, httr, rjson
 Encoding: UTF-8
-RoxygenNote: 7.1.1
-Suggests: 
+RoxygenNote: 7.1.2
+Suggests:
+    ggplot2,
+    quanteda,
+    scales,
+    testthat (>= 3.0.0),
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Config/testthat/edition: 3

@@ -128,3 +128,7 @@
 - Added relocateForm() to move a form from one database to another
 - Added submitPending() to submit rescued offline records to the server
 
+## [4.25]
+- Fixed and improved queryAuditLog()
+
+

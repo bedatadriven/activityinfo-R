@@ -169,7 +169,12 @@ deleteDatabaseUser <- function(databaseId, userId) {
 #'
 #' @param databaseId the id of the database
 #' @param userId the (numeric) id of the user to update
-#' @param assignment the as
+#' @param assignment the role assignment, \code{\link[activityinfo]{roleAssignment}}
+#' @examples \dontrun{
+#' 
+#' databaseId <- "caxadcasdf"
+#' updateUserRole(databaseId, userId = 165, roleAssignment(roleId = "admin", roleResources = databaseId))
+#' } 
 #'
 #' @importFrom httr POST
 #' @export
@@ -188,6 +193,38 @@ updateUserRole <- function(databaseId, userId, assignment) {
 }
 
 
+#' roleAssignment
+#'
+#' Creates a role assignment object
+#' 
+#' @param roleId the id of the role to assign to the user
+#' @param roleParameters a named list of parameters, if the role has any parameters
+#' @param roleResources the list of resources (database, folder, form, or report) 
+#' to assign to this user. Using the databaseId assigns all resources to this user
+#' @examples {
+#' 
+#' # Role assignment for a reporting role with a partner parameter
+#' roleAssignment(roleId = "rp", 
+#'                roleParameters = list(partner = reference(formId="cxadsfs32", recordId="c3423423")), 
+#'                roleResources = "cxa99335")
+#'                
+#'                
+#' # Role assignment for an administrator role without any role parameters  
+#' roleAssignment(roleId = "admin",
+#'                roleResources = c("cxa99335", "c8234234"))
+#' }
+#' @export
+roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
+  stopifnot(is.list(roleParameters))
+  if(any(is.na(names(roleParameters)))) {
+    stop("roleParameters must be named.")
+  }
+  
+  list(roleId = roleId, roleParameters = roleParameters, roleResources = as.list(roleResources))
+}
+
+
+#' 
 #' permissions
 #' 
 #' Helper method to create a list of permissions for a role or grant.

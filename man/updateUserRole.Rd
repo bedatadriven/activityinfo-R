@@ -11,8 +11,16 @@ updateUserRole(databaseId, userId, assignment)
 
 \item{userId}{the (numeric) id of the user to update}
 
-\item{assignment}{the as}
+\item{assignment}{the role assignment, \code{\link[activityinfo]{roleAssignment}}}
 }
 \description{
 Updates a user's role in the database
+}
+\examples{
+\dontrun{
+
+databaseId <- "caxadcasdf"
+updateUserRole(databaseId, userId = 165, roleAssignment(roleId = "admin", roleResources = databaseId))
+} 
+
 }

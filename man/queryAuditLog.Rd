@@ -7,20 +7,23 @@
 queryAuditLog(
   databaseId,
   before = Sys.time(),
-  after = NULL,
+  after,
   resourceId = NULL,
-  typeFilter = NULL
+  typeFilter = NULL,
+  limit = 1000
 )
 }
 \arguments{
 \item{databaseId}{the database identifier.}
 
-\item{before}{a \emph{Date}, \emph{POSIX}, or (UNIX) timestamp (in milliseconds) to filter result before a given
+\item{before}{a \emph{Date} or \emph{POSIX} to filter result before a given
 time; defaults to the time of the query.}
 
-\item{after}{an optional \emph{Date}, \emph{POSIX} or numeric value representing a UNIX timestamp (in milliseconds).}
+\item{after}{an optional \emph{Date} or \emph{POSIX}}
 
 \item{typeFilter}{a character string with the event type to filter on; default is none.}
+
+\item{limit}{the maximum number of events to return. Default is 1,000 events.}
 
 \item{resoureId}{a resource (i.e. form or folder) identifier to filter on.}
 }
@@ -43,15 +46,28 @@ you query older log entries:
 argument of the query;
 \item \emph{endTime} the earliest timestamp of the range, which can be used to query the next set of entries.
 }
+
+The following event type filters are supported:
+\itemize{
+\item \emph{RECORD}: changes to records
+\item \emph{FORM}: changes to form schemas
+\item \emph{FOLDER}: changes to folders
+\item \emph{DATABASE}: changes to the database itself (renaming, creation)
+\item \emph{LOCK}: changes to the database locks
+\item \emph{USER_PERMISSION}: changes to user permissions
+\item \emph{ROLE}: changes to roles
+}
 }
 \examples{
 \dontrun{
-# keep querying the audit log until no more events are found:
-events <- queryAuditLog("asjdhewhasd", typeFilter = "RECORD")
-r <- events
-while (isTRUE(attr(r, "moreEvents"))) {
-  r <- queryAuditLog("asjdhewhasd", before = attr(r, "endTime"), typeFilter = "RECORD")
-  events <- rbind(events, r)
-}
+
+# Query up to 10,000 records
+events <- queryAuditLog("cax132253", limit = 10000)
+
+# Query events after the beginning of 2022
+events <- queryAuditLog("cax132253", after = as.Date("2022-01-01"))
+
+# Query only changes to user permissions
+events <- queryAuditLog("cax132253", typeFilter = "USER_PERMISSION")
 }
 }

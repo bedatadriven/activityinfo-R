@@ -77,12 +77,16 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
     page <- do.call(rbind, lapply(result$events, function(event) {
       event <- lapply(event, na_for_null)
       event$time <- as.POSIXct.millis(event$time)
-      if ("user" %in% names(event)) {
+      if (is.list(event$user)) {
         event$user.id <- event$user$id
         event$user.name <- event$user$name
         event$user.email <- event$user$email
-        event$user <- NULL
+      } else {
+        event$user.id <- NA
+        event$user.name <- NA
+        event$user.email <- NA
       }
+      event$user <- NULL
       as.data.frame(event, stringsAsFactors = FALSE)
     }))
     

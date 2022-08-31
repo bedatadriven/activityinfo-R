@@ -1,11 +1,5 @@
 
 
-testthat::test_that("the function returns a warning if there is an anonymous access to the 'activityinfo' API", {
-
-  testthat::expect_warning( suppressMessages(activityinfo::queryTable(form = FORM_ID)) )
-})
-
-
 testthat::test_that("the function returns a data.frame with 2 rows and multiple columns", {
 
   output = suppressWarnings(suppressMessages(activityinfo::queryTable(form = FORM_ID)))

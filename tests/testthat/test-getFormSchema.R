@@ -21,3 +21,11 @@ testthat::test_that("the function returns a Schema data.frame with the expected 
 
   testthat::expect_true( inherits(output, "data.frame") & nrow(output) == 7 & ncol(output) == 16 )
 })
+
+testthat::test_that("the function returns a Schema data.frame for a subform", {
+  
+  output = suppressWarnings(suppressMessages(activityinfo::getFormSchema(formId = "c57pp2ql7hd1hue9")))
+  output = as.data.frame(output)
+  testthat::expect_true( all(output$parentFormId == "cxo4ffkl7hd0zkl3zzz") )
+  
+})

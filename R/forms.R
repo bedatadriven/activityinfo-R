@@ -133,6 +133,7 @@ as.data.frame.formSchema <- function(x, row.names = NULL, optional = FALSE, ...)
     formParentId = rep.int(null2na(x$parentFormId), nfields),
     fieldId = sapply(x$elements, function(e) e$id),
     fieldCode = sapply(x$elements, function(e) null2na(e$code)),
+    fieldType = sapply(x$elements, function(e) null2na(e$type)),
     fieldLabel = sapply(x$elements, function(e) null2na(e$label)),
     fieldDescription = sapply(x$elements, function(e) null2na(e$description)),
     validationCondition = sapply(x$elements, function(e) null2na(e$validationCondition)),

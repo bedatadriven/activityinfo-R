@@ -101,6 +101,8 @@ parseColumnSet <- function(columnSet) {
                             STRING = NA_character_,
                             NUMBER = NA_real_),
                      columnSet$rows)
+               } else if(column$type == "BOOLEAN" && !identical(column$value, TRUE) && !identical(column$value, FALSE)) {
+                  rep(NA, columnSet$rows)   
                } else {
                  rep(column$value, columnSet$rows)
                }

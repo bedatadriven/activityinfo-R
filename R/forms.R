@@ -135,14 +135,14 @@ as.data.frame.formSchema <- function(x, row.names = NULL, optional = FALSE, ...)
     fieldCode = sapply(x$elements, function(e) null2na(e$code)),
     fieldLabel = sapply(x$elements, function(e) null2na(e$label)),
     fieldDescription = sapply(x$elements, function(e) null2na(e$description)),
-    validationCondition <- sapply(x$elements, function(e) null2na(e$validationCondition)),
-    relevanceCondition <- sapply(x$elements, function(e) null2na(e$relevanceCondition)),
-    fieldRequired <- sapply(x$elements, function(e) null2na(e$required)),
-    key <- sapply(x$elements, function(e) identical(e$key, TRUE)),
-    referenceFormId <- sapply(x$elements, function(e) null2na(e$typeParameters$range[[1]]$formId)),
-    formula <- sapply(x$elements, function(e) null2na(e$typeParameters$formula)),
-    dataEntryVisible <- sapply(x$elements, function(e) !identical(e$dataEntryVisible, FALSE)),
-    tableVisible <- sapply(x$elements, function(e) !identical(e$tableVisible, FALSE)),
+    validationCondition = sapply(x$elements, function(e) null2na(e$validationCondition)),
+    relevanceCondition = sapply(x$elements, function(e) null2na(e$relevanceCondition)),
+    fieldRequired = sapply(x$elements, function(e) null2na(e$required)),
+    key = sapply(x$elements, function(e) identical(e$key, TRUE)),
+    referenceFormId = sapply(x$elements, function(e) null2na(e$typeParameters$range[[1]]$formId)),
+    formula = sapply(x$elements, function(e) null2na(e$typeParameters$formula)),
+    dataEntryVisible = sapply(x$elements, function(e) !identical(e$dataEntryVisible, FALSE)),
+    tableVisible = sapply(x$elements, function(e) !identical(e$tableVisible, FALSE)),
     stringsAsFactors = FALSE)
 }
 

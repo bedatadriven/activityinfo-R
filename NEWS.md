@@ -131,4 +131,7 @@
 ## [4.25]
 - Fixed and improved queryAuditLog()
 
+## [4.26]
+- Fix for queryAuditLog() when collection links are involved
+
 

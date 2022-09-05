@@ -145,5 +145,21 @@ reference <- function(formId, recordId) {
   sprintf("%s:%s", formId, recordId)
 }
 
-
+#' Recover a deleted record
+#'
+#' @description
+#' This call recovers a single deleted record for the given \code{formId} and
+#' \code{recordId}.
+#'
+#' @param formId a form id
+#' @param recordId a record id
+#'
+#' @export
+recoverRecord <- function(formId, recordId) {
+  stopifnot(is.character(formId))
+  stopifnot(is.character(recordId))
+  
+  path<-sprintf("form/%s/record/%s/recover",formId,recordId)
+  postResource(path = path, NULL, task = "recover record")
+}
 

@@ -134,4 +134,5 @@
 ## [4.26]
 - Fix for queryAuditLog() when collection links are involved
 
-
+## [4.27]
+- Added recoverRecord() to recover deleted records

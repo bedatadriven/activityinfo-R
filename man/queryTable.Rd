@@ -4,12 +4,14 @@
 \alias{queryTable}
 \title{Queries a form as a flat, two-dimensional table}
 \usage{
-queryTable(form, columns, ..., truncate.strings = TRUE)
+queryTable(form, columns, ..., truncate.strings = TRUE, filter)
 }
 \arguments{
 \item{columns}{select columns, see Details}
 
 \item{truncate.strings}{TRUE if longer strings should be truncated to 128 characters}
+
+\item{filter}{an ActivityInfo formula string that limits the records returned}
 
 \item{the}{form to query. This can be an object of type "tree", "class", or the id of the
 form as a character.}

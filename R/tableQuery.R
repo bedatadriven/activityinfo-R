@@ -5,6 +5,7 @@
 #' form as a character.
 #' @param columns select columns, see Details
 #' @param truncate.strings TRUE if longer strings should be truncated to 128 characters
+#' @param filter an ActivityInfo formula string that limits the records returned
 #' @details To select columns, you can use
 #' \itemize{
 #'   \item \code{_id} to get the record identifier,
@@ -34,7 +35,7 @@
 #' ))
 #' }
 #' @export
-queryTable <- function(form, columns,  ..., truncate.strings = TRUE) {
+queryTable <- function(form, columns,  ..., truncate.strings = TRUE, filter) {
 
   formId <- if (inherits(form, "formtree")) {
     # query the root form of a tree contained in a formtree result
@@ -71,6 +72,11 @@ queryTable <- function(form, columns,  ..., truncate.strings = TRUE) {
     }),
     truncateStrings = truncate.strings
   )
+  
+  if(!missing(filter)) {
+    stopifnot(is.character(filter))
+    query$filter <- filter
+  }
 
   columnSet <- postResource("query/columns", query)
   df <- parseColumnSet(columnSet)

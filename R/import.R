@@ -1,4 +1,8 @@
 
+# N.B. This is an generic import routine that should be incorporated into
+# the activityinfo package shortly. But under development so we'll keep
+# it here for the time being.
+
 
 #' Batch imports a data.frame into an ActivityInfo form
 #' 
@@ -14,7 +18,7 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
     if(!is.character(recordIdColumn)) {
       stop(sprintf("Expected a character vector for the recordIdColumn, found %s", deparse(head(recordId))))
     }
-    if(anyDuplicated(recordId)) {
+    if(anyDuplicated(recordId[!is.na(recordId)])) {
       stop("The recordIdColumn contains duplicates.")
     }
   } else {
@@ -38,8 +42,8 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
                    parentIdColumn,
                    paste(head(parentIds[!validParentIds]), collapse = ", ")))
     }
+    providedCols <- providedCols[providedCols != parentIdColumn]
   }
-  providedCols <- providedCols[providedCols != parentIdColumn]
   
   if(length(providedCols) == 0) {
     stop("The data.frame to import does not have any fields to import.")
@@ -74,8 +78,8 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
   
   for(recordIndex in 1:nrow(data)) {
     record <- lapply(fieldSeq, function(fieldIndex) {
-      v <- fieldValues[[fieldIndex]][recordIndex]
-      if(is.na(v)) NULL else v
+      v <- fieldValues[[fieldIndex]][[recordIndex]]
+      if(length(v) == 1 && is.na(v)) NULL else v
     })
     recordLines[recordIndex] <- rjson::toJSON(record)
   }
@@ -83,7 +87,7 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
   lines <- c(
     "LINE DELIMITED JSON RECORDS",
     as.character(nrow(data)),
-    rjson::toJSON(fieldIds),
+    rjson::toJSON(as.list(fieldIds)),
     recordLines)
   
   importId <- stageImport(paste(lines, collapse = "\n"))
@@ -99,7 +103,7 @@ matchColumn <- function(colName, schema) {
   if(colName %in% schema$fieldId) {
     return(colName)
   }
-  matchingCodes <- schema$fieldId[tolower(schema$fieldCode) == tolower(colName)]
+  matchingCodes <- schema$fieldId[!is.na(schema$fieldCode) & tolower(schema$fieldCode) == tolower(colName)]
   if(length(matchingCodes) == 1) {
     return(matchingCodes)
   }
@@ -108,9 +112,9 @@ matchColumn <- function(colName, schema) {
     return(matchingLabels)
   }
   if(length(matchingLabels) > 1) {
-    stop(sprintf("Ambiguous column name '%s', matches several fields", colName))
+    stop(sprintf("Ambiguous imported column name '%s', matches several fields", colName))
   } else {
-    stop(sprintf("No matching field for '%s'", colName))
+    stop(sprintf("No matching field for imported column '%s'", colName))
   }
 }
 
@@ -123,6 +127,7 @@ prepareImport <- function(field, columnName, column) {
           enumerated = prepareEnumImport(field, columnName, column),
           reference = prepareReference(field, column),
           date = prepareDate(field, column),
+          serial = prepareSerial(field, columnName, column),
           stop(sprintf("Field '%s' has unsupported type '%s'", field$label, field$type))
   )
 }
@@ -131,10 +136,22 @@ prepareEnumImport <- function(field, columnName, column) {
   items <- sapply(field$typeParameters$values, function(item) item$id)
   names(items) <- sapply(field$typeParameters$values, function(item) tolower(item$label))
   
+  # Replace empty strings with NAs
+  column[!nzchar(column)] <- NA_character_
+  
+  # If this vector has labels, then add those to the lookup table
+  if(inherits(column, "haven_labelled")) {
+    columnLabels <- attr(column, "labels")
+    names(columnLabels) <- tolower(names(columnLabels))
+    codedItems <- items
+    names(codedItems) <- tolower(columnLabels[ names(codedItems) ])
+    items <- c(items, codedItems)
+  }
+  
   if(field$typeParameters$cardinality == "single") {
     prepareSingleEnumImport(field, items, columnName, column)
   } else {
-    prepareMultiEnumImport(field, column)
+    prepareMultiEnumImport(field, items, columnName, column)
   }
 }
 
@@ -161,8 +178,33 @@ prepareSingleEnumImport <- function(field, items, columnName, column) {
   itemIds
 }
 
-prepareMultiEnumImport <- function(field, items, columns) {
-  stop("TODO")
+prepareMultiEnumImport <- function(field, items, columnName, column) {
+  column <- as.character(column)
+  rows <- strsplit(column, split = "\\s*,\\s*")
+  
+  lapply <- lapply(rows, function(row) {
+    if(length(row) == 1 && is.na(row)) {
+      return(NA_character_)
+    }
+    itemIds <- as.character(items[tolower(row)])
+    matching <- !is.na(itemIds)
+    if (any(!matching)) {
+      badLabels <- unique(row[!matching])
+      stop(
+        sprintf(
+          "For multi-select field '%s', the imported column `%s` has values (%s) which do not match the options defined for this field (%s)",
+          field$label,
+          columnName,
+          paste(collapse = ", ", sprintf("'%s'", badLabels)),
+          paste(collapse = ", ", sprintf("'%s'", names(items)))
+          
+        )
+      )
+    }
+    itemIds
+  })
+  
+  
 }
 
 prepareReference <- function(field, column) {
@@ -177,6 +219,10 @@ prepareReference <- function(field, column) {
                  paste(collapse = ", ", sprintf("'%s'", badLabels))))
   }
   column
+}
+
+prepareSerial <- function(field, columnName, column) {
+  stop(sprintf("Column '%s': importing serial numbers not (yet) supported", columnName))
 }
 
 prepareDate <- function(field, column) {
@@ -194,7 +240,6 @@ prepareDate <- function(field, column) {
   
   strftime(dates, "%Y-%m-%d")
 }
-
 
 
 #' Stages data to import to ActivityInfo 

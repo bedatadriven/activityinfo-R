@@ -4,7 +4,7 @@
 \alias{importTable}
 \title{Batch imports a data.frame into an ActivityInfo form}
 \usage{
-importTable(formId, recordIdColumn, data)
+importTable(formId, data, recordIdColumn, parentIdColumn)
 }
 \description{
 Batch imports a data.frame into an ActivityInfo form

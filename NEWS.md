@@ -133,6 +133,10 @@
 
 ## [4.26]
 - Fix for queryAuditLog() when collection links are involved
+- Fix for converting a sub form schema into a data.frame (#25)
 
 ## [4.27]
 - Added recoverRecord() to recover deleted records
+
+## [4.28]
+- Improvements to importTable() function

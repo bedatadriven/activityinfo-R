@@ -220,7 +220,7 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
     stop("roleParameters must be named.")
   }
   
-  list(roleId = roleId, roleParameters = roleParameters, roleResources = as.list(roleResources))
+  list(id = roleId, parameters = roleParameters, resources = as.list(roleResources))
 }
 
 

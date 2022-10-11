@@ -140,3 +140,6 @@
 
 ## [4.28]
 - Improvements to importTable() function
+
+## [4.29]
+- Fix for roleAssignment() function

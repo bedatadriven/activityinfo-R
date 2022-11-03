@@ -5,46 +5,29 @@
 #' @param data The data.frame to import
 #' @param recordIdColumn The record ID column
 #' @param parentIdColumn The parent ID column required when importing a subform
-#' 
+#'
 #' @importFrom utils head
 #' @export
 importTable <- function(formId, data, recordIdColumn, parentIdColumn) { 
   parentId <- NULL
-  
+
   schema <- activityinfo::getFormSchema(formId)
   schemaTable <- as.data.frame(schema)
+  subform <- !is.null(schema$parentFormId)
+
   providedCols <- names(data)
+
   if(!missing(recordIdColumn)) {
+    recordId <- recordIdFromData(data, recordIdColumn)
     providedCols <- providedCols[providedCols != recordIdColumn]
-    recordId <- data[[recordIdColumn]]
-    if(!is.character(recordIdColumn)) {
-      stop(sprintf("Expected a character vector for the recordIdColumn, found %s", deparse(utils::head(recordId))))
-    }
-    if(anyDuplicated(recordId[!is.na(recordId)])) {
-      stop("The recordIdColumn contains duplicates.")
-    }
   } else {
     recordId <- rep.int(NA_character_, times = nrow(data))
   }
-  if(!is.null(schema$parentFormId)) {
-    if(missing(parentIdColumn)) {
-      stop("When importing to a subform, you must provide a parentIdColumn")
-    }
-    parentId <- as.character(data[[parentIdColumn]])
-    if(!is.character(parentIdColumn)) {
-      stop(sprintf("Expected a character vector for the parentIdColumn, found %s", deparse(utils::head(parentId))))
-    }
-    if(anyNA(parentId)) {
-      stop("The parentIdColumn contains missing values.")
-    }
-    existingParentIds <- queryTable(schema$parentFormId, id = "_id")
-    validParentIds <- parentId %in% existingParentIds$id
-    if(!all(validParentIds)) {
-      stop(sprintf("The parent id column `%s` has %d invalid parent ids, including: %s",
-                   parentIdColumn,
-                   paste(head(existingParentIds[!validParentIds]), collapse = ", ")))
-    }
+  if(subform) {
+    parentId <- parentIdFromData(data, parentIdColumn, schema)
     providedCols <- providedCols[providedCols != parentIdColumn]
+  } else {
+    parentId <- NULL
   }
   
   if(length(providedCols) == 0) {
@@ -58,48 +41,55 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
     columnName <- providedCols[i]
     fieldValues[[i]] <- prepareImport(schema$elements[[fieldIndex]], columnName, data[[columnName]])
   }
-  
-  if(!missing(parentIdColumn)) {
-    fieldValues <- c(
-      list(parentId),
-      fieldValues
-    )
-  }
-  
-  fieldValues <- c(
-    list(recordId),
-    fieldValues
-  )
-  
+
   if(nrow(data) == 0) {
     warning("data.frame to import is empty")
     return()
   }
-  recordLines <- character(nrow(data))
-  fieldSeq <- seq_along(fieldValues)
-  
-  for(recordIndex in 1:nrow(data)) {
-    record <- lapply(fieldSeq, function(fieldIndex) {
-      v <- fieldValues[[fieldIndex]][[recordIndex]]
-      if(length(v) == 1 && is.na(v)) NULL else v
-    })
-    recordLines[recordIndex] <- rjson::toJSON(record)
+
+  if(missing(recordIdColumn)) {
+    recordId <- matchRecordIdsByKey(schema, data, fieldIds, fieldValues)
   }
-  
-  lines <- c(
-    "LINE DELIMITED JSON RECORDS",
-    as.character(nrow(data)),
-    rjson::toJSON(as.list(fieldIds)),
-    recordLines)
-  
+  lines <- formatImport(data, recordId, parentId, fieldIds, fieldValues)
   importId <- stageImport(paste(lines, collapse = "\n"))
   
-  executeJob("importRecords", descriptor = 
+  executeJob("importRecords", descriptor =
                               list(formId = formId,
                                    importId = importId))
   
 }
 
+recordIdFromData <- function(data, recordIdColumn) {
+  recordId <- data[[recordIdColumn]]
+  if(!is.character(recordIdColumn)) {
+    stop(sprintf("Expected a character vector for the recordIdColumn, found %s", deparse(head(recordId))))
+  }
+  if(anyDuplicated(recordId[!is.na(recordId)])) {
+    stop("The recordIdColumn contains duplicates.")
+  }
+  return(recordId)
+}
+
+parentIdFromData <- function(data, parentIdColumn, schema) {
+  if(missing(parentIdColumn)) {
+    stop("When importing to a subform, you must provide a parentIdColumn")
+  }
+  parentId <- as.character(data[[parentIdColumn]])
+  if(!is.character(parentIdColumn)) {
+    stop(sprintf("Expected a character vector for the parentIdColumn, found %s", deparse(head(parentId))))
+  }
+  if(anyNA(parentId)) {
+    stop("The parentIdColumn contains missing values.")
+  }
+  existingParentIds <- queryTable(schema$parentFormId, id = "_id")
+  validParentIds <- parentId %in% existingParentIds$id
+  if(!all(validParentIds)) {
+    stop(sprintf("The parent id column `%s` has %d invalid parent ids, including: %s",
+                 parentIdColumn,
+                 paste(head(parentIds[!validParentIds]), collapse = ", ")))
+  }
+  return(parentId)
+}
 
 matchColumn <- function(colName, schema) {
   if(colName %in% schema$fieldId) {
@@ -129,6 +119,7 @@ prepareImport <- function(field, columnName, column) {
           enumerated = prepareEnumImport(field, columnName, column),
           reference = prepareReference(field, column),
           date = prepareDate(field, column),
+          month = prepareMonth(field, columnName, column),
           serial = prepareSerial(field, columnName, column),
           stop(sprintf("Field '%s' has unsupported type '%s'", field$label, field$type))
   )
@@ -244,7 +235,95 @@ prepareDate <- function(field, column) {
 }
 
 
-#' Stages data to import to ActivityInfo 
+prepareMonth <- function(field, columnName, column) {
+
+  months <- as.character(column)
+  valid <- grepl(pattern = "\\d{4}-\\d{2}", x = column)
+  if(any(!valid)) {
+    badMonths <- head(unique(column[!valid]), n = 5)
+
+    stop(sprintf("Column '%s' contains %d invalid month values, including: %s",
+                 columnName,
+                 sum(!valid),
+                 paste(collapse = ", ", sprintf("'%s'", badMonths))))
+  }
+  months
+}
+
+matchRecordIdsByKey <- function(schema, data, fieldIds, fieldValues) {
+  keyFieldIds <- findKeyFieldIds(schema)
+  keys <- which(fieldIds %in% keyFieldIds)
+
+  provided <- as.data.frame(fieldValues[keys])
+  names(provided) <- sprintf("k%d", seq_along(keyFieldIds))
+
+  # Check that our input does not include duplicates according to the key
+  # fields
+  dups <- duplicated(provided)
+  if(any(dups)) {
+    stop(sprintf("There are %d duplicate rows (by key fields %s) in the input, including row(s) %s",
+                 sum(dups),
+                 paste(sprintf("`%s`", names(data)[keys]), collapse =", "),
+                 paste(head(which(dups)), collapse = ", ")))
+  }
+
+  # Match against existing rows
+  lookup <- queryLookupTable(schema$id, keyFieldIds)
+  matched <- merge(provided, lookup, by = names(provided), all.x = TRUE)
+
+  return(matched$id)
+}
+
+findKeyFieldIds <- function(schema) {
+  fieldIds <- sapply(schema$elements, function(e) e$id)
+  keys <- sapply(schema$elements, function(e) identical(e$key, TRUE))
+
+  return(fieldIds[keys])
+}
+
+queryLookupTable <- function(formId, keyFieldIds) {
+  columns <- as.list(keyFieldIds)
+  names(columns) <- sprintf("k%d", seq_along(keyFieldIds))
+  columns[["id"]] <- "_id"
+
+  queryTable(formId, columns, truncate.strings = FALSE)
+}
+
+formatImport <- function(data, recordId, parentId, fieldIds, fieldValues) {
+
+
+  if(!is.null(parentId)) {
+    fieldValues <- c(
+      list(parentId),
+      fieldValues
+    )
+  }
+
+  fieldValues <- c(
+    list(recordId),
+    fieldValues
+  )
+
+  recordLines <- character(nrow(data))
+  fieldSeq <- seq_along(fieldValues)
+
+  for(recordIndex in 1:nrow(data)) {
+    record <- lapply(fieldSeq, function(fieldIndex) {
+      v <- fieldValues[[fieldIndex]][[recordIndex]]
+      if(length(v) == 1 && is.na(v)) NULL else v
+    })
+    recordLines[recordIndex] <- toJSON(record)
+  }
+
+  c("LINE DELIMITED JSON RECORDS",
+    as.character(nrow(data)),
+    toJSON(as.list(fieldIds)),
+    recordLines)
+}
+
+
+
+#' Stages data to import to ActivityInfo
 #' 
 #' @param text The text of the file to import.
 stageImport <- function(text) {
@@ -270,8 +349,9 @@ stageImport <- function(text) {
   if(putResult$status_code != 200) {
     stop("Failed to stage import file at ", uploadUrl, ": status = ", putResult$status_code)
   }
-  
-  
+
   response$importId
 }
+
+
 

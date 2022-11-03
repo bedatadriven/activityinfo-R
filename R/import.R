@@ -1,8 +1,4 @@
 
-# N.B. This is an generic import routine that should be incorporated into
-# the activityinfo package shortly. But under development so we'll keep
-# it here for the time being.
-
 
 #' Batch imports a data.frame into an ActivityInfo form
 #' @param formId The form ID

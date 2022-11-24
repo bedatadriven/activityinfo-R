@@ -80,7 +80,7 @@ activityInfoAuthentication <- local({
 #' activityInfoLogin("nouser@@activityinfo.org", "pass")
 #' }
 #' @export
-activityInfoLogin <- function(userEmail, password) {
+activityInfoLogin <- function(userEmail, password,savePassword = TRUE) {
 
   if (missing(userEmail) || missing(password)) {
     attempts <- 0
@@ -102,7 +102,7 @@ activityInfoLogin <- function(userEmail, password) {
   credentials <- paste(userEmail, password, sep = ":")
   activityInfoAuthentication(credentials)
 
-  if(interactive()) {
+  if(interactive() & savePassword) {
     cat("Do you want to save your password for future R sessions?\n")
     cat("WARNING: If you choose yes, your password will be stored plain text in your home\n")
     cat("directory. Don't choose this option on an insecure or public machine! (Y/n)\n")

@@ -1,4 +1,8 @@
-library(httr)
+withr::local_options(list(
+  warnPartialMatchDollar = TRUE,
+  warnPartialMatchArgs = TRUE,
+  warnPartialMatchAttr = TRUE
+))
 
 # Isolate every test completely by creating a completely new user.
 # We will use the testing API to do this, which is only enabled in pre-production.
@@ -36,14 +40,21 @@ activityInfoRootUrl(preprodRootUrl)
 activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
 
 # Add a new database for this user
-database <- activityinfo:::postResource("databases", body = list(id = cuid(), label = "My database", templateId = "blank"))
+setupBlankDatabase <- function(label) {
+  activityinfo:::postResource("databases", body = list(id = cuid(), label = label, templateId = "blank"), task = sprintf("Creating test database '%s' post request", label))
+}
+
+database <- setupBlankDatabase("My first database")
+database2 <- setupBlankDatabase("My second database")
 
 # Add a form to the database
 personFormId <- cuid()
+childrenSubformId <- cuid()
+
 addForm(database$databaseId, schema = 
           list(id = personFormId,
                databaseId = database$databaseId,
-               label = "Test form",
+               label = "Person form",
                elements = list(
                  list(
                    id = cuid(),
@@ -61,16 +72,82 @@ addForm(database$databaseId, schema =
                    ),
                    tableVisible = TRUE,
                    dataEntryVisible = TRUE
+                 ),
+                 list(
+                   id = cuid(),
+                   code = "CHILDREN",
+                   label = "Children",
+                   description = "List the children present in the household",
+                   relevanceCondition = "",
+                   validationCondition = "",
+                   key = FALSE,
+                   required = TRUE,
+                   type = "subform",
+                   typeParameters = list(
+                     formId = childrenSubformId
+                   ),
+                   tableVisible = TRUE,
+                   dataEntryVisible = TRUE
                  )
                )))
 
 # Add some records to the form
-
 addRecord(formId = personFormId, fieldValues = list(NAME = "Bob"))
 addRecord(formId = personFormId, fieldValues = list(NAME = "Alice"))
 
-# Verify that the records are actually there
+updateFormSchemaResult <- updateFormSchema(schema = list(id = childrenSubformId,
+                               databaseId = database$databaseId,
+                               label = "Children",
+                               parentFormId = personFormId,
+                               subFormKind = "REPEATING", # anachronism.
+                               elements = list(
+                                 list(
+                                   id = cuid(),
+                                   code = "NAME",
+                                   label = "Child name",
+                                   relevanceCondition = "",
+                                   validationCondition = "",
+                                   key = TRUE,
+                                   required = TRUE,
+                                   type = "FREE_TEXT",
+                                   typeParameters = list(
+                                     inputMask = "",
+                                     barcode = FALSE
+                                   )
+                                 ),
+                                 list(
+                                   id = cuid(),
+                                   code = "DOB",
+                                   label = "Date of birth",
+                                   relevanceCondition = "",
+                                   validationCondition = "",
+                                   key = FALSE,
+                                   required = TRUE,
+                                   type = "date"
+                                 )
+                               ))
+)
+
 records <- queryTable(personFormId)
 
+# Verify that the records are actually there
 assertthat::assert_that("Bob" %in% records$NAME)
 assertthat::assert_that("Alice" %in% records$NAME)
+
+# Create some sub-form data
+nChildren <- 12
+childrenNames <- paste0("child", 1:nChildren)
+childrenDOB <- withr::with_seed(100, as.Date("1990-01-01") + runif(nChildren, min = 1, max = 10000))
+childrenParent <- c(rep("Alice", nChildren/2), rep("Bob", nChildren/2))
+parentRecordId <- lapply(childrenParent, function(x) {records[records$NAME == x,]$X.id})
+
+lapply(1:nChildren, function(x) {
+    addRecord(formId = childrenSubformId, parentRecordId = parentRecordId[[x]], fieldValues = list(
+      NAME = childrenNames[[x]],
+      DOB = childrenDOB[[x]]
+      ))
+  })
+
+records <- queryTable(personFormId)
+
+itemNames <- c("bed", "light", "house", "shoes", "coat", "gloves", "table", "chair", "computer", "fridge", "bicycle", "car", "truck", "freezer", "stove", "utensils", "bowl", "plate", "bucket", "soap", "water container", "rice bag", "cereal", "fruit", "jerrycan", "shovel", "latrine", "toilet", "phone", "tablet", "solar charger")

@@ -41,7 +41,19 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
     )
   )
 
-  postResource(path = "update", body = list(changes = changes), task = "add record")
+  task <- sprintf("Add record %s to form %s",
+                  changes[[1]]$recordId,
+                  ifelse(is.na(parentRecordId),
+                         formId,
+                         sprintf("%s with parentRecordId %s", formId, parentRecordId)
+                  )
+  )
+  
+  postResource(
+    path = "update", 
+    body = list(changes = changes), 
+    task = task
+    )
 }
 
 #' Delete a record

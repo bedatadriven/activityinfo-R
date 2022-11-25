@@ -11,7 +11,6 @@ legacy <- function(domain, id) {
 #' associated with a 'classic' activity
 site.form.id <- function(activityId) legacy("a", activityId)
 
-
 #' Returns the id of the form containing the monthly reports
 #' associated with a 'classic' activity
 monthly.reports.form.id <- function(activityId) legacy("M", activityId)
@@ -65,8 +64,12 @@ getFormSchema <- function(formId) {
   stopifnot(is.character(formId))
   schema <- getResource(sprintf("form/%s/schema", formId))
   
-  # Enforce some types to make other 
-  # operations easier
+  as.schema(schema)
+}
+
+# Enforce some types to make other 
+# operations easier
+as.schema <- function(schema) {
   schema$elements <- lapply(schema$elements, function(e) {
     e$key <- identical(e$key, TRUE)
     e$required <- identical(e$required, TRUE)
@@ -74,7 +77,7 @@ getFormSchema <- function(formId) {
     e
   })
   class(schema) <- "formSchema"
-  schema
+  schema  
 }
 
 #' Pretty print a form schema
@@ -164,7 +167,10 @@ addForm <- function(databaseId, schema, folderId = databaseId) {
                         visibility = "PRIVATE"),
     formClass = schema)
   
-  postResource(sprintf("databases/%s/forms", databaseId), request)
+  postResource(
+    sprintf("databases/%s/forms", databaseId), 
+    request, 
+    task = sprintf("Adding a new form '%s' with id %s in database %s", schema$label, schema$id, databaseId))
   
 }
 
@@ -182,16 +188,13 @@ updateFormSchema <- function(schema) {
     x
   })
 
-  url <- sprintf("%s/resources/form/%s/schema", activityInfoRootUrl(), schema$id)
-
-  result <- POST(url, body = schema, encode = "json",  activityInfoAuthentication(), accept_json())
-
-  if (result$status_code != 200) {
-    stop(sprintf("Update of form schema failed with status code %d %s: %s",
-                 result$status_code,
-                 http_status(result$status_code)$message,
-                 content(result, as = "text", encoding = "UTF-8")))
-  }
+  result <- postResource(
+    sprintf("form/%s/schema", schema$id),
+    body = schema, 
+    task = sprintf("Update of form schema for form %s (%s)", schema$label, schema$id), 
+    requireStatus = 200)
+  
+  result
 }
 
 #' Queries the Form Tree of a Form

@@ -39,6 +39,11 @@ tryCatch(
 activityInfoRootUrl(preprodRootUrl)
 activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
 
+# get a personal API token
+tokenRequest <- activityInfoToken(
+  postResource("accounts/tokens/generate", body = list(label = "read write testing token", scope = "READ_WRITE"), task = "Creating test user token")$token
+)
+
 # Add a new database for this user
 setupBlankDatabase <- function(label) {
   activityinfo:::postResource("databases", body = list(id = cuid(), label = label, templateId = "blank"), task = sprintf("Creating test database '%s' post request", label))

@@ -18,7 +18,11 @@ updateRecord <- function(formId, recordId, fieldValues) {
     )
   )
 
-  postResource(path = "update", body = list(changes = changes), task = "update record")
+  postResource(
+    path = "update", 
+    body = list(changes = changes), 
+    task = sprintf("Updating record %s in form %s", recordId, formId)
+  )
 }
 
 #' Adds a new record
@@ -41,7 +45,7 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
     )
   )
 
-  task <- sprintf("Add record %s to form %s",
+  task <- sprintf("Adding record %s to form %s",
                   changes[[1]]$recordId,
                   ifelse(is.na(parentRecordId),
                          formId,
@@ -78,7 +82,11 @@ deleteRecord <- function(formId, recordId) {
     )
   )
 
-  postResource(path = "update", body = list(changes = changes), task = "delete record")
+  postResource(
+    path = "update", 
+    body = list(changes = changes), 
+    task = sprintf("Delete record %s in form %s", recordId, formId)
+    )
 }
 
 #' Gets the list of changes to a record
@@ -91,7 +99,10 @@ deleteRecord <- function(formId, recordId) {
 #' @param recordId a record id
 #' @export
 getRecordHistory <- function(formId, recordId) {
-  getResource(paste("form", formId, "record", recordId, "history", sep = "/"))
+  getResource(
+    paste("form", formId, "record", recordId, "history", sep = "/"),
+    task = sprintf("Get record %s history from form %s", recordId, formId)
+    )
 }
 
 #' Gets a single record
@@ -101,7 +112,10 @@ getRecordHistory <- function(formId, recordId) {
 #' @export
 #' 
 getRecord <- function(formId, recordId) {
-  getResource(sprintf("form/%s/record/%s", formId, recordId))
+  getResource(
+    sprintf("form/%s/record/%s", formId, recordId),
+    task = sprintf("Get record %s from form %s", recordId, formId)
+    )
 }
 
 #' Gets an attachment
@@ -172,6 +186,6 @@ recoverRecord <- function(formId, recordId) {
   stopifnot(is.character(recordId))
   
   path<-sprintf("form/%s/record/%s/recover",formId,recordId)
-  postResource(path = path, NULL, task = "recover record")
+  postResource(path = path, NULL, task = sprintf("Recover record %s from form %s", recordId, formId))
 }
 

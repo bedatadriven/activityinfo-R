@@ -72,7 +72,7 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
   
   while(TRUE) {
   
-    result <- postResource(path = path, body = request, task = "query audit log")
+    result <- postResource(path = path, body = request, task = "Query audit log")
     
     page <- do.call(rbind, lapply(result$events, function(event) {
       event <- lapply(event, na_for_null)

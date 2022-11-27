@@ -62,7 +62,10 @@ changeName <- function(x, from, to) {
 #' @export
 getFormSchema <- function(formId) {
   stopifnot(is.character(formId))
-  schema <- getResource(sprintf("form/%s/schema", formId))
+  schema <- getResource(
+    sprintf("form/%s/schema", formId), 
+    task = sprintf("Getting form %s schema", formId)
+    )
   
   as.schema(schema)
 }
@@ -204,7 +207,10 @@ updateFormSchema <- function(schema) {
 #' @export
 getFormTree <- function(formId) {
   stopifnot(is.character(formId))
-  tree <- getResource(paste("form", formId, "tree", sep = "/"))
+  tree <- getResource(
+    paste("form", formId, "tree", sep = "/"), 
+    task = sprintf("Getting form %s tree", formId)
+    )
 
   # enforce some types to make other operations easier:
   tree$forms <- lapply(tree$forms, function(form) {
@@ -235,7 +241,10 @@ getFormTree <- function(formId) {
 #' @export
 relocateForm <- function(formId, newDatabaseId) {
   
-  postResource(sprintf("/form/%s/database", formId),
-                              body = list(databaseId = newDatabaseId))
+  postResource(
+    sprintf("/form/%s/database", formId),
+    body = list(databaseId = newDatabaseId),
+    task = sprintf("Relocating form %s to database %s",formId, newDatabaseId)
+    )
   
 }

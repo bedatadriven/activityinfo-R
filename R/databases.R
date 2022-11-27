@@ -7,7 +7,7 @@
 #'
 #' @export
 getDatabases <- function() {
-  getResource("databases")
+  getResource("databases", task = "Getting all databases")
 }
 
 
@@ -68,7 +68,10 @@ print.databaseTree <- function(x, ...) {
 #'
 #' @export
 getDatabaseUsers <- function(databaseId) {
-  users <- getResource(paste("databases", databaseId, "users", sep="/"))
+  users <- getResource(
+    paste("databases", databaseId, "users", sep="/"), 
+    task = sprintf("Getting list of database %s users", databaseId))
+  
   users
 }
 
@@ -80,7 +83,7 @@ getDatabaseUsers <- function(databaseId) {
 getDatabaseUser <- function(databaseId, userId) {
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "grants",  sep="/")
   result <- GET(url, activityInfoAuthentication(), accept_json())
-
+  
   if(result$status_code == 200) {
     return(fromJSON(content(result, as = "text", encoding = "UTF-8")))
   } else if(result$status_code == 404) {
@@ -90,7 +93,23 @@ getDatabaseUser <- function(databaseId, userId) {
                  url, result$status_code, http_status(result$status_code)$message,
                  content(result, as = "text", encoding = "UTF-8")))
   }
+  
 }
+
+# Compare with these in a test to see if return values differ
+#' getDatabaseUser2
+#'
+#' Retrieves a user's role and permissions
+#'
+#' @export
+getDatabaseUser2 <- function(databaseId, userId) {
+  url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "grants",  sep="/")
+
+  #Compare with this in a test to see if return values differ
+  result <- getResource(url, task = sprintf("Request for database/user %s/%s",databaseId, userId))
+  result
+}
+
 
 
 #' addDatabaseUser

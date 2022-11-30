@@ -1,4 +1,10 @@
 
+# set standard connection to stdin() for user interaction
+.onLoad <- function(libname, pkgname){
+  message("Setting standard input...")
+  options(activityinfo.interactive = stdin())
+}
+
 credentialsFile <- "~/.activityinfo.credentials"
 
 credentials <- environment()
@@ -42,10 +48,13 @@ activityInfoAuthentication <- local({
     } else {
       # Look for credentials first in ~/.activityinfo.credentials
       if(is.null(credentials) && file.exists(credentialsFile)) {
-        cat(sprintf("Reading username:password from %s...\n", path.expand(path = credentialsFile)))
+        cat(sprintf("Reading credentials from %s...\n", path.expand(path = credentialsFile)))
         line <- readLines("~/.activityinfo.credentials", warn = FALSE)[1]
         if(nchar(line) <= 2) {
           cat(sprintf("...file exists, but is empty or improperly formatted.\n", path.expand(path = credentialsFile)))
+        } else {
+          if(credentialType(line) == "basic") deprecationOfBasicAuthWarning()
+          credentials <<- line
         }
       }
 
@@ -69,13 +78,17 @@ activityInfoAuthentication <- local({
 credentialType <- function(credentials) {
   if(nchar(credentials) > 2) {
     if(grepl(credentials, pattern = ".+:.+")) {
-      warning("The ActivityInfo API is deprecating the use of username and passwords. Update your code to use a personal API token before the functionality is removed.", call. =  FALSE, noBreaks. = TRUE)
       return("basic")
     } else {
       return("bearer")
     }
   }
   stop("ActivityInfo credential not a valid type.")
+}
+
+readline2 <- function(prompt) {
+  cat(prompt)
+  readLines(con = getOption("activityinfo.interactive"), n = 1)
 }
 
 #' Store personal token to authorize requests for the
@@ -93,7 +106,7 @@ credentialType <- function(credentials) {
 activityInfoToken <- function(token) {
   
   if (interactive() && missing(token)) {
-    token <- readline("Enter your token: ")
+    token <- readline2("Enter your token: ")
   }
   
   activityInfoAuthentication(token)
@@ -103,20 +116,25 @@ activityInfoToken <- function(token) {
     cat("WARNING: If you choose yes, your token will be stored plain text in your home\n")
     cat("directory. Don't choose this option on an insecure or public machine! (Y/n)\n")
     
-    save <- readline("Save token? ")
+    save <- readline2("Save token? ")
     if(substr(tolower(save), 1, 1) == "y") {
-      cat(credentials, file=credentialsFile)
+      cat(token, file=credentialsFile)
     }
   }
 }
 
+deprecationOfBasicAuthWarning <- function() {
+  warning("The ActivityInfo API is deprecating the use of username and passwords. Update your code to use a personal API token before the functionality is removed.", call. =  FALSE, noBreaks. = TRUE)
+}
 
-#' Authenticate and store user credentials to authorize requests for the
+#' Use Basic Authentication (deprecated) to authenticate and store user credentials to authorize requests for the
 #' ActivityInfo API
 #'
 #' @description
 #' Configures the current session to use a user's email address and
 #' password for authentication to \href{www.activityinfo.org}{ActivityInfo.org}
+#' 
+#' This function is deprecated. Switch to the more secure activityInfoToken() with a personal access token.
 #'
 #' @param userEmail The email address used to log in with to ActivityInfo.org
 #' @param password The user's ActivityInfo password
@@ -126,11 +144,13 @@ activityInfoToken <- function(token) {
 #' }
 #' @export
 activityInfoLogin <- function(userEmail, password) {
-
+  
+  deprecationOfBasicAuthWarning()
+  
   if (missing(userEmail) || missing(password)) {
     attempts <- 0
     repeat {
-      userEmail <- readline("Enter the email address you use to login to ActivityInfo.org: ")
+      userEmail <- readline2("Enter the email address you use to login to ActivityInfo.org: ")
       if(grepl(userEmail, pattern='.+@.+')) {
         break;
       }
@@ -141,18 +161,18 @@ activityInfoLogin <- function(userEmail, password) {
         attempts <- attempts + 1
       }
     }
-    password <- readline("Enter your password: ")
+    password <- readline2("Enter your password: ")
   }
-
+  
   credentials <- paste(userEmail, password, sep = ":")
   activityInfoAuthentication(credentials)
-
+  
   if(interactive()) {
     cat("Do you want to save your password for future R sessions?\n")
     cat("WARNING: If you choose yes, your password will be stored plain text in your home\n")
     cat("directory. Don't choose this option on an insecure or public machine! (Y/n)\n")
 
-    save <- readline("Save password? ")
+    save <- readline2("Save password? ")
     if(substr(tolower(save), 1, 1) == "y") {
       cat(credentials, file=credentialsFile)
     }

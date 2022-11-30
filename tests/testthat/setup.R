@@ -41,7 +41,7 @@ activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testU
 
 # get a personal API token
 tokenRequest <- activityInfoToken(
-  postResource("accounts/tokens/generate", body = list(label = "read write testing token", scope = "READ_WRITE"), task = "Creating test user token")$token
+  token = postResource("accounts/tokens/generate", body = list(label = "read write testing token", scope = "READ_WRITE"), task = "Creating test user token")$token
 )
 
 # Add a new database for this user

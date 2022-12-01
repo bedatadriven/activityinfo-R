@@ -154,7 +154,7 @@ deprecationOfBasicAuthWarning <- function() {
 #' }
 #' @export
 activityInfoLogin <- function(userEmail, password) {
-  
+  .Deprecated("activityInfoToken")
   deprecationOfBasicAuthWarning()
   
   if (missing(userEmail) || missing(password)) {

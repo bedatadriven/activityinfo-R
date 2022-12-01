@@ -103,14 +103,9 @@ getDatabaseUser <- function(databaseId, userId) {
 #'
 #' @export
 getDatabaseUser2 <- function(databaseId, userId) {
-  url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "grants",  sep="/")
-
-  #Compare with this in a test to see if return values differ
-  result <- getResource(url, task = sprintf("Request for database/user %s/%s",databaseId, userId))
-  result
+  url <- paste("databases", databaseId, "users", userId, "grants",  sep="/")
+  getResource(url, task = sprintf("Request for database/user %s/%s",databaseId, userId))
 }
-
-
 
 #' addDatabaseUser
 #'

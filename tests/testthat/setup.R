@@ -4,6 +4,7 @@ withr::local_options(list(
   warnPartialMatchAttr = TRUE
 ))
 
+
 # Isolate every test completely by creating a completely new user.
 # We will use the testing API to do this, which is only enabled in pre-production.
 
@@ -37,12 +38,17 @@ tryCatch(
 
 # www.activityinfo.org
 activityInfoRootUrl(preprodRootUrl)
-activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
 
-# get a personal API token
-tokenRequest <- activityInfoToken(
-  token = postResource("accounts/tokens/generate", body = list(label = "read write testing token", scope = "READ_WRITE"), task = "Creating test user token")$token
-)
+setAuthentication <- function() {
+  activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
+  
+  # get a personal API token
+  activityInfoToken(
+    token = postResource("accounts/tokens/generate", body = list(label = sprintf("read write testing token %s", cuid()), scope = "READ_WRITE"), task = "Creating test user token")$token
+  )
+}
+
+tokenRequest <- setAuthentication()
 
 # Add a new database for this user
 setupBlankDatabase <- function(label) {

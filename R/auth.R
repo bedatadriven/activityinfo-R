@@ -2,7 +2,8 @@
 # set standard connection to stdin() for user interaction
 .onLoad <- function(libname, pkgname){
   message("Setting standard input...")
-  options(activityinfo.interactive = stdin())
+  options(activityinfo.interactive.con = stdin())
+  options(activityinfo.interactive = NULL)
 }
 
 credentialsFile <- "~/.activityinfo.credentials"
@@ -88,7 +89,16 @@ credentialType <- function(credentials) {
 
 readline2 <- function(prompt) {
   cat(prompt)
-  readLines(con = getOption("activityinfo.interactive"), n = 1)
+  readLines(con = getOption("activityinfo.interactive.con"), n = 1)
+}
+
+interactive2 <- function() {
+  activityInfoInteractive <- getOption("activityinfo.interactive")
+  if (is.null(activityInfoInteractive)) {
+    interactive()
+  } else {
+    activityInfoInteractive==TRUE
+  }
 }
 
 #' Store personal token to authorize requests for the
@@ -105,13 +115,13 @@ readline2 <- function(prompt) {
 #' @export
 activityInfoToken <- function(token) {
   
-  if (interactive() && missing(token)) {
+  if (interactive2() && missing(token)) {
     token <- readline2("Enter your token: ")
   }
   
   activityInfoAuthentication(token)
   
-  if(interactive()) {
+  if(interactive2()) {
     cat("Do you want to save your token for future R sessions?\n")
     cat("WARNING: If you choose yes, your token will be stored plain text in your home\n")
     cat("directory. Don't choose this option on an insecure or public machine! (Y/n)\n")
@@ -167,7 +177,7 @@ activityInfoLogin <- function(userEmail, password) {
   credentials <- paste(userEmail, password, sep = ":")
   activityInfoAuthentication(credentials)
   
-  if(interactive()) {
+  if(interactive2()) {
     cat("Do you want to save your password for future R sessions?\n")
     cat("WARNING: If you choose yes, your password will be stored plain text in your home\n")
     cat("directory. Don't choose this option on an insecure or public machine! (Y/n)\n")

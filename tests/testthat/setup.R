@@ -4,6 +4,10 @@ withr::local_options(list(
   warnPartialMatchAttr = TRUE
 ))
 
+preprodEndpoint <- Sys.getenv("preprod_testing_endpoint")
+preprodRootUrl <- Sys.getenv("preprod_root_url")
+
+if (preprodEndpoint == "" || preprodRootUrl == "") stop("Pre-production environment variables are not available.")
 
 # Isolate every test completely by creating a completely new user.
 # We will use the testing API to do this, which is only enabled in pre-production.
@@ -16,11 +20,6 @@ testUser <- list(email = sprintf("test%s@example.com", cuid()),
                  trial = TRUE)
 
 cat(sprintf("Adding user %s...\n", testUser$email))
-
-preprodEndpoint <- Sys.getenv("preprod_testing_endpoint")
-preprodRootUrl <- Sys.getenv("preprod_root_url")
-
-if (preprodEndpoint == "" || preprodRootUrl == "") stop("Pre-production environment variables are not available.")
 
 tryCatch(
   {

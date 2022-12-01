@@ -130,7 +130,23 @@ getDatabaseUser2 <- function(databaseId, userId) {
 addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId,
                             roleParameters = list(),
                             roleResources = list(databaseId)) {
-
+  
+  urlPreflight <- paste("databases", databaseId, "users", "preflight", sep = "/")
+  
+  requestPreflight <- list(email = email,
+                  grants = list(),
+                  name = "",
+                  locale = "",
+                  role = list(
+                    id = "default",
+                    parameters = NULL,
+                    resources = list()
+                  ))
+  
+  responsePreflight <- postResource(urlPreflight, body = requestPreflight)
+  
+  url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", sep = "/")
+  
   request <- list(email = email,
                   name = name,
                   locale = locale,
@@ -138,20 +154,22 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
                     id = roleId,
                     parameters = roleParameters,
                     resources = roleResources
-                  ))
-
-  url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", sep = "/")
-
-  response <- POST(url, body = request, encode = "json", activityInfoAuthentication(), accept_json())
-
-  result <- list()
+                  ),
+                  grants = list()
+              )
+  # fix conversion to empty json array by changing it to an empty json object
+  jsonPayload <- stringr::str_replace(string = jsonlite::toJSON(request, auto_unbox = TRUE), pattern = '"parameters":\\[\\]', replacement = '"parameters":{}')
+  
+  response <- POST(url, body = jsonPayload, encode = "raw", activityInfoAuthentication(), accept_json(), httr::content_type_json())
+  
   if(response$status_code == 200) {
     return(list(added = TRUE,
                 user = fromJSON(content(response, as = "text", encoding = "UTF-8"))))
 
   } else if(response$status_code == 400) {
     return(list(added = FALSE,
-                error = fromJSON(content(response, as = "text", encoding = "UTF-8"))))
+                error = fromJSON(content(response, as = "text", encoding = "UTF-8")),
+                ))
   } else {
     stop(sprintf("Request for %s failed with status code %d %s: %s",
                  url, response$status_code, http_status(response$status_code)$message,

@@ -92,7 +92,7 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
   
   importId <- stageImport(paste(lines, collapse = "\n"))
   
-  activityinfo:::executeJob("importRecords", descriptor = 
+  executeJob("importRecords", descriptor = 
                               list(formId = formId,
                                    importId = importId))
   
@@ -249,7 +249,7 @@ stageImport <- function(text) {
   
   url <- paste(activityInfoRootUrl(), "resources", "imports", "stage", sep = "/")
   
-  result <- POST(url, activityinfo:::activityInfoAuthentication(), accept_json())
+  result <- POST(url, activityInfoAuthentication(), accept_json())
   
   if (result$status_code != 200) {
     stop(sprintf("Request for %s failed with status code %d %s: %s",
@@ -264,7 +264,7 @@ stageImport <- function(text) {
     uploadUrl <- paste0(activityInfoRootUrl(), uploadUrl)
   }
   
-  putResult <- PUT(uploadUrl, body = text, encode = "raw", activityinfo:::activityInfoAuthentication())
+  putResult <- PUT(uploadUrl, body = text, encode = "raw", activityInfoAuthentication())
   if(putResult$status_code != 200) {
     stop("Failed to stage import file at ", uploadUrl, ": status = ", putResult$status_code)
   }

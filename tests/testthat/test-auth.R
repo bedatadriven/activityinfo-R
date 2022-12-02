@@ -45,26 +45,32 @@ testthat::test_that("activityInfoLogin() works interactively", {
 
         # test fully interactive
         testthat::expect_warning({
-          activityInfoLogin()
-        }, regexp = "deprec")
-        testBasicCredentials(x)
+          testthat::expect_warning({
+            activityInfoLogin()
+          }, regexp = "deprec")
+          testBasicCredentials(x)
+        })
 
         # test with arguments
         testthat::expect_warning({
-          activityInfoLogin(userEmail = testCases$responses[[x]][1], password = testCases$responses[[x]][2])
-        }, regexp = "deprec")
-        testBasicCredentials(x)
+          testthat::expect_warning({
+            activityInfoLogin(userEmail = testCases$responses[[x]][1], password = testCases$responses[[x]][2])
+          }, regexp = "deprec")
+          testBasicCredentials(x)
+        })
 
       })
     })
   })
 
   withr::with_options(list(activityinfo.interactive = FALSE),{
-    testthat::expect_false(activityinfo:::interactive2())
+    testthat::expect_warning({
+      testthat::expect_false(activityinfo:::interactive2())
       testthat::expect_warning({
         activityInfoLogin(userEmail = testCases$responses[[1]][1], password = testCases$responses[[1]][2])
       }, regexp = "deprec")
       testBasicCredentials(1)
+    })
   })
 
 })

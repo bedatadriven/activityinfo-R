@@ -1,66 +1,133 @@
 testthat::test_that("getDatabases() works", {
-
+  testthat::expect_no_error({
+    databasesObject <- getDatabases()
+    testthat::expect_true(all(unlist(
+      lapply(databasesObject, function(x) {
+        (x$databaseId == database$databaseId||x$databaseId == database2$databaseId)&&
+          (all(names(x) %in% c("databaseId", "label", "description", "ownerId", "billingAccountId", "suspended", "publishedTemplate")))
+      })
+    )))
+  })
+  expectActivityInfoSnapshot(databasesObject)
 })
 
-testthat::test_that("getDatabaseSchema() works", {
-  
+testthat::test_that("getDatabaseSchema() and getDatabaseTree() return same value and getDatabaseSchema() provides deprecation warning", {
+  testthat::expect_warning(
+    testthat::expect_identical(getDatabaseSchema(databaseId = database$databaseId), getDatabaseTree(databaseId = database$databaseId)),
+    regexp = "Deprec"
+  )
 })
 
 
 testthat::test_that("getDatabaseTree() works", {
-  
-})
-
-testthat::test_that("getDatabaseUsers() works", {
-  
-})
-
-testthat::test_that("getDatabaseUsers() works", {
-  
-})
-
-testthat::test_that("getDatabaseUser() works", {
-  
-})
-
-# strangely different pattern here -- returns on failure instead of signalling an error -- no other functions do this and I think it will produce some bad practice - we should deprecate this
-testthat::test_that("addDatabaseUser() works", {
-  
-})
-
-# this one should return like all other functions
-testthat::test_that("getDatabaseUser2() returns same as old getDatabaseUser()", {
-  # need new parameters
-  # newDatabaseUser <- addDatabaseUser(databaseId = database$databaseId, email = "test@example.com", name = "Test database user", locale = "en", roleId = "readonly")
-  # responseOld <- getDatabaseUser(databaseId = database$databaseId)
-  # response <- getDatabaseUser2(databaseId = database$databaseId)
-  # 
-  # testthat::expect_identical(responseOld, response)
+  tree <- getDatabaseTree(databaseId = database$databaseId)
+  testthat::expect_s3_class(tree, "databaseTree")
+  testthat::expect_named(tree, c("databaseId", "userId", "version", "label", "description", "ownerRef", "billingAccountId", "language", "originalLanguage", "continuousTranslation", "translationFromDbMemory", "thirdPartyTranslation", "languages", "role", "suspended", "storage", "publishedTemplate", "resources", "grants", "locks", "roles", "securityCategories"))
+  testthat::expect_identical(tree$databaseId, database$databaseId)
+  expectActivityInfoSnapshot(tree)
 })
 
 
-testthat::test_that("deleteDatabaseUser() works", {
+addTestUsers <- function(database, tree, nUsers = 1) {
+  lapply(1:nUsers, function(x) {
+    
+    newUserEmail <- sprintf("test%s@example.com", cuid())
+    newDatabaseUser <- addDatabaseUser(databaseId = database$databaseId, email = newUserEmail, name = "Test database user", locale = "en", roleId = tree$roles[[2]]$id, roleResources = list(database$databaseId))
+    
+    testthat::expect_true(newDatabaseUser$added)
+    
+    testthat::expect_identical(newDatabaseUser$user$email, newUserEmail)
+    testthat::expect_identical(newDatabaseUser$user$role$id, tree$roles[[2]]$id)
+    testthat::expect_identical(newDatabaseUser$user$role$resources[[1]], database$databaseId)
+    
+    newDatabaseUser
+  })
+}
+
+deleteTestUsers <- function(database, returnedUsers) {
+  lapply(returnedUsers, function(newDatabaseUser) {
+    if (newDatabaseUser$added) {
+      testthat::expect_no_error({
+        deleteDatabaseUser(databaseId = database$databaseId, userId = newDatabaseUser$user$userId)
+      })
+      testthat::expect_null(getDatabaseUser(databaseId = database$databaseId, userId = newDatabaseUser$user$userId))
+    } else {
+      message(newDatabaseUser$error$request)
+    }
+  })
+}
+
+testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseUsers() and getDatabaseUser() and getDatabaseUser2() work", {
+  databases <- getDatabases()
+  database <- databases[[1]]
+  tree <- getDatabaseTree(databaseId = database$databaseId)
+
+  returnedUsers <- addTestUsers(database, tree, nUsers = 2)
   
+  expectActivityInfoSnapshot(returnedUsers)
+  
+  testGetUsers <- function(database, tree, nUsers = 1) {
+    testthat::expect_no_error({
+      users <- getDatabaseUsers(databaseId = database$databaseId)
+    })
+    
+    testthat::expect_gte(length(users), expected = nUsers)
+    
+    if (length(users)==0) stop("No users available to test.")
+    
+    lapply(1:nUsers, function(x) {
+      testthat::expect_no_error({
+        user <- getDatabaseUser(databaseId = database$databaseId, userId = users[[x]]$userId)
+      })
+      
+      testthat::expect_identical(user$userId, users[[x]]$userId)
+      testthat::expect_identical(user$databaseId, database$databaseId)
+      testthat::expect_identical(user$name, users[[x]]$name)
+      testthat::expect_identical(user$email, users[[x]]$email)
+      
+      # test new variant returns correctly
+      user2 <- getDatabaseUser2(databaseId = database$databaseId, userId = users[[x]]$userId)
+      testthat::expect_identical(user, user2)
+      
+    })
+    
+    expectActivityInfoSnapshot(users)
+    
+    length(users)
+  }
+  
+  nDatabaseUsers <- testGetUsers(database, tree, nUsers = 2)
+  
+  deleteTestUsers(database, returnedUsers)
 })
 
 
 testthat::test_that("updateUserRole() works", {
-  
+  # databases <- getDatabases()
+  # database <- databases[[1]]
+  # tree <- getDatabaseTree(databaseId = database$databaseId)
+  # 
+  # returnedUsers <- addTestUsers(database, tree, nUsers = 1)
+  # 
+  # lapply(returnedUsers, function(newDatabaseUser) {
+  #   
+  # })
+  # 
+  # deleteTestUsers(database, tree, returnedUsers)
 })
 
+
+
+
 testthat::test_that("roleAssignment() works", {
-  
 })
 
 testthat::test_that("permissions() helper works", {
-  
 })
 
 testthat::test_that("updateGrant() works", {
-  
 })
 
 testthat::test_that("updateRole() works", {
-  
 })
 

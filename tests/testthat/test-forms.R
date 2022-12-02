@@ -10,11 +10,14 @@ testthat::test_that("getFormSchema() returns an error if the 'formId' is invalid
 testthat::test_that("getFormSchema() output Schema is valid", {
   output = suppressWarnings(suppressMessages(getFormSchema(formId = personFormId)))
   testthat::expect_true( inherits(output, "formSchema") & all(names(output) %in% c("id", "schemaVersion", "databaseId", "label", "elements")) & length(output$elements) > 0 )
+  #expectActivityInfoSnapshot(output)
 })
 
 testthat::test_that("getFormSchema() and as.data.frame.formSchema() return a Schema data.frame with the expected columns", {
   
   output = suppressWarnings(suppressMessages(getFormSchema(formId = personFormId)))
+  #expectActivityInfoSnapshot(output)
+  
   output = as.data.frame(output)
   
   testthat::expect_true( inherits(output, "data.frame") & nrow(output) == 2 & ncol(output) == 17 )
@@ -36,6 +39,7 @@ testthat::test_that("getFormSchema() and as.data.frame.formSchema() return a Sch
     "dataEntryVisible",
     "tableVisible") %in% names(output)))
   
+  
 })
 
 testthat::test_that("getFormSchema() returns a Schema data.frame for a subform", {
@@ -55,11 +59,17 @@ testthat::test_that("getFormTree() returns a formTree for parent and child forms
   testthat::expect_identical(childForm$forms, parentForm$forms)
   testthat::expect_identical(childForm$root, childrenSubformId)
   testthat::expect_identical(parentForm$root, personFormId)
+  
+  #expectActivityInfoSnapshot(parentForm)
+  #expectActivityInfoSnapshot(childForm)
+  
 })
 
 # updateFormSchemaResult should have names forms and database - why does it not return the updated schema?
 testthat::test_that("updateFormSchema() api call returns object with database and forms", {
   testthat::expect_true(all(c("database", "forms") %in% names(updateFormSchemaResult)))
+  
+  #expectActivityInfoSnapshot(updateFormSchemaResult)
 })
 
 testthat::test_that("relocateForm() works", {

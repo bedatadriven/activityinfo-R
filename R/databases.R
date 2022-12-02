@@ -163,7 +163,7 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
 
   } else if(response$status_code == 400) {
     return(list(added = FALSE,
-                error = fromJSON(content(response, as = "text", encoding = "UTF-8")),
+                error = fromJSON(content(response, as = "text", encoding = "UTF-8"))
                 ))
   } else {
     stop(sprintf("Request for %s failed with status code %d %s: %s",

@@ -4,6 +4,66 @@ withr::local_options(list(
   warnPartialMatchAttr = TRUE
 ))
 
+# creating a cuid that artificially enforces a sort order on IDs for snapshotting of API objects
+cuid <- local({
+  i <- 10000L
+  
+  function() {
+    i <<- i + 1L
+    sprintf("c%d%s",i, activityinfo:::cuid())
+  }
+})
+
+wipeActivityInfoObject <- function(tree) {
+  savedAttributes <- attributes(tree)
+  recursiveWipe <- function(x, path = "") {
+    if(is.list(x)){
+      xNames <- names(x)
+      n <- (grepl(pattern = "[Ii]d$", names(x))&
+              !grepl(pattern = "roles", names(x)))|
+        grepl(pattern = "email", names(x))
+      x[n] <- "<id value>"
+      
+      n <- grepl(pattern = "Time", names(x), ignore.case = TRUE)|grepl(pattern = "Date", names(x), ignore.case = TRUE)
+      x[n] <- "<date or time value>"
+
+      n <- grepl(pattern = "resources", names(x))&lengths(x)==1
+      x[n] <- list("Empty resources until we can ensure a sort order in the API.")
+
+      n <- grepl(pattern = "resources", names(x))&lengths(x)>1
+
+      # replace a list or vector of resource ids
+      x[n] <- lapply(x[n], function(y) {
+          if(is.recursive(y)) {
+            #y
+            list("Empty resources until we can ensure a sort order in the API.")
+          } else if (is.list(y)) {
+            #yReturn <- list(rep("<resource id>", length(y)))
+            #names(yReturn) <- names(y)
+            list("Empty resources until we can ensure a sort order in the API.")
+          } else {
+            #rep("<resource id>", length(y))
+            list("Empty resources until we can ensure a sort order in the API.")
+          }
+      })
+      
+      # names(lapply(x, recursiveWipeId)) <- xNames
+      lapply(x, function(y) {
+        recursiveWipe(y, path = paste(c(path,path),collapse = "."))
+        })
+    }else{
+      x
+    }
+  }
+  wipedTree <- recursiveWipe(tree)
+  attributes(wipedTree) <- savedAttributes
+  wipedTree
+}
+
+expectActivityInfoSnapshot <- function(x) {
+  expect_snapshot_value(wipeActivityInfoObject(x), style = "deparse")
+}
+
 preprodEndpoint <- Sys.getenv("preprod_testing_endpoint")
 preprodRootUrl <- Sys.getenv("preprod_root_url")
 

@@ -7,6 +7,9 @@ associated with a 'classic' activity}
 \usage{
 monthly.reports.form.id(activityId)
 }
+\arguments{
+\item{activityId}{The activity ID}
+}
 \description{
 Returns the id of the form containing the monthly reports
 associated with a 'classic' activity

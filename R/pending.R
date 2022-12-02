@@ -6,6 +6,8 @@
 #' file to the database owner, who can use this send the changes to the server
 #' under their own account.
 #' 
+#' @param file.name The file name/path containing the pending changes
+#' 
 #' @export
 submitPending <- function(file.name) {
   pending <- fromJSON(file = file.name)

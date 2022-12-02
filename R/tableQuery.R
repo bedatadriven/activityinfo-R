@@ -1,11 +1,12 @@
 
 #' Queries a form as a flat, two-dimensional table
 #'
-#' @param the form to query. This can be an object of type "tree", "class", or the id of the
+#' @param form form to query. This can be an object of type "tree", "class", or the id of the
 #' form as a character.
 #' @param columns select columns, see Details
 #' @param truncate.strings TRUE if longer strings should be truncated to 128 characters
 #' @param filter an ActivityInfo formula string that limits the records returned
+#' @param ... If columns parameter is empty, the additional arguments are used as columns.
 #' @details To select columns, you can use
 #' \itemize{
 #'   \item \code{_id} to get the record identifier,

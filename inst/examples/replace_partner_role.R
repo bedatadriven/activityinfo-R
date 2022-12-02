@@ -29,7 +29,7 @@ for(role in db$roles) {
       }
     }
     
-    activityinfo:::updateRole(db$databaseId, role)
+    updateRole(db$databaseId, role)
 
   }
 }

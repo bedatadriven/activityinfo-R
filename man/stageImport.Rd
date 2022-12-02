@@ -6,6 +6,9 @@
 \usage{
 stageImport(text)
 }
+\arguments{
+\item{text}{The text of the file to import.}
+}
 \description{
 Stages data to import to ActivityInfo
 }

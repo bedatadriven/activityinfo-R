@@ -48,15 +48,13 @@ permissions(
 
 \item{manage_roles}{Add, modify and delete roles}
 
+\item{manage_reference_data}{Manage reference data}
+
 \item{audit}{Access the Audit logs for a database (or a subset)}
 
 \item{share_reports}{Allow the user to share reports with other roles in the database.}
 
 \item{publish_reports}{Allows the user to publish reports.}
-
-\item{resourceId}{The id of the form, subform, or folder.}
-
-\item{bulk_delete}{Bulk record delete within this form}
 }
 \description{
 Helper method to create a list of permissions for a role or grant.

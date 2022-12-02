@@ -7,7 +7,7 @@ AUDIT_LOG_EVENT_TYPES <- c("RECORD", "FORM", "FOLDER", "DATABASE", "LOCK", "USER
 #' @param before a \emph{Date} or \emph{POSIX} to filter result before a given
 #' time; defaults to the time of the query.
 #' @param after an optional \emph{Date} or \emph{POSIX} 
-#' @param resoureId a resource (i.e. form or folder) identifier to filter on.
+#' @param resourceId a resource (i.e. form or folder) identifier to filter on.
 #' @param typeFilter a character string with the event type to filter on; default is none.
 #' @param limit the maximum number of events to return. Default is 1,000 events.
 #'
@@ -72,7 +72,7 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
   
   while(TRUE) {
   
-    result <- postResource(path = path, body = request, task = "query audit log")
+    result <- postResource(path = path, body = request, task = "Query audit log")
     
     page <- do.call(rbind, lapply(result$events, function(event) {
       event <- lapply(event, na_for_null)
@@ -112,6 +112,7 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
   }
   
   # Apply filters client side
+  time <- NULL # ensure package checks do not complain about non-existing global variable
   events <- subset(events, time > afterCt)
   attr(events, "endTime") <- afterCt
   

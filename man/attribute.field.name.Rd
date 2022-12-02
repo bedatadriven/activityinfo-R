@@ -6,6 +6,9 @@
 \usage{
 attribute.field.name(attributeGroupId)
 }
+\arguments{
+\item{attributeGroupId}{The legacy ID}
+}
 \description{
 Returns the name of the field containing the value of a 'classic' attribute group
 }

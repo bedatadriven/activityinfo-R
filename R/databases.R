@@ -1,6 +1,3 @@
-
-
-
 #' getDatabases()
 #'
 #' Retrieves a list of databases the authenticated user owns, or has been shared with
@@ -13,15 +10,13 @@ getDatabases <- function() {
 
 #' getDatabaseSchema
 #'
-#' Retrieves the schema (partners, activities, indicators and attributes) from
-#' for the given database.
+#' This function is deprecated in favor of getDatabaseTree(). Please use getDatabaseTree().
 #'
 #' @param databaseId database identifier
 #' @examples \dontrun{
 #' getDatabaseSchema("ck2k93muu2")
 #' }
 #' @export
-#' @noRd
 getDatabaseSchema <- function(databaseId) {
   .Deprecated("getDatabaseTree")
   getDatabaseTree(databaseId)
@@ -65,7 +60,7 @@ print.databaseTree <- function(x, ...) {
 #' getDatabaseUsers
 #'
 #' Retrieves the list of users with access to the database.
-#'
+#' @param databaseId The database ID
 #' @export
 getDatabaseUsers <- function(databaseId) {
   users <- getResource(
@@ -77,8 +72,9 @@ getDatabaseUsers <- function(databaseId) {
 
 #' getDatabaseUser
 #'
-#' Retrieves a user's role and permissions
-#'
+#' Retrieves a user's role and permissions. Returns a NULL value if there is no user with the corresponding IDs.
+#' @param databaseId The database ID
+#' @param userId The user ID
 #' @export
 getDatabaseUser <- function(databaseId, userId) {
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "grants",  sep="/")
@@ -99,8 +95,9 @@ getDatabaseUser <- function(databaseId, userId) {
 # Compare with these in a test to see if return values differ
 #' getDatabaseUser2
 #'
-#' Retrieves a user's role and permissions
-#'
+#' Retrieves a user's role and permissions. This will throw an error if no user is found instead of returning a NULL value.
+#' @param databaseId The database ID
+#' @param userId The user ID
 #' @export
 getDatabaseUser2 <- function(databaseId, userId) {
   url <- paste("databases", databaseId, "users", userId, "grants",  sep="/")
@@ -120,7 +117,8 @@ getDatabaseUser2 <- function(databaseId, userId) {
 #' @param roleResources a list of folders in which this role should be assigned (or the databaseId if they should have this role in the whole database)
 #'
 #'
-#'
+#' @importFrom jsonlite toJSON
+#' @importFrom stringr str_replace
 #' @export
 addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId,
                             roleParameters = list(),
@@ -205,7 +203,12 @@ deleteDatabaseUser <- function(databaseId, userId) {
 #' @examples \dontrun{
 #' 
 #' databaseId <- "caxadcasdf"
-#' updateUserRole(databaseId, userId = 165, roleAssignment(roleId = "admin", roleResources = databaseId))
+#' updateUserRole(databaseId, 
+#'  userId = 165, 
+#'  roleAssignment(
+#'    roleId = "admin", 
+#'    roleResources = databaseId
+#'    ))
 #' } 
 #'
 #' @importFrom httr POST
@@ -270,12 +273,10 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
 #' The view, add_record, edit_record, and delete_record permissions may instead
 #' be a formula that conditions the permission on the values of the record.
 #' 
-#' @param resourceId The id of the form, subform, or folder.
 #' @param view View the resource, whether a form, folder, or database.
 #' @param add_record Add a record within a form contained by this folder or form
 #' @param edit_record Edit a record's values within a form contained by this folder or form.
 #' @param delete_record Delete a record within this form.
-#' @param bulk_delete  Bulk record delete within this form
 #' @param export_records Export Records from a form, folder or database.
 #' @param manage_users Grant permissions to a user to this database, folder, or form.
 #' @param lock_records Add, modify, or remove locks on records.
@@ -287,6 +288,7 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
 #' @param share_reports Allow the user to share reports with other roles in the database.
 #' @param publish_reports Allows the user to publish reports.
 #' @param manage_roles Add, modify and delete roles
+#' @param manage_reference_data Manage reference data
 #' @export
 #' 
 permissions <- function(

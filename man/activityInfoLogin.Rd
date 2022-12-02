@@ -2,7 +2,7 @@
 % Please edit documentation in R/auth.R
 \name{activityInfoLogin}
 \alias{activityInfoLogin}
-\title{Authenticate and store user credentials to authorize requests for the
+\title{Use Basic Authentication (deprecated) to authenticate and store user credentials to authorize requests for the
 ActivityInfo API}
 \usage{
 activityInfoLogin(userEmail, password)
@@ -15,6 +15,8 @@ activityInfoLogin(userEmail, password)
 \description{
 Configures the current session to use a user's email address and
 password for authentication to \href{www.activityinfo.org}{ActivityInfo.org}
+
+This function is deprecated. Switch to the more secure activityInfoToken() with a personal access token.
 }
 \examples{
 \dontrun{

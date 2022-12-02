@@ -6,6 +6,9 @@
 \usage{
 activityInfoRootUrl(new.url)
 }
+\arguments{
+\item{new.url}{The new URL to set as the ActivityInfo root URL}
+}
 \description{
 This call gets or sets the root url used for a session, \emph{valid only
 during the session}.

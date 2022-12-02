@@ -20,7 +20,12 @@ Updates a user's role in the database
 \dontrun{
 
 databaseId <- "caxadcasdf"
-updateUserRole(databaseId, userId = 165, roleAssignment(roleId = "admin", roleResources = databaseId))
+updateUserRole(databaseId, 
+ userId = 165, 
+ roleAssignment(
+   roleId = "admin", 
+   roleResources = databaseId
+   ))
 } 
 
 }

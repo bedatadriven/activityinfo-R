@@ -1,7 +1,6 @@
 
 # set standard connection to stdin() for user interaction
 .onLoad <- function(libname, pkgname){
-  message("Setting standard input...")
   options(activityinfo.interactive.con = stdin())
   options(activityinfo.interactive = NULL)
 }
@@ -15,7 +14,9 @@ credentials <- environment()
 #' @description
 #' This call gets or sets the root url used for a session, \emph{valid only
 #' during the session}.
-#'
+#' 
+#' @param new.url The new URL to set as the ActivityInfo root URL
+#' 
 #' @export
 activityInfoRootUrl <- local({
 
@@ -36,7 +37,7 @@ activityInfoRootUrl <- local({
 #' Constructs a httr::authentication object from saved credentials
 #' from the user's home directory at ~/.activityinfo.credentials
 #'
-#' @importFrom httr authenticate
+#' @importFrom httr authenticate add_headers
 #' @noRd
 activityInfoAuthentication <- local({
 
@@ -68,7 +69,7 @@ activityInfoAuthentication <- local({
           userPass <- unlist(strsplit(credentials, ":"))
           authenticate(userPass[1], userPass[2], type = "basic")
         } else if(type == "bearer") {
-          add_headers(Authorization = paste("Bearer", credentials, sep = " "))
+          httr::add_headers(Authorization = paste("Bearer", credentials, sep = " "))
         }
         
       }

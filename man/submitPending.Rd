@@ -6,6 +6,9 @@
 \usage{
 submitPending(file.name)
 }
+\arguments{
+\item{file.name}{The file name/path containing the pending changes}
+}
 \description{
 If a device is no longer able to connect to the internet, you can export
 the changes queued for synchronization and manually transfer the pending.json

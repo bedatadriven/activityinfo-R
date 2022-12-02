@@ -21,6 +21,11 @@ message_for_status <- function(x, task = NULL) {
 #'
 #' Extends the httr conditions to be able to create specific condition messages for the API.
 #'
+#' @param result The result of the API call
+#' @param type forced type for the condition
+#' @param task The task of the request
+#' @param call The call stack
+#'
 #' @importFrom httr http_condition http_error
 #' @importFrom rjson fromJSON
 activityInfoAPICondition <- function(result, type = NULL, task = NULL, call = sys.call(which = -4)) {
@@ -59,7 +64,7 @@ activityInfoAPIConditionMessage <- function(result, type = "message", task = NUL
 checkForError <- function(result, task = NULL, requireStatus = NULL) {
   if(!is.null(requireStatus)) {
     if (!is.numeric(requireStatus)) stop("Required status codes must be provided in a numeric vector.")
-    na.fail(requireStatus)
+    stats::na.fail(requireStatus)
     status = status_code(result)
     if (any(requireStatus == status)) {
       return(activityInfoAPICondition(result, task = task))

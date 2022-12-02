@@ -64,8 +64,8 @@ expectActivityInfoSnapshot <- function(x) {
   expect_snapshot_value(wipeActivityInfoObject(x), style = "deparse")
 }
 
-preprodEndpoint <- Sys.getenv("preprod_testing_endpoint")
-preprodRootUrl <- Sys.getenv("preprod_root_url")
+preprodEndpoint <- Sys.getenv("PREPROD_TESTING_ENDPOINT")
+preprodRootUrl <- Sys.getenv("PREPROD_ROOT_URL")
 
 if (preprodEndpoint == "" || preprodRootUrl == "") stop("Pre-production environment variables are not available.")
 

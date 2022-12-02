@@ -9,18 +9,24 @@ legacy <- function(domain, id) {
 
 #' Returns the id of the form containing the sites
 #' associated with a 'classic' activity
+#' @param activityId The activity ID
 site.form.id <- function(activityId) legacy("a", activityId)
 
 #' Returns the id of the form containing the monthly reports
 #' associated with a 'classic' activity
+#' @param activityId The activity ID
 monthly.reports.form.id <- function(activityId) legacy("M", activityId)
 
+#' Returns the id of the form using the value of a 'classic' admin level form id
+#' @param adminLevelId The admin level ID
 admin.level.form.id <- function(adminLevelId) legacy("E", adminLevelId)
 
 #' Returns the name of the field containing the value of a 'classic' attribute group
+#' @param attributeGroupId The legacy ID
 attribute.field.name <- function(attributeGroupId) legacy("Q", attributeGroupId)
 
 #' Returns the name of the field containing the value of a 'classic' indicator
+#' @param indicatorId The legacy ID
 indicator.field.name <- function(indicatorId) legacy("i", indicatorId)
 
 
@@ -237,7 +243,7 @@ getFormTree <- function(formId) {
 #' source database, and permission to add new forms in the target database.
 #' 
 #' @param formId the id of the form to move
-#' @param databaseId the id of the database to which the form should be moved.
+#' @param newDatabaseId the id of the database to which the form should be moved.
 #' @export
 relocateForm <- function(formId, newDatabaseId) {
   

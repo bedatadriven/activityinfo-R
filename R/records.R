@@ -129,7 +129,7 @@ getRecord <- function(formId, recordId) {
 #' @param blobId the attachment blob id
 #' @export
 #' 
-getAttachment <- function(formId, recordId, fieldId, blobId, extension) {
+getAttachment <- function(formId, recordId, fieldId, blobId) {
   url <- modify_url(activityInfoRootUrl(), path = sprintf("resources/form/%s/record/%s/field/%s/blob/%s/signature.png", 
                                                           formId, 
                                                           recordId,

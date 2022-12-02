@@ -7,11 +7,11 @@
 getQuantityTable(databaseId = NA, folderId, includeBlanks = FALSE)
 }
 \arguments{
+\item{databaseId}{the CUID of the database (e.g., "ck2yrizmo2" or "d00000006583")}
+
+\item{folderId}{(optional) the id of the folder or form to include. If omitted, the whole database will be included in the export.}
+
 \item{includeBlanks}{if TRUE, the export will include a row for quantity fields with blank values. Default is FALSE.}
-
-\item{database.id}{the CUID of the database (e.g., "ck2yrizmo2" or "d00000006583")}
-
-\item{folder.id}{(optional) the id of the folder or form to include. If omitted, the whole database will be included in the export.}
 }
 \value{
 a single data.frame with quantity values in rows, and dimensions in columns.

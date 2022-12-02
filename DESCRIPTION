@@ -7,15 +7,17 @@ Author: Alex Bertram <alex@bedatadriven.com>
 Maintainer: Alex Bertram <alex@bedatadriven.com>
 Description: An interface to ActivityInfo.org, which is an information management (IM) system.
 License: GPL-3
-Imports: stats, utils, httr, rjson
+Imports: stats, utils, httr, rjson, jsonlite, stringr
 Encoding: UTF-8
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.2.9000
 Suggests:
     ggplot2,
     quanteda,
     scales,
     testthat (>= 3.0.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    withr,
+    assertthat
 VignetteBuilder: knitr
 Config/testthat/edition: 3

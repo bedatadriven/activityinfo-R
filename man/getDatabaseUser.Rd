@@ -6,6 +6,11 @@
 \usage{
 getDatabaseUser(databaseId, userId)
 }
+\arguments{
+\item{databaseId}{The database ID}
+
+\item{userId}{The user ID}
+}
 \description{
-Retrieves a user's role and permissions
+Retrieves a user's role and permissions. Returns a NULL value if there is no user with the corresponding IDs.
 }

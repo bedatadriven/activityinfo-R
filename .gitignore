@@ -6,3 +6,4 @@
 .Rbuildignore
 .Renviron
 inst/doc
+docs/

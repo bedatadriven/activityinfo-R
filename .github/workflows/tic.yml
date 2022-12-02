@@ -20,11 +20,7 @@ name: tic
 
 env: 
   PREPROD_TESTING_ENDPOINT: ${{ secrets.PREPROD_TESTING_ENDPOINT }}
-<<<<<<< HEAD
   PREPROD_ROOT_URL: ${{ secrets.PREPROD_ROOT_URL }}
-=======
-  PREPROD_ROOT_URL: $${{ secrets.PREPROD_ROOT_URL }}
->>>>>>> bdbbf195a1795cba42d7b216950591ced17e1b1c
 
 jobs:
   all:
@@ -91,11 +87,7 @@ jobs:
       - name: "[Stage] Script"
         env:
           PREPROD_TESTING_ENDPOINT: ${{ secrets.PREPROD_TESTING_ENDPOINT }}
-<<<<<<< HEAD
           PREPROD_ROOT_URL: ${{ secrets.PREPROD_ROOT_URL }}
-=======
-          PREPROD_ROOT_URL: $${{ secrets.PREPROD_ROOT_URL }}
->>>>>>> bdbbf195a1795cba42d7b216950591ced17e1b1c
         run: Rscript -e 'tic::script()'
 
       - name: "[Stage] After Success"

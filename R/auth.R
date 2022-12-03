@@ -15,15 +15,20 @@ credentials <- environment()
 #' This call gets or sets the root url used for a session, \emph{valid only
 #' during the session}.
 #' 
-#' @param new.url The new URL to set as the ActivityInfo root URL
+#' @param newURL The new URL to set as the ActivityInfo root URL
+#' @param new.url Deprecated. The new URL to set as the ActivityInfo root URL
+#' 
 #' 
 #' @export
 activityInfoRootUrl <- local({
 
   url <- "https://www.activityinfo.org"
-
-  function(new.url) {
-    if(!missing(new.url)) {
+  function(newUrl, new.url) {
+    if (!missing(newUrl)) {
+      warning("The parameter new.url in activityInfoRootUrl is deprecated. Please switch to from new.url to newUrl.", call. =  FALSE, noBreaks. = TRUE)
+      url <<- newUrl
+      invisible()
+    } else if(!missing(new.url)) {
       url <<- new.url
       invisible()
     } else {

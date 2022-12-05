@@ -4,6 +4,7 @@
 ^tic\.R$
 ^.git$
 ^.github$
+^.lintr$
 ^\.ccache$
 ^doc$
 ^Meta$

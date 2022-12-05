@@ -15,7 +15,7 @@ credentials <- environment()
 #' This call gets or sets the root url used for a session, \emph{valid only
 #' during the session}.
 #' 
-#' @param newURL The new URL to set as the ActivityInfo root URL
+#' @param newUrl The new URL to set as the ActivityInfo root URL
 #' @param new.url Deprecated. The new URL to set as the ActivityInfo root URL
 #' 
 #' 

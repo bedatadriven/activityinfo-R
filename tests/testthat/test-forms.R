@@ -56,7 +56,7 @@ testthat::test_that("getFormTree() returns a formTree for parent and child forms
   testthat::expect_s3_class(parentForm, "formTree")
   testthat::expect_s3_class(childForm, "formTree")
   
-  testthat::expect_identical(childForm$forms, parentForm$forms)
+  testthat::expect_identical(sort(childForm$forms), sort(parentForm$forms))
   testthat::expect_identical(childForm$root, childrenSubformId)
   testthat::expect_identical(parentForm$root, personFormId)
   

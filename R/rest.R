@@ -2,7 +2,11 @@
 
 #' Local version of httr::message_for_status
 #'
-#' Equivalent to httr::message_for_status except that we add a newline to the message.
+#' This function is deprecated and will be removed soon. It does not try to 
+#' add a newline anymore since this was causing problems in Rmd outputs.
+#' 
+#' Old description: Equivalent to httr::message_for_status except that we add a 
+#' newline to the message.
 #'
 #' @param x a response object
 #' @param task text for message
@@ -13,7 +17,8 @@
 message_for_status <- function(x, task = NULL) {
   response <- httr::message_for_status(x, task = task)
   # add a newline which 'httr::message_for_status' annoyingly doesn't include:
-  cat("\n")
+  #cat("\n")
+  
   invisible(response)
 }
 

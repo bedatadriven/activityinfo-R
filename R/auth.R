@@ -16,7 +16,7 @@ credentials <- environment()
 #' during the session}.
 #' 
 #' @param newUrl The new URL to set as the ActivityInfo root URL
-#' @param new.url Deprecated. The new URL to set as the ActivityInfo root URL
+#' @param new.url Deprecated: please use newUrl. The new URL to set as the ActivityInfo root URL
 #' 
 #' 
 #' @export
@@ -25,10 +25,10 @@ activityInfoRootUrl <- local({
   url <- "https://www.activityinfo.org"
   function(newUrl, new.url) {
     if (!missing(newUrl)) {
-      warning("The parameter new.url in activityInfoRootUrl is deprecated. Please switch to from new.url to newUrl.", call. =  FALSE, noBreaks. = TRUE)
       url <<- newUrl
       invisible()
     } else if(!missing(new.url)) {
+      warning("The parameter new.url in activityInfoRootUrl is deprecated. Please switch to from new.url to newUrl.", call. =  FALSE, noBreaks. = TRUE)
       url <<- new.url
       invisible()
     } else {
@@ -55,10 +55,10 @@ activityInfoAuthentication <- local({
     } else {
       # Look for credentials first in ~/.activityinfo.credentials
       if(is.null(credentials) && file.exists(credentialsFile)) {
-        cat(sprintf("Reading credentials from %s...\n", path.expand(path = credentialsFile)))
+        message(sprintf("Reading credentials from %s...\n", path.expand(path = credentialsFile)))
         line <- readLines("~/.activityinfo.credentials", warn = FALSE)[1]
         if(nchar(line) <= 2) {
-          cat(sprintf("...file exists, but is empty or improperly formatted.\n", path.expand(path = credentialsFile)))
+          warning(sprintf("...file exists, but is empty or improperly formatted.\n", path.expand(path = credentialsFile)))
         } else {
           if(credentialType(line) == "basic") deprecationOfBasicAuthWarning()
           credentials <<- line

@@ -1,0 +1,23 @@
+---
+title: "TestMessages"
+author: "Nicolas Dickinson"
+date: "2022-12-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+## This is a test of issue #29
+
+```{r code, results='asis'}
+library(activityinfo)
+options(activityinfo.interactive = FALSE)
+source(file = here::here("tests/testthat/setup.R"))
+
+dt <- as.data.frame(getFormSchema(formId = personFormId))
+
+```

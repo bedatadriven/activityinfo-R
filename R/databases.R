@@ -323,7 +323,7 @@ permissions <- function(
   lapply(operations[granted], function(operation) {
     p <- list(operation = toupper(operation))
     v <- permissions[[operation]]
-    cat(deparse(v), "\n")    
+    message(deparse(v), "\n")    
     if(is.character(v)) {
       p$filter <- as.character(v)
     }

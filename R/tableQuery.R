@@ -4,7 +4,8 @@
 #' @param form form to query. This can be an object of type "tree", "class", or the id of the
 #' form as a character.
 #' @param columns select columns, see Details
-#' @param truncate.strings TRUE if longer strings should be truncated to 128 characters
+#' @param truncateStrings TRUE if longer strings should be truncated to 128 characters
+#' @param truncate.strings Deprecated: please use truncateStrings. TRUE if longer strings should be truncated to 128 characters
 #' @param filter an ActivityInfo formula string that limits the records returned
 #' @param ... If columns parameter is empty, the additional arguments are used as columns.
 #' @details To select columns, you can use
@@ -36,8 +37,17 @@
 #' ))
 #' }
 #' @export
-queryTable <- function(form, columns,  ..., truncate.strings = TRUE, filter) {
-
+queryTable <- function(form, columns,  ..., truncateStrings = TRUE, truncate.strings = truncateStrings, filter) {
+  
+  if (!missing(truncate.strings)) {
+    warning("The parameter truncate.strings in queryTable is deprecated. Please switch to from truncate.strings to truncateStrings.", call. =  FALSE, noBreaks. = TRUE)
+    if (missing(truncateStrings)) {
+      truncateStrings = truncate.strings
+    } else if (truncateStrings != truncate.strings) {
+      stop("Inconsistent parameters given to queryTable: truncate.strings and truncateStrings should be the same but are not. truncate.strings is now deprecated and should no longer be used.")
+    }
+  }
+  
   formId <- if (inherits(form, "formtree")) {
     # query the root form of a tree contained in a formtree result
     attr(form, "tree")$root
@@ -56,7 +66,7 @@ queryTable <- function(form, columns,  ..., truncate.strings = TRUE, filter) {
   }
 
   if(length(columns) == 0) {
-    return(parseColumnSet(getResource(sprintf("form/%s/query/columns", formId))))
+    return(parseColumnSet(getResource(sprintf("form/%s/query/columns", formId), task = sprintf("Getting form %s data.", formId))))
   }
 
   stopifnot(length(columns) > 0)
@@ -71,7 +81,7 @@ queryTable <- function(form, columns,  ..., truncate.strings = TRUE, filter) {
       list(id = names(columns)[i],
            expression = as.character(columns[[i]]))
     }),
-    truncateStrings = truncate.strings
+    truncateStrings = truncateStrings
   )
   
   if(!missing(filter)) {
@@ -79,7 +89,7 @@ queryTable <- function(form, columns,  ..., truncate.strings = TRUE, filter) {
     query$filter <- filter
   }
 
-  columnSet <- postResource("query/columns", query)
+  columnSet <- postResource("query/columns", query, task = sprintf("Getting form %s data for specified columns.", formId))
   df <- parseColumnSet(columnSet)
   
   # make sure we have a column for each name

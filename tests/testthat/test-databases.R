@@ -3,7 +3,7 @@ testthat::test_that("getDatabases() works", {
     databasesObject <- getDatabases()
     testthat::expect_true(all(unlist(
       lapply(databasesObject, function(x) {
-        (x$databaseId == database$databaseId||x$databaseId == database2$databaseId)&&
+        (x$databaseId == database$databaseId || x$databaseId == database2$databaseId) &&
           (all(names(x) %in% c("databaseId", "label", "description", "ownerId", "billingAccountId", "suspended", "publishedTemplate")))
       })
     )))
@@ -30,16 +30,15 @@ testthat::test_that("getDatabaseTree() works", {
 
 addTestUsers <- function(database, tree, nUsers = 1) {
   lapply(1:nUsers, function(x) {
-    
     newUserEmail <- sprintf("test%s@example.com", cuid())
     newDatabaseUser <- addDatabaseUser(databaseId = database$databaseId, email = newUserEmail, name = "Test database user", locale = "en", roleId = tree$roles[[2]]$id, roleResources = list(database$databaseId))
-    
+
     testthat::expect_true(newDatabaseUser$added)
-    
+
     testthat::expect_identical(newDatabaseUser$user$email, newUserEmail)
     testthat::expect_identical(newDatabaseUser$user$role$id, tree$roles[[2]]$id)
     testthat::expect_identical(newDatabaseUser$user$role$resources[[1]], database$databaseId)
-    
+
     newDatabaseUser
   })
 }
@@ -63,41 +62,40 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
   tree <- getDatabaseTree(databaseId = database$databaseId)
 
   returnedUsers <- addTestUsers(database, tree, nUsers = 2)
-  
+
   expectActivityInfoSnapshot(returnedUsers)
-  
+
   testGetUsers <- function(database, tree, nUsers = 1) {
     testthat::expect_no_error({
       users <- getDatabaseUsers(databaseId = database$databaseId)
     })
-    
+
     testthat::expect_gte(length(users), expected = nUsers)
-    
-    if (length(users)==0) stop("No users available to test.")
-    
+
+    if (length(users) == 0) stop("No users available to test.")
+
     lapply(1:nUsers, function(x) {
       testthat::expect_no_error({
         user <- getDatabaseUser(databaseId = database$databaseId, userId = users[[x]]$userId)
       })
-      
+
       testthat::expect_identical(user$userId, users[[x]]$userId)
       testthat::expect_identical(user$databaseId, database$databaseId)
       testthat::expect_identical(user$name, users[[x]]$name)
       testthat::expect_identical(user$email, users[[x]]$email)
-      
+
       # test new variant returns correctly
       user2 <- getDatabaseUser2(databaseId = database$databaseId, userId = users[[x]]$userId)
       testthat::expect_identical(user, user2)
-      
     })
-    
+
     expectActivityInfoSnapshot(users)
-    
+
     length(users)
   }
-  
+
   nDatabaseUsers <- testGetUsers(database, tree, nUsers = 2)
-  
+
   deleteTestUsers(database, returnedUsers)
 })
 
@@ -106,13 +104,13 @@ testthat::test_that("updateUserRole() works", {
   # databases <- getDatabases()
   # database <- databases[[1]]
   # tree <- getDatabaseTree(databaseId = database$databaseId)
-  # 
+  #
   # returnedUsers <- addTestUsers(database, tree, nUsers = 1)
-  # 
+  #
   # lapply(returnedUsers, function(newDatabaseUser) {
-  #   
+  #
   # })
-  # 
+  #
   # deleteTestUsers(database, tree, returnedUsers)
 })
 
@@ -130,4 +128,3 @@ testthat::test_that("updateGrant() works", {
 
 testthat::test_that("updateRole() works", {
 })
-

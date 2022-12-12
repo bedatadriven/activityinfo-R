@@ -13,8 +13,8 @@ params:
 # This example uses a public form on ActivityInfo.org so you should be able
 # to 'knit' this file directly to see the output.
 
-# You can render this document from another R script (or a Shiny app for example)
-# by running:
+# You can render this document from another R script (or a Shiny app for 
+# example) by running:
 # rmarkdown::render(input = "consent.Rmd", parameters = list(record_id = "cxyz"))
 
 

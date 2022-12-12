@@ -4,5 +4,7 @@ testthat::test_that("base36() produces expected output", {
 })
 
 testthat::test_that("Seed-dependent part of cuid() generated as expected", {
-  testthat::expect_equal(withr::with_seed(100, {substr(activityinfo::cuid(),0,7)}), "caxhv7m")
+  testthat::expect_equal(withr::with_seed(100, {
+    substr(activityinfo::cuid(), 0, 7)
+  }), "caxhv7m")
 })

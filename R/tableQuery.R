@@ -26,28 +26,27 @@
 #' Unix time, Wikipedia \url{https://en.wikipedia.org/wiki/Unix_time}
 #' @examples \dontrun{
 #' queryTable("a2145507918", columns = c(
-#' id="_id",
-#' name="Name",
-#' campId="camp",
-#' camp="Camp.Name",
-#' governorate="Camp.Governorate.Name",
-#' teachers="teachers",
-#' students="students",
-#' type="[Type of School]"
+#'   id = "_id",
+#'   name = "Name",
+#'   campId = "camp",
+#'   camp = "Camp.Name",
+#'   governorate = "Camp.Governorate.Name",
+#'   teachers = "teachers",
+#'   students = "students",
+#'   type = "[Type of School]"
 #' ))
 #' }
 #' @export
-queryTable <- function(form, columns,  ..., truncateStrings = TRUE, truncate.strings = truncateStrings, filter) {
-  
+queryTable <- function(form, columns, ..., truncateStrings = TRUE, truncate.strings = truncateStrings, filter) {
   if (!missing(truncate.strings)) {
-    warning("The parameter truncate.strings in queryTable is deprecated. Please switch to from truncate.strings to truncateStrings.", call. =  FALSE, noBreaks. = TRUE)
+    warning("The parameter truncate.strings in queryTable is deprecated. Please switch to from truncate.strings to truncateStrings.", call. = FALSE, noBreaks. = TRUE)
     if (missing(truncateStrings)) {
-      truncateStrings = truncate.strings
+      truncateStrings <- truncate.strings
     } else if (truncateStrings != truncate.strings) {
       stop("Inconsistent parameters given to queryTable: truncate.strings and truncateStrings should be the same but are not. truncate.strings is now deprecated and should no longer be used.")
     }
   }
-  
+
   formId <- if (inherits(form, "formtree")) {
     # query the root form of a tree contained in a formtree result
     attr(form, "tree")$root
@@ -61,16 +60,16 @@ queryTable <- function(form, columns,  ..., truncateStrings = TRUE, truncate.str
     form$root
   }
 
-  if(missing(columns)) {
+  if (missing(columns)) {
     columns <- list(...)
   }
 
-  if(length(columns) == 0) {
+  if (length(columns) == 0) {
     return(parseColumnSet(getResource(sprintf("form/%s/query/columns", formId), task = sprintf("Getting form %s data.", formId))))
   }
 
   stopifnot(length(columns) > 0)
-  
+
   names(columns) <- make.names(names(columns), unique = TRUE)
 
   query <- list(
@@ -78,23 +77,25 @@ queryTable <- function(form, columns,  ..., truncateStrings = TRUE, truncate.str
       list(rootFormId = formId)
     ),
     columns = lapply(seq_along(columns), function(i) {
-      list(id = names(columns)[i],
-           expression = as.character(columns[[i]]))
+      list(
+        id = names(columns)[i],
+        expression = as.character(columns[[i]])
+      )
     }),
     truncateStrings = truncateStrings
   )
-  
-  if(!missing(filter)) {
+
+  if (!missing(filter)) {
     stopifnot(is.character(filter))
     query$filter <- filter
   }
 
   columnSet <- postResource("query/columns", query, task = sprintf("Getting form %s data for specified columns.", formId))
   df <- parseColumnSet(columnSet)
-  
+
   # make sure we have a column for each name
-  for(cn in names(columns)) {
-    if(!(cn %in% names(df))) {
+  for (cn in names(columns)) {
+    if (!(cn %in% names(df))) {
       df[[cn]] <- rep(NA, times = nrow(df))
     }
   }
@@ -106,48 +107,55 @@ queryTable <- function(form, columns,  ..., truncateStrings = TRUE, truncate.str
   return(df)
 }
 
-na.if.null <- function(x) if(is.null(x)) NA else x
+na.if.null <- function(x) if (is.null(x)) NA else x
 
 parseColumnSet <- function(columnSet) {
   as.data.frame(
     lapply(columnSet$columns, function(column) {
       cv <- switch(column$storage,
-             constant = {
-               if (is.null(column$value)) {
-                 rep(switch(column$type,
-                            STRING = NA_character_,
-                            NUMBER = NA_real_),
-                     columnSet$rows)
-               } else if(column$type == "BOOLEAN" && !identical(column$value, TRUE) && !identical(column$value, FALSE)) {
-                  rep(NA, columnSet$rows)   
-               } else {
-                 rep(column$value, columnSet$rows)
-               }
-             },
-             array = {
-               if (is.list(column$values)) {
-                 # one or more of the values is 'NULL'
-                 mode <- switch(column$type,
-                                STRING = "character",
-                                NUMBER = "double",
-                                BOOLEAN = "logical")
-                 as.vector(sapply(column$values, na.if.null), mode = mode)
-               } else {
-                 column$values
-               }
-             },
-             empty = {
-               rep(switch(column$type,
-                          STRING = NA_character_,
-                          NUMBER = NA_real_,
-                          NA),
-                   columnSet$rows)
-             },
-             stop("unknown storage mode '", column$storage, "'")
+        constant = {
+          if (is.null(column$value)) {
+            rep(
+              switch(column$type,
+                STRING = NA_character_,
+                NUMBER = NA_real_
+              ),
+              columnSet$rows
+            )
+          } else if (column$type == "BOOLEAN" && !identical(column$value, TRUE) && !identical(column$value, FALSE)) {
+            rep(NA, columnSet$rows)
+          } else {
+            rep(column$value, columnSet$rows)
+          }
+        },
+        array = {
+          if (is.list(column$values)) {
+            # one or more of the values is 'NULL'
+            mode <- switch(column$type,
+              STRING = "character",
+              NUMBER = "double",
+              BOOLEAN = "logical"
+            )
+            as.vector(sapply(column$values, na.if.null), mode = mode)
+          } else {
+            column$values
+          }
+        },
+        empty = {
+          rep(
+            switch(column$type,
+              STRING = NA_character_,
+              NUMBER = NA_real_,
+              NA
+            ),
+            columnSet$rows
+          )
+        },
+        stop("unknown storage mode '", column$storage, "'")
       )
-      if(length(cv) != columnSet$rows) {
+      if (length(cv) != columnSet$rows) {
         # TODO: replace usage of 'str' with something that prints a summary of the column to the console
-        #str(column)
+        # str(column)
         stop("Internal error: Column length is inconsistent. Contact support@activityinfo.org")
       }
       cv

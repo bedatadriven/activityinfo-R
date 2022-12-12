@@ -24,7 +24,8 @@
 #' }
 #' @references
 #' Unix time, Wikipedia \url{https://en.wikipedia.org/wiki/Unix_time}
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' queryTable("a2145507918", columns = c(
 #'   id = "_id",
 #'   name = "Name",

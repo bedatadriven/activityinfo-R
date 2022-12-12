@@ -62,7 +62,8 @@ changeName <- function(x, from, to) {
 #'
 #'
 #' @param formId the form identifier
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' formSchema <- getFormSchema("ck2lt9wp3g")
 #' formSchemaTable <- as.data.frame(getFormSchema("ck2lt9wp3g"))
 #' }

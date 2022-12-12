@@ -16,7 +16,8 @@ credentials <- environment()
 #' during the session}.
 #'
 #' @param newUrl The new URL to set as the ActivityInfo root URL
-#' @param new.url Deprecated: please use newUrl. The new URL to set as the ActivityInfo root URL
+#' @param new.url Deprecated: please use newUrl. The new URL to set as the 
+#' ActivityInfo root URL
 #'
 #'
 #' @export
@@ -110,7 +111,8 @@ interactive2 <- function() {
 #'
 #' @param token The personal token used to authenticate with to ActivityInfo.org
 #'
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' activityInfoToken("<API TOKEN>")
 #' }
 #' @export
@@ -149,7 +151,8 @@ deprecationOfBasicAuthWarning <- function() {
 #' @param userEmail The email address used to log in with to ActivityInfo.org
 #' @param password The user's ActivityInfo password
 #'
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' activityInfoLogin("nouser@activityinfo.org", "pass")
 #' }
 #' @export

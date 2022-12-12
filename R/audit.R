@@ -33,7 +33,8 @@ AUDIT_LOG_EVENT_TYPES <- c("RECORD", "FORM", "FOLDER", "DATABASE", "LOCK", "USER
 #' \item \emph{USER_PERMISSION}: changes to user permissions
 #' \item \emph{ROLE}: changes to roles
 #' }
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' 
 #' # Query up to 10,000 records
 #' events <- queryAuditLog("cax132253", limit = 10000)

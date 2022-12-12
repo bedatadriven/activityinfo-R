@@ -14,7 +14,8 @@ getDatabases <- function() {
 #' This function is deprecated in favor of getDatabaseTree(). Please use getDatabaseTree().
 #'
 #' @param databaseId database identifier
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' getDatabaseSchema("ck2k93muu2")
 #' }
 #' @export
@@ -29,7 +30,8 @@ getDatabaseSchema <- function(databaseId) {
 #' user.
 #'
 #' @param databaseId database identifier
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' getDatabaseTree("ck2k93muu2")
 #' }
 #' @export
@@ -209,7 +211,8 @@ deleteDatabaseUser <- function(databaseId, userId) {
 #' @param databaseId the id of the database
 #' @param userId the (numeric) id of the user to update
 #' @param assignment the role assignment, \code{\link[activityinfo]{roleAssignment}}
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #'
 #' databaseId <- "caxadcasdf"
 #' updateUserRole(databaseId,
@@ -354,7 +357,8 @@ permissions <- function(view = TRUE,
 #' @param resourceId the id of the form or folder
 #' @param permissions the permissions to grant to the user for the given resource
 #' @export
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' updateGrant(
 #'   databaseId = "cxy123", user = 165,
 #'   permissions(
@@ -388,7 +392,8 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #'
 #'
 #' @export
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' updateRole("cxy123", list(
 #'   id = "rp",
 #'   label = "Reporting partner",

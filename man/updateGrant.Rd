@@ -20,10 +20,14 @@ Adds or updates a grant for a user to a specific resource.
 }
 \examples{
 \dontrun{
-updateGrant(databaseId = "cxy123", user = 165, 
-    permissions(add_record = TRUE,
-                edit_record = TRUE,
-                delete_record = TRUE))
+updateGrant(
+  databaseId = "cxy123", user = 165,
+  permissions(
+    add_record = TRUE,
+    edit_record = TRUE,
+    delete_record = TRUE
+  )
+)
 }
 
 }

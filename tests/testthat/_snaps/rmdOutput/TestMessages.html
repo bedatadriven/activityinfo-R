@@ -363,7 +363,7 @@ display: none;
   if (grepl(pattern = &quot;activityinfo-R$&quot;, rstudioapi::getActiveProject())) {
     devtools::load_all(&quot;.&quot;)
     withr::with_options(new = list(activityinfo.interactive = FALSE), {
-      source(file = here::here(&quot;tests/testthat/setup.R&quot;))
+      source(file = testthat::test_path(&quot;setup.R&quot;))
     })
   }
 }, silent = TRUE)

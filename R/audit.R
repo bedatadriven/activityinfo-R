@@ -33,7 +33,8 @@ AUDIT_LOG_EVENT_TYPES <- c("RECORD", "FORM", "FOLDER", "DATABASE", "LOCK", "USER
 #' \item \emph{USER_PERMISSION}: changes to user permissions
 #' \item \emph{ROLE}: changes to roles
 #' }
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' 
 #' # Query up to 10,000 records
 #' events <- queryAuditLog("cax132253", limit = 10000)
@@ -75,7 +76,7 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
     result <- postResource(path = path, body = request, task = "Query audit log")
     
     page <- do.call(rbind, lapply(result$events, function(event) {
-      event <- lapply(event, na_for_null)
+      event <- lapply(event, naForNull)
       event$time <- as.POSIXct.millis(event$time)
       if (is.list(event$user)) {
         event$user.id <- event$user$id
@@ -130,6 +131,6 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
 #'
 #' @return Logical NA if \code{x} is \code{NULL}, otherwise \code{x}.
 #' @noRd
-na_for_null <- function(x) {
+naForNull <- function(x) {
   if (is.null(x)) NA else x
 }

@@ -4,7 +4,14 @@
 \alias{queryTable}
 \title{Queries a form as a flat, two-dimensional table}
 \usage{
-queryTable(form, columns, ..., truncate.strings = TRUE, filter)
+queryTable(
+  form,
+  columns,
+  ...,
+  truncateStrings = TRUE,
+  truncate.strings = truncateStrings,
+  filter
+)
 }
 \arguments{
 \item{form}{form to query. This can be an object of type "tree", "class", or the id of the
@@ -14,7 +21,9 @@ form as a character.}
 
 \item{...}{If columns parameter is empty, the additional arguments are used as columns.}
 
-\item{truncate.strings}{TRUE if longer strings should be truncated to 128 characters}
+\item{truncateStrings}{TRUE if longer strings should be truncated to 128 characters}
+
+\item{truncate.strings}{Deprecated: please use truncateStrings. TRUE if longer strings should be truncated to 128 characters}
 
 \item{filter}{an ActivityInfo formula string that limits the records returned}
 }
@@ -40,14 +49,14 @@ column. For example:
 \examples{
 \dontrun{
 queryTable("a2145507918", columns = c(
-id="_id",
-name="Name",
-campId="camp",
-camp="Camp.Name",
-governorate="Camp.Governorate.Name",
-teachers="teachers",
-students="students",
-type="[Type of School]"
+  id = "_id",
+  name = "Name",
+  campId = "camp",
+  camp = "Camp.Name",
+  governorate = "Camp.Governorate.Name",
+  teachers = "teachers",
+  students = "students",
+  type = "[Type of School]"
 ))
 }
 }

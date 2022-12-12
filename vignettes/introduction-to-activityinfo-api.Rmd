@@ -8,7 +8,7 @@ output:
     toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Introduction to ActivityInfo API}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{knitr::knitr}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -48,17 +48,19 @@ library(activityinfo)
 
 ## 2. Authentication
 
-In order to access to the *ActivityInfo API*, an authentication process has first
-to be done.
+In order to access to the *ActivityInfo API*, an authentication process has 
+first to be done. One must setup a personal access token using the ActivityInfo
+dashboard. Logging in by email and password through the API is now deprecated
+and insecure.
 
 ```{r, eval=FALSE}
-activityInfoLogin(userEmail, password)
+activityInfoToken(token)
 ```
 
 After the authentication process has been successfully completed, a token file
 named *`r basename(activityinfo:::credentialsFile)`* will be written to your 
 home directory. Don't share or publish this token file and preserve securely
-as it contains your username and password.
+as it contains your personal access token.
 
 Before start working on the API calls, do not forget to restart your *R* session
 to have changes applied.

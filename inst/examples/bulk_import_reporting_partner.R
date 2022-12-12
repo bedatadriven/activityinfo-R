@@ -17,7 +17,7 @@ users <- read.csv("examples/users.csv")
 # Read the database tree
 databaseTree <- getDatabaseTree(databaseId)
 
-# Find the reporting partner role 
+# Find the reporting partner role
 roles <- sapply(databaseTree$roles, function(r) r$label)
 role <- databaseTree$roles[[which(roles == "Reporting partner")]]
 
@@ -25,7 +25,7 @@ role <- databaseTree$roles[[which(roles == "Reporting partner")]]
 partnerFormId <- role$parameters[[1]]$range
 
 # Know read in the least of partners so we can match it against the
-# names of partners in the CSV list. 
+# names of partners in the CSV list.
 partners <- queryTable(partnerFormId, partnerId = "_id", partner = "name")
 
 # Find the partner Id for each of the users
@@ -36,16 +36,16 @@ users <- merge(users, partners)
 # to all forms and folders
 resources <- list(databaseId)
 
-for(i in 1:nrow(users)) {
-  
+for (i in seq_len(nrow(users))) {
+
   partnerRef <- reference(partnerFormId, users[i, "partnerId"])
-  
-  addDatabaseUser(databaseId = databaseId, 
-                  email = users[i, "email"], 
+
+  addDatabaseUser(databaseId = databaseId,
+                  email = users[i, "email"],
                   name = users[i, "name"],
                   locale = "en",
                   roleId = role$id,
                   roleParameters = list(partner = partnerRef),
                   roleResources = resources)
-  
+
 }

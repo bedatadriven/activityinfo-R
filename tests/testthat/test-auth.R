@@ -10,9 +10,9 @@ testthat::test_that("activityInfoLogin() works interactively", {
 
   testCases <- list(
     responses = list(
-        c("example1@example.com", "password1", "n", "No"),
-        c("example2@example.com", "password2", "Y", "yes")
-      ),
+      c("example1@example.com", "password1", "n", "No"),
+      c("example2@example.com", "password2", "Y", "yes")
+    ),
     fileSaved = list(FALSE, TRUE),
     credentials = list(
       "example1@example.com:password1",
@@ -21,8 +21,8 @@ testthat::test_that("activityInfoLogin() works interactively", {
   )
 
   testBasicCredentials <- function(x) {
-    testthat::expect_identical(file.exists(activityinfo:::credentialsFile),testCases$fileSaved[[x]])
-    if(testCases$fileSaved[[x]]) {
+    testthat::expect_identical(file.exists(activityinfo:::credentialsFile), testCases$fileSaved[[x]])
+    if (testCases$fileSaved[[x]]) {
       line <- readLines(activityinfo:::credentialsFile, warn = FALSE)[1]
       testthat::expect_identical(line, testCases$credentials[[x]])
     }
@@ -37,42 +37,48 @@ testthat::test_that("activityInfoLogin() works interactively", {
   if (file.exists(activityinfo:::credentialsFile)) file.remove(activityinfo:::credentialsFile)
 
   withr::with_environment(interactiveEnv, {
-    withr::with_options(list(activityinfo.interactive.con = f, activityinfo.interactive = TRUE),{
+    withr::with_options(list(activityinfo.interactive.con = f, activityinfo.interactive = TRUE), {
       testthat::expect_true(activityinfo:::interactive2())
       responses <- paste(unlist(testCases$responses), collapse = "\n")
       write(responses, f)
-      lapply(1:2, function(x){
-
+      lapply(1:2, function(x) {
         # test fully interactive
         testthat::expect_warning({
-          testthat::expect_warning({
-            activityInfoLogin()
-          }, regexp = "deprec")
+          testthat::expect_warning(
+            {
+              activityInfoLogin()
+            },
+            regexp = "deprec"
+          )
           testBasicCredentials(x)
         })
 
         # test with arguments
         testthat::expect_warning({
-          testthat::expect_warning({
-            activityInfoLogin(userEmail = testCases$responses[[x]][1], password = testCases$responses[[x]][2])
-          }, regexp = "deprec")
+          testthat::expect_warning(
+            {
+              activityInfoLogin(userEmail = testCases$responses[[x]][1], password = testCases$responses[[x]][2])
+            },
+            regexp = "deprec"
+          )
           testBasicCredentials(x)
         })
-
       })
     })
   })
 
-  withr::with_options(list(activityinfo.interactive = FALSE),{
+  withr::with_options(list(activityinfo.interactive = FALSE), {
     testthat::expect_warning({
       testthat::expect_false(activityinfo:::interactive2())
-      testthat::expect_warning({
-        activityInfoLogin(userEmail = testCases$responses[[1]][1], password = testCases$responses[[1]][2])
-      }, regexp = "deprec")
+      testthat::expect_warning(
+        {
+          activityInfoLogin(userEmail = testCases$responses[[1]][1], password = testCases$responses[[1]][2])
+        },
+        regexp = "deprec"
+      )
       testBasicCredentials(1)
     })
   })
-
 })
 
 
@@ -94,8 +100,8 @@ testthat::test_that("activityInfoToken() works", {
   if (file.exists(activityinfo:::credentialsFile)) file.remove(activityinfo:::credentialsFile)
 
   testTokenCredentials <- function(x) {
-    testthat::expect_identical(file.exists(activityinfo:::credentialsFile),testCases$fileSaved[[x]])
-    if(testCases$fileSaved[[x]]) {
+    testthat::expect_identical(file.exists(activityinfo:::credentialsFile), testCases$fileSaved[[x]])
+    if (testCases$fileSaved[[x]]) {
       line <- readLines(activityinfo:::credentialsFile, warn = FALSE)[1]
       testthat::expect_identical(line, testCases$credentials[[x]])
     }
@@ -107,11 +113,10 @@ testthat::test_that("activityInfoToken() works", {
   }
 
   withr::with_environment(interactiveEnv, {
-    withr::with_options(list(activityinfo.interactive.con = f, activityinfo.interactive = TRUE),{
+    withr::with_options(list(activityinfo.interactive.con = f, activityinfo.interactive = TRUE), {
       responses <- paste(unlist(testCases$responses), collapse = "\n")
       write(responses, f)
-      lapply(1:2, function(x){
-
+      lapply(1:2, function(x) {
         # test fully interactive
         activityInfoToken()
         testTokenCredentials(x)
@@ -119,12 +124,11 @@ testthat::test_that("activityInfoToken() works", {
         # test with arguements
         activityInfoToken(token = testCases$responses[[x]][1])
         testTokenCredentials(x)
-
       })
     })
   })
 
-  withr::with_options(list(activityinfo.interactive = FALSE),{
+  withr::with_options(list(activityinfo.interactive = FALSE), {
     activityInfoToken(token = testCases$responses[[1]][1])
     testTokenCredentials(1)
   })

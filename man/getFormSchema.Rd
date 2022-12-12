@@ -13,7 +13,7 @@ getFormSchema(formId)
 A list with class \sQuote{formSchema}.
 }
 \description{
-The result has a class "formSchema" and can be transformed to 
+The result has a class "formSchema" and can be transformed to
 data.frame using `as.data.frame()`
 }
 \examples{

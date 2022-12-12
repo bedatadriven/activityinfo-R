@@ -4,10 +4,13 @@
 \alias{activityInfoRootUrl}
 \title{Get or set the root url for the ActivityInfo}
 \usage{
-activityInfoRootUrl(new.url)
+activityInfoRootUrl(newUrl, new.url)
 }
 \arguments{
-\item{new.url}{The new URL to set as the ActivityInfo root URL}
+\item{newUrl}{The new URL to set as the ActivityInfo root URL}
+
+\item{new.url}{Deprecated: please use newUrl. The new URL to set as the 
+ActivityInfo root URL}
 }
 \description{
 This call gets or sets the root url used for a session, \emph{valid only

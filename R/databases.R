@@ -1,6 +1,7 @@
 #' getDatabases()
 #'
-#' Retrieves a list of databases the authenticated user owns, or has been shared with
+#' Retrieves a list of databases the authenticated user owns, or has been shared
+#'  with
 #'
 #' @export
 getDatabases <- function() {
@@ -13,7 +14,8 @@ getDatabases <- function() {
 #' This function is deprecated in favor of getDatabaseTree(). Please use getDatabaseTree().
 #'
 #' @param databaseId database identifier
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' getDatabaseSchema("ck2k93muu2")
 #' }
 #' @export
@@ -25,15 +27,16 @@ getDatabaseSchema <- function(databaseId) {
 #' getDatabaseTree
 #'
 #' Retrieves the database's tree of resources that are visible to the authenticated
-#' user. 
+#' user.
 #'
 #' @param databaseId database identifier
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' getDatabaseTree("ck2k93muu2")
 #' }
 #' @export
 getDatabaseTree <- function(databaseId) {
-  tree <- getResource(paste("databases", databaseId, sep="/"))
+  tree <- getResource(paste("databases", databaseId, sep = "/"))
   class(tree$resources) <- "databaseResources"
   class(tree) <- "databaseTree"
   tree
@@ -64,9 +67,10 @@ print.databaseTree <- function(x, ...) {
 #' @export
 getDatabaseUsers <- function(databaseId) {
   users <- getResource(
-    paste("databases", databaseId, "users", sep="/"), 
-    task = sprintf("Getting list of database %s users", databaseId))
-  
+    paste("databases", databaseId, "users", sep = "/"),
+    task = sprintf("Getting list of database %s users", databaseId)
+  )
+
   users
 }
 
@@ -77,19 +81,20 @@ getDatabaseUsers <- function(databaseId) {
 #' @param userId The user ID
 #' @export
 getDatabaseUser <- function(databaseId, userId) {
-  url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "grants",  sep="/")
+  url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "grants", sep = "/")
   result <- GET(url, activityInfoAuthentication(), accept_json())
-  
-  if(result$status_code == 200) {
+
+  if (result$status_code == 200) {
     return(fromJSON(content(result, as = "text", encoding = "UTF-8")))
-  } else if(result$status_code == 404) {
+  } else if (result$status_code == 404) {
     return(NULL)
   } else {
-    stop(sprintf("Request for %s failed with status code %d %s: %s",
-                 url, result$status_code, http_status(result$status_code)$message,
-                 content(result, as = "text", encoding = "UTF-8")))
+    stop(sprintf(
+      "Request for %s failed with status code %d %s: %s",
+      url, result$status_code, http_status(result$status_code)$message,
+      content(result, as = "text", encoding = "UTF-8")
+    ))
   }
-  
 }
 
 # Compare with these in a test to see if return values differ
@@ -100,8 +105,8 @@ getDatabaseUser <- function(databaseId, userId) {
 #' @param userId The user ID
 #' @export
 getDatabaseUser2 <- function(databaseId, userId) {
-  url <- paste("databases", databaseId, "users", userId, "grants",  sep="/")
-  getResource(url, task = sprintf("Request for database/user %s/%s",databaseId, userId))
+  url <- paste("databases", databaseId, "users", userId, "grants", sep = "/")
+  getResource(url, task = sprintf("Request for database/user %s/%s", databaseId, userId))
 }
 
 #' addDatabaseUser
@@ -123,51 +128,56 @@ getDatabaseUser2 <- function(databaseId, userId) {
 addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId,
                             roleParameters = list(),
                             roleResources = list(databaseId)) {
-  
   urlPreflight <- paste("databases", databaseId, "users", "preflight", sep = "/")
-  
-  requestPreflight <- list(email = email,
-                  grants = list(),
-                  name = "",
-                  locale = "",
-                  role = list(
-                    id = "default",
-                    parameters = NULL,
-                    resources = list()
-                  ))
-  
+
+  requestPreflight <- list(
+    email = email,
+    grants = list(),
+    name = "",
+    locale = "",
+    role = list(
+      id = "default",
+      parameters = NULL,
+      resources = list()
+    )
+  )
+
   responsePreflight <- postResource(urlPreflight, body = requestPreflight)
-  
+
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", sep = "/")
-  
-  request <- list(email = email,
-                  name = name,
-                  locale = locale,
-                  role = list(
-                    id = roleId,
-                    parameters = roleParameters,
-                    resources = roleResources
-                  ),
-                  grants = list()
-              )
+
+  request <- list(
+    email = email,
+    name = name,
+    locale = locale,
+    role = list(
+      id = roleId,
+      parameters = roleParameters,
+      resources = roleResources
+    ),
+    grants = list()
+  )
   # fix conversion to empty json array by changing it to an empty json object
   jsonPayload <- stringr::str_replace(string = jsonlite::toJSON(request, auto_unbox = TRUE), pattern = '"parameters":\\[\\]', replacement = '"parameters":{}')
-  
+
   response <- POST(url, body = jsonPayload, encode = "raw", activityInfoAuthentication(), accept_json(), httr::content_type_json())
-  
-  if(response$status_code == 200) {
-    return(list(added = TRUE,
-                user = fromJSON(content(response, as = "text", encoding = "UTF-8"))))
 
-  } else if(response$status_code == 400) {
-    return(list(added = FALSE,
-                error = fromJSON(content(response, as = "text", encoding = "UTF-8"))
-                ))
+  if (response$status_code == 200) {
+    return(list(
+      added = TRUE,
+      user = fromJSON(content(response, as = "text", encoding = "UTF-8"))
+    ))
+  } else if (response$status_code == 400) {
+    return(list(
+      added = FALSE,
+      error = fromJSON(content(response, as = "text", encoding = "UTF-8"))
+    ))
   } else {
-    stop(sprintf("Request for %s failed with status code %d %s: %s",
-                 url, response$status_code, http_status(response$status_code)$message,
-                 content(response, as = "text", encoding = "UTF-8")))
-
+    stop(sprintf(
+      "Request for %s failed with status code %d %s: %s",
+      url, response$status_code, http_status(response$status_code)$message,
+      content(response, as = "text", encoding = "UTF-8")
+    ))
   }
 }
 
@@ -181,15 +191,16 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
 #' @importFrom httr DELETE
 #' @export
 deleteDatabaseUser <- function(databaseId, userId) {
-
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, sep = "/")
 
   response <- DELETE(url, activityInfoAuthentication())
 
-  if(response$status_code != 200) {
-    stop(sprintf("Request for %s failed with status code %d %s: %s",
-                 url, response$status_code, http_status(response$status_code)$message,
-                 content(response, as = "text", encoding = "UTF-8")))
+  if (response$status_code != 200) {
+    stop(sprintf(
+      "Request for %s failed with status code %d %s: %s",
+      url, response$status_code, http_status(response$status_code)$message,
+      content(response, as = "text", encoding = "UTF-8")
+    ))
   }
 }
 
@@ -200,29 +211,32 @@ deleteDatabaseUser <- function(databaseId, userId) {
 #' @param databaseId the id of the database
 #' @param userId the (numeric) id of the user to update
 #' @param assignment the role assignment, \code{\link[activityinfo]{roleAssignment}}
-#' @examples \dontrun{
-#' 
+#' @examples 
+#' \dontrun{
+#'
 #' databaseId <- "caxadcasdf"
-#' updateUserRole(databaseId, 
-#'  userId = 165, 
-#'  roleAssignment(
-#'    roleId = "admin", 
-#'    roleResources = databaseId
-#'    ))
-#' } 
+#' updateUserRole(databaseId,
+#'   userId = 165,
+#'   roleAssignment(
+#'     roleId = "admin",
+#'     roleResources = databaseId
+#'   )
+#' )
+#' }
 #'
 #' @importFrom httr POST
 #' @export
 updateUserRole <- function(databaseId, userId, assignment) {
-
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "role", sep = "/")
   request <- list(assignments = list(assignment))
 
   response <- POST(url, body = request, encode = "json", activityInfoAuthentication(), accept_json())
-  if(response$status_code != 200) {
-    stop(sprintf("Request for %s failed with status code %d %s: %s",
-                 url, response$status_code, http_status(response$status_code)$message,
-                 content(response, as = "text", encoding = "UTF-8")))
+  if (response$status_code != 200) {
+    stop(sprintf(
+      "Request for %s failed with status code %d %s: %s",
+      url, response$status_code, http_status(response$status_code)$message,
+      content(response, as = "text", encoding = "UTF-8")
+    ))
   }
   invisible(NULL)
 }
@@ -231,48 +245,51 @@ updateUserRole <- function(databaseId, userId, assignment) {
 #' roleAssignment
 #'
 #' Creates a role assignment object
-#' 
+#'
 #' @param roleId the id of the role to assign to the user
 #' @param roleParameters a named list of parameters, if the role has any parameters
-#' @param roleResources the list of resources (database, folder, form, or report) 
+#' @param roleResources the list of resources (database, folder, form, or report)
 #' to assign to this user. Using the databaseId assigns all resources to this user
 #' @examples {
-#' 
-#' # Role assignment for a reporting role with a partner parameter
-#' roleAssignment(roleId = "rp", 
-#'                roleParameters = list(partner = reference(formId="cxadsfs32", recordId="c3423423")), 
-#'                roleResources = "cxa99335")
-#'                
-#'                
-#' # Role assignment for an administrator role without any role parameters  
-#' roleAssignment(roleId = "admin",
-#'                roleResources = c("cxa99335", "c8234234"))
+#'   # Role assignment for a reporting role with a partner parameter
+#'   roleAssignment(
+#'     roleId = "rp",
+#'     roleParameters = list(partner = reference(formId = "cxadsfs32", recordId = "c3423423")),
+#'     roleResources = "cxa99335"
+#'   )
+#'
+#'
+#'   # Role assignment for an administrator role without any role parameters
+#'   roleAssignment(
+#'     roleId = "admin",
+#'     roleResources = c("cxa99335", "c8234234")
+#'   )
 #' }
 #' @export
 roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
   stopifnot(is.list(roleParameters))
-  if(any(is.na(names(roleParameters)))) {
+  if (any(is.na(names(roleParameters)))) {
     stop("roleParameters must be named.")
   }
-  
-  if(length(roleParameters) == 0) {
+
+  if (length(roleParameters) == 0) {
     roleParameters <- NULL
   }
-  
+
   list(id = roleId, parameters = roleParameters, resources = as.list(roleResources))
 }
 
 
-#' 
+#'
 #' permissions
-#' 
+#'
 #' Helper method to create a list of permissions for a role or grant.
-#' 
+#'
 #' Each argument may either be TRUE or FALSE.
-#' 
+#'
 #' The view, add_record, edit_record, and delete_record permissions may instead
 #' be a formula that conditions the permission on the values of the record.
-#' 
+#'
 #' @param view View the resource, whether a form, folder, or database.
 #' @param add_record Add a record within a form contained by this folder or form
 #' @param edit_record Edit a record's values within a form contained by this folder or form.
@@ -290,29 +307,27 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
 #' @param manage_roles Add, modify and delete roles
 #' @param manage_reference_data Manage reference data
 #' @export
-#' 
-permissions <- function(
-                  view = TRUE, 
-                  add_record = FALSE,
-                  edit_record = FALSE, 
-                  delete_record = FALSE,
-                  export_records = FALSE,
-                  lock_records = FALSE,
-                  add_resource = FALSE,
-                  edit_resource = FALSE,
-                  delete_resource = FALSE,
-                  manage_collection_links = FALSE,
-                  manage_users = FALSE,
-                  manage_roles = FALSE,
-                  manage_reference_data = FALSE,
-                  audit = FALSE,
-                  share_reports = FALSE,
-                  publish_reports = FALSE) {
-  
+#'
+permissions <- function(view = TRUE,
+                        add_record = FALSE,
+                        edit_record = FALSE,
+                        delete_record = FALSE,
+                        export_records = FALSE,
+                        lock_records = FALSE,
+                        add_resource = FALSE,
+                        edit_resource = FALSE,
+                        delete_resource = FALSE,
+                        manage_collection_links = FALSE,
+                        manage_users = FALSE,
+                        manage_roles = FALSE,
+                        manage_reference_data = FALSE,
+                        audit = FALSE,
+                        share_reports = FALSE,
+                        publish_reports = FALSE) {
   operations <- names(formals())
   permissions <- lapply(operations, function(operation) {
     v <- eval(as.name(operation))
-    if(length(v) != 1 || is.na(v) || !(is.logical(v) || is.character(v))) {
+    if (length(v) != 1 || is.na(v) || !(is.logical(v) || is.character(v))) {
       stop(sprintf("Invalid value for operation '%s': %s", operation, deparse(v)))
     }
     v
@@ -322,8 +337,8 @@ permissions <- function(
   lapply(operations[granted], function(operation) {
     p <- list(operation = toupper(operation))
     v <- permissions[[operation]]
-    cat(deparse(v), "\n")    
-    if(is.character(v)) {
+    message(deparse(v), "\n")
+    if (is.character(v)) {
       p$filter <- as.character(v)
     }
     p
@@ -339,20 +354,24 @@ permissions <- function(
 #'
 #' @param databaseId the id of the database
 #' @param userId the (numeric) id of the user to update
-#' @param resourceId the id of the form or folder 
+#' @param resourceId the id of the form or folder
 #' @param permissions the permissions to grant to the user for the given resource
 #' @export
-#' @examples \dontrun{
-#' updateGrant(databaseId = "cxy123", user = 165, 
-#'     permissions(add_record = TRUE,
-#'                 edit_record = TRUE,
-#'                 delete_record = TRUE))
+#' @examples 
+#' \dontrun{
+#' updateGrant(
+#'   databaseId = "cxy123", user = 165,
+#'   permissions(
+#'     add_record = TRUE,
+#'     edit_record = TRUE,
+#'     delete_record = TRUE
+#'   )
+#' )
 #' }
 #'
 #' @importFrom httr POST
 #' @export
 updateGrant <- function(databaseId, userId, resourceId, permissions) {
-  
   path <- paste("databases", databaseId, "users", userId, "grants", sep = "/")
   request <- list(grantUpdates = list(
     list(
@@ -360,9 +379,9 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
       operations = permissions
     )
   ))
-  
+
   postResource(path, body = request, task = "updateGrant")
-  
+
   invisible(NULL)
 }
 
@@ -373,34 +392,37 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #'
 #'
 #' @export
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' updateRole("cxy123", list(
-#'    id = "rp",
-#'    label = "Reporting partner",
-#'    permissions = permissions(
-#'       view = "ck5dxt1712 == @user.partner",
-#'       edit_record = "ck5dxt1712 == @user.partner",
-#'       export_records = TRUE),
-#'    parameters = list(
-#'      list(
-#'        parameterId = "partner",
-#'        label = "Partner",
-#'        range = "ck5dxt1712"
-#'      )
-#'    ),
-#'    filters = list(
-#'      list(id = "partner",
-#'        label = "partner is user's partner",
-#'        filter = "ck5dxt1712 == @user.partner")
-#'      )
-#'  ))
+#'   id = "rp",
+#'   label = "Reporting partner",
+#'   permissions = permissions(
+#'     view = "ck5dxt1712 == @user.partner",
+#'     edit_record = "ck5dxt1712 == @user.partner",
+#'     export_records = TRUE
+#'   ),
+#'   parameters = list(
+#'     list(
+#'       parameterId = "partner",
+#'       label = "Partner",
+#'       range = "ck5dxt1712"
+#'     )
+#'   ),
+#'   filters = list(
+#'     list(
+#'       id = "partner",
+#'       label = "partner is user's partner",
+#'       filter = "ck5dxt1712 == @user.partner"
+#'     )
+#'   )
+#' ))
 #' }
 #'
 updateRole <- function(databaseId, role) {
-
   path <- paste("databases", databaseId, sep = "/")
   request <- list(roleUpdates = list(role))
   postResource(path, request, task = "updateRole")
-  
+
   invisible()
 }

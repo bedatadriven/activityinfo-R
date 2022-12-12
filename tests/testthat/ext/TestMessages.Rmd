@@ -14,10 +14,17 @@ knitr::opts_chunk$set(echo = TRUE,
 ## This is a test of issue #29
 
 ```{r code, results='asis'}
-library(activityinfo)
-options(activityinfo.interactive = FALSE)
-source(file = here::here("tests/testthat/setup.R"))
+try({
+  if (grepl(pattern = "activityinfo-R$", rstudioapi::getActiveProject())) {
+    devtools::load_all(".")
+    withr::with_options(new = list(activityinfo.interactive = FALSE), {
+      source(file = here::here("tests/testthat/setup.R"))
+    })
+  }
+}, silent = TRUE)
 
 dt <- as.data.frame(getFormSchema(formId = personFormId))
+
+knitr::kable(dt[,c("fieldCode", "fieldType")])
 
 ```

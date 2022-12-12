@@ -36,16 +36,16 @@ users <- merge(users, partners)
 # to all forms and folders
 resources <- list(databaseId)
 
-for(i in 1:nrow(users)) {
-  
+for (i in seq_len(nrow(users))) {
+
   partnerRef <- reference(partnerFormId, users[i, "partnerId"])
-  
-  addDatabaseUser(databaseId = databaseId, 
-                  email = users[i, "email"], 
+
+  addDatabaseUser(databaseId = databaseId,
+                  email = users[i, "email"],
                   name = users[i, "name"],
                   locale = "en",
                   roleId = role$id,
                   roleParameters = list(partner = partnerRef),
                   roleResources = resources)
-  
+
 }

@@ -1,3 +1,11 @@
+## [4.30]
+- Adding testing suite (#21)
+- Enhancing messaging of all functions and the handling of errors and warnings (#30, #28)
+- Deprecation of the user/password authentication and addition of personal token based authentication (#22)
+- Fixing Rmarkdown chunks (#29)
+- Overall improvement in code quality and consistency
+
+
 ## [4.29]
 - Fix for roleAssignment() function
 

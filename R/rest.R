@@ -90,7 +90,7 @@ checkForError <- function(result, task = NULL, requireStatus = NULL) {
 #' @importFrom httr GET accept_json content http_status modify_url
 #' @importFrom rjson fromJSON
 #' @noRd
-getResource <- function(path, queryParams = list(), task = NULL, requireStatus = 200, silent = FALSE, ...) {
+getResource <- function(path, queryParams = list(), task = NULL, requireStatus = 200, ...) {
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
   url <- if (length(queryParams) == 0) {
     url
@@ -98,13 +98,13 @@ getResource <- function(path, queryParams = list(), task = NULL, requireStatus =
     modify_url(url, query = queryParams)
   }
 
-  if (!silent) message("Sending GET request to ", url)
+  if (getOption("activityinfo.verbose.requests")) message("Sending GET request to ", url)
 
   result <- GET(url, activityInfoAuthentication(), accept_json(), ...)
 
   condition <- checkForError(result, task = task, requireStatus = requireStatus)
 
-  if (!silent) message(condition)
+  if (getOption("activityinfo.verbose.tasks")) message(condition)
 
   json <- content(result, as = "text", encoding = "UTF-8")
 
@@ -119,17 +119,17 @@ getResource <- function(path, queryParams = list(), task = NULL, requireStatus =
 #' @importFrom httr POST accept_json content stop_for_status status_code modify_url
 #' @importFrom rjson fromJSON
 #' @noRd
-postResource <- function(path, body, task = NULL, requireStatus = NULL, silent = FALSE, encode = "json", ...) {
+postResource <- function(path, body, task = NULL, requireStatus = NULL, encode = "json", ...) {
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
 
-  if (!silent) message("Sending POST request to ", url)
+  if (getOption("activityinfo.verbose.requests")) message("Sending POST request to ", url)
 
   result <- POST(url, body = body, encode = encode, activityInfoAuthentication(), accept_json(), ...)
 
   condition <- checkForError(result, task, requireStatus)
 
-  if (!silent) message(condition)
-
+  if (getOption("activityinfo.verbose.tasks")) message(condition)
+  
   json <- content(result, as = "text", encoding = "UTF-8")
   if (!nzchar(json)) {
     return(invisible())
@@ -149,14 +149,14 @@ postResource <- function(path, body, task = NULL, requireStatus = NULL, silent =
 putResource <- function(path, body, task = NULL, requireStatus = NULL, silent = FALSE, encode = "json", ...) {
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
 
-  if (!silent) message("Sending PUT request to ", url)
+  if (getOption("activityinfo.verbose.requests")) message("Sending PUT request to ", url)
 
   result <- PUT(url, body = body, encode = encode, activityInfoAuthentication(), accept_json(), ...)
 
   condition <- checkForError(result, task, requireStatus)
 
   # also display (short) success message:
-  if (!silent) message(condition)
+  if (getOption("activityinfo.verbose.tasks")) message(condition)
 
   json <- content(result, as = "text", encoding = "UTF-8")
   if (nzchar(json)) {

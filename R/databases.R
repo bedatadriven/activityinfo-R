@@ -128,21 +128,22 @@ getDatabaseUser2 <- function(databaseId, userId) {
 addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId,
                             roleParameters = list(),
                             roleResources = list(databaseId)) {
-  urlPreflight <- paste("databases", databaseId, "users", "preflight", sep = "/")
+  
+  # urlPreflight <- paste("databases", databaseId, "users", "preflight", sep = "/")
+  # 
+  # requestPreflight <- list(
+  #   email = email,
+  #   grants = list(),
+  #   name = "",
+  #   locale = "",
+  #   role = list(
+  #     id = "default",
+  #     parameters = NULL,
+  #     resources = list()
+  #   )
+  # )
 
-  requestPreflight <- list(
-    email = email,
-    grants = list(),
-    name = "",
-    locale = "",
-    role = list(
-      id = "default",
-      parameters = NULL,
-      resources = list()
-    )
-  )
-
-  responsePreflight <- postResource(urlPreflight, body = requestPreflight)
+  #responsePreflight <- postResource(urlPreflight, body = requestPreflight)
 
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", sep = "/")
 

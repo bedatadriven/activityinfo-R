@@ -3,6 +3,8 @@
 .onLoad <- function(libname, pkgname) {
   options(activityinfo.interactive.con = stdin())
   options(activityinfo.interactive = NULL)
+  options(activityinfo.verbose.requests = FALSE)
+  options(activityinfo.verbose.tasks = TRUE)
 }
 
 credentialsFile <- "~/.activityinfo.credentials"
@@ -52,7 +54,7 @@ activityInfoAuthentication <- local({
     } else {
       # Look for credentials first in ~/.activityinfo.credentials
       if (is.null(credentials) && file.exists(credentialsFile)) {
-        message(sprintf("Reading credentials from %s...\n", path.expand(path = credentialsFile)))
+        # message(sprintf("Reading credentials from %s...\n", path.expand(path = credentialsFile)))
         line <- readLines("~/.activityinfo.credentials", warn = FALSE)[1]
         if (nchar(line) <= 2) {
           warning(sprintf("...file exists, but is empty or improperly formatted.\n", path.expand(path = credentialsFile)))

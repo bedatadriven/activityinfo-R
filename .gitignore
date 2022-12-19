@@ -5,7 +5,6 @@
 *.Rproj.out
 .Rbuildignore
 .Renviron
-inst/doc
 docs/
 /doc/
 /Meta/

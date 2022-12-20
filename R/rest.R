@@ -33,7 +33,7 @@ message_for_status <- function(x, task = NULL) {
 #'
 #' @importFrom httr http_condition http_error
 #' @importFrom rjson fromJSON
-activityInfoAPICondition <- function(result, type = NULL, task = NULL, call = sys.call(which = -4)) {
+activityInfoAPICondition <- function(result, type = NULL, task = NULL, call = minSysCall(which = -7)) {
   if ((http_error(result) && is.null(type)) || (!is.null(type) && type == "error")) {
     condition <- http_condition(result, type = "error", task = task, call = call)
     type <- "error"
@@ -51,6 +51,11 @@ activityInfoAPICondition <- function(result, type = NULL, task = NULL, call = sy
   class(condition) <- c("activityinfo_api", class(condition))
   condition
 }
+
+minSysCall <- function(which = 0) {
+  sys.call(max(c(-max(length(sys.calls())-1,0),which)))
+}
+
 
 #' @importFrom httr http_condition http_error status_code content
 activityInfoAPIConditionMessage <- function(result, type = "message", task = NULL, taskMessage = "%s returned") {

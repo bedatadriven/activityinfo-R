@@ -14,9 +14,9 @@ cuid <- local({
   }
 })
 
-wipeActivityInfoObject <- function(tree) {
+canonicalizeActivityInfoObject <- function(tree) {
   savedAttributes <- attributes(tree)
-  recursiveWipe <- function(x, path = "") {
+  recursiveCanonicalize <- function(x, path = "") {
     if (is.list(x)) {
       xNames <- names(x)
       n <- (grepl(pattern = "[Ii]d$", names(x)) &
@@ -47,21 +47,21 @@ wipeActivityInfoObject <- function(tree) {
         }
       })
 
-      # names(lapply(x, recursiveWipeId)) <- xNames
+      # names(lapply(x, recursiveCanonicalizeId)) <- xNames
       lapply(x, function(y) {
-        recursiveWipe(y, path = paste(c(path, path), collapse = "."))
+        recursiveCanonicalize(y, path = paste(c(path, path), collapse = "."))
       })
     } else {
       x
     }
   }
-  wipedTree <- recursiveWipe(tree)
-  attributes(wipedTree) <- savedAttributes
-  wipedTree
+  canonicalizedTree <- recursiveCanonicalize(tree)
+  attributes(canonicalizedTree) <- savedAttributes
+  canonicalizedTree
 }
 
 expectActivityInfoSnapshot <- function(x) {
-  testthat::expect_snapshot_value(wipeActivityInfoObject(x), style = "deparse")
+  testthat::expect_snapshot_value(canonicalizeActivityInfoObject(x), style = "deparse")
 }
 
 preprodEndpoint <- Sys.getenv("PREPROD_TESTING_ENDPOINT")

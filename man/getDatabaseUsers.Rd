@@ -6,6 +6,9 @@
 \usage{
 getDatabaseUsers(databaseId)
 }
+\arguments{
+\item{databaseId}{The database ID}
+}
 \description{
 Retrieves the list of users with access to the database.
 }

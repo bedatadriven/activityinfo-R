@@ -7,7 +7,7 @@ AUDIT_LOG_EVENT_TYPES <- c("RECORD", "FORM", "FOLDER", "DATABASE", "LOCK", "USER
 #' @param before a \emph{Date} or \emph{POSIX} to filter result before a given
 #' time; defaults to the time of the query.
 #' @param after an optional \emph{Date} or \emph{POSIX} 
-#' @param resoureId a resource (i.e. form or folder) identifier to filter on.
+#' @param resourceId a resource (i.e. form or folder) identifier to filter on.
 #' @param typeFilter a character string with the event type to filter on; default is none.
 #' @param limit the maximum number of events to return. Default is 1,000 events.
 #'
@@ -33,7 +33,8 @@ AUDIT_LOG_EVENT_TYPES <- c("RECORD", "FORM", "FOLDER", "DATABASE", "LOCK", "USER
 #' \item \emph{USER_PERMISSION}: changes to user permissions
 #' \item \emph{ROLE}: changes to roles
 #' }
-#' @examples \dontrun{
+#' @examples 
+#' \dontrun{
 #' 
 #' # Query up to 10,000 records
 #' events <- queryAuditLog("cax132253", limit = 10000)
@@ -72,10 +73,10 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
   
   while(TRUE) {
   
-    result <- postResource(path = path, body = request, task = "query audit log")
+    result <- postResource(path = path, body = request, task = "Query audit log")
     
     page <- do.call(rbind, lapply(result$events, function(event) {
-      event <- lapply(event, na_for_null)
+      event <- lapply(event, naForNull)
       event$time <- as.POSIXct.millis(event$time)
       if (is.list(event$user)) {
         event$user.id <- event$user$id
@@ -112,6 +113,7 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
   }
   
   # Apply filters client side
+  time <- NULL # ensure package checks do not complain about non-existing global variable
   events <- subset(events, time > afterCt)
   attr(events, "endTime") <- afterCt
   
@@ -129,6 +131,6 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
 #'
 #' @return Logical NA if \code{x} is \code{NULL}, otherwise \code{x}.
 #' @noRd
-na_for_null <- function(x) {
+naForNull <- function(x) {
   if (is.null(x)) NA else x
 }

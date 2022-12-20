@@ -5,9 +5,15 @@
 
 
 #' Batch imports a data.frame into an ActivityInfo form
+#' @param formId The form ID
+#' @param data The data.frame to import
+#' @param recordIdColumn The record ID column
+#' @param parentIdColumn The parent ID column required when importing a subform
 #' 
+#' @importFrom utils head
 #' @export
 importTable <- function(formId, data, recordIdColumn, parentIdColumn) { 
+  parentId <- NULL
   
   schema <- activityinfo::getFormSchema(formId)
   schemaTable <- as.data.frame(schema)
@@ -16,7 +22,7 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
     providedCols <- providedCols[providedCols != recordIdColumn]
     recordId <- data[[recordIdColumn]]
     if(!is.character(recordIdColumn)) {
-      stop(sprintf("Expected a character vector for the recordIdColumn, found %s", deparse(head(recordId))))
+      stop(sprintf("Expected a character vector for the recordIdColumn, found %s", deparse(utils::head(recordId))))
     }
     if(anyDuplicated(recordId[!is.na(recordId)])) {
       stop("The recordIdColumn contains duplicates.")
@@ -30,7 +36,7 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
     }
     parentId <- as.character(data[[parentIdColumn]])
     if(!is.character(parentIdColumn)) {
-      stop(sprintf("Expected a character vector for the parentIdColumn, found %s", deparse(head(parentId))))
+      stop(sprintf("Expected a character vector for the parentIdColumn, found %s", deparse(utils::head(parentId))))
     }
     if(anyNA(parentId)) {
       stop("The parentIdColumn contains missing values.")
@@ -40,7 +46,7 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
     if(!all(validParentIds)) {
       stop(sprintf("The parent id column `%s` has %d invalid parent ids, including: %s",
                    parentIdColumn,
-                   paste(head(parentIds[!validParentIds]), collapse = ", ")))
+                   paste(head(existingParentIds[!validParentIds]), collapse = ", ")))
     }
     providedCols <- providedCols[providedCols != parentIdColumn]
   }
@@ -92,7 +98,7 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
   
   importId <- stageImport(paste(lines, collapse = "\n"))
   
-  activityinfo:::executeJob("importRecords", descriptor = 
+  executeJob("importRecords", descriptor = 
                               list(formId = formId,
                                    importId = importId))
   
@@ -244,12 +250,12 @@ prepareDate <- function(field, column) {
 
 #' Stages data to import to ActivityInfo 
 #' 
-#' 
+#' @param text The text of the file to import.
 stageImport <- function(text) {
   
   url <- paste(activityInfoRootUrl(), "resources", "imports", "stage", sep = "/")
   
-  result <- POST(url, activityinfo:::activityInfoAuthentication(), accept_json())
+  result <- POST(url, activityInfoAuthentication(), accept_json())
   
   if (result$status_code != 200) {
     stop(sprintf("Request for %s failed with status code %d %s: %s",
@@ -264,7 +270,7 @@ stageImport <- function(text) {
     uploadUrl <- paste0(activityInfoRootUrl(), uploadUrl)
   }
   
-  putResult <- PUT(uploadUrl, body = text, encode = "raw", activityinfo:::activityInfoAuthentication())
+  putResult <- PUT(uploadUrl, body = text, encode = "raw", activityInfoAuthentication())
   if(putResult$status_code != 200) {
     stop("Failed to stage import file at ", uploadUrl, ": status = ", putResult$status_code)
   }

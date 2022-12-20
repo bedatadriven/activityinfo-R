@@ -10,7 +10,7 @@ relocateForm(formId, newDatabaseId)
 \arguments{
 \item{formId}{the id of the form to move}
 
-\item{databaseId}{the id of the database to which the form should be moved.}
+\item{newDatabaseId}{the id of the database to which the form should be moved.}
 }
 \description{
 In order to relocate a form, the user must have "delete" permission in the

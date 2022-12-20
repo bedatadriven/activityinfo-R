@@ -4,7 +4,7 @@
 \alias{getAttachment}
 \title{Gets an attachment}
 \usage{
-getAttachment(formId, recordId, fieldId, blobId, extension)
+getAttachment(formId, recordId, fieldId, blobId)
 }
 \arguments{
 \item{formId}{a form id}

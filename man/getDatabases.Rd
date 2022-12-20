@@ -7,5 +7,6 @@
 getDatabases()
 }
 \description{
-Retrieves a list of databases the authenticated user owns, or has been shared with
+Retrieves a list of databases the authenticated user owns, or has been shared
+ with
 }

@@ -2,7 +2,11 @@
 
 #' Local version of httr::message_for_status
 #'
-#' Equivalent to httr::message_for_status except that we add a newline to the message.
+#' This function is deprecated and will be removed soon. It does not try to
+#' add a newline anymore since this was causing problems in Rmd outputs.
+#'
+#' Old description: Equivalent to httr::message_for_status except that we add a
+#' newline to the message.
 #'
 #' @param x a response object
 #' @param task text for message
@@ -13,20 +17,67 @@
 message_for_status <- function(x, task = NULL) {
   response <- httr::message_for_status(x, task = task)
   # add a newline which 'httr::message_for_status' annoyingly doesn't include:
-  cat("\n")
+  # cat("\n")
 
   invisible(response)
 }
 
-checkForError <- function(result, task = "<unset>") {
-  if(status_code(result) >= 400) {
-    e <- content(result)
-    if(is.list(e) && !is.null(e$code) && !is.null(e$message)) {
-      stop(sprintf("Request %s failed with code %s: %s", task, e$code, e$message)) 
+#' Create an ActivityInfo API condition
+#'
+#' Extends the httr conditions to be able to create specific condition messages for the API.
+#'
+#' @param result The result of the API call
+#' @param type forced type for the condition
+#' @param task The task of the request
+#' @param call The call stack
+#'
+#' @importFrom httr http_condition http_error
+#' @importFrom rjson fromJSON
+activityInfoAPICondition <- function(result, type = NULL, task = NULL, call = sys.call(which = -4)) {
+  if ((http_error(result) && is.null(type)) || (!is.null(type) && type == "error")) {
+    condition <- http_condition(result, type = "error", task = task, call = call)
+    type <- "error"
+    taskMessage <- "%s failed"
+  } else {
+    if ((result$status_code >= 300 & is.null(type)) || (!is.null(type) && type == "warning")) {
+      type <- "warning"
     } else {
-      stop(sprintf("Request %s failed with status %d: %s", task, status_code(result), deparse(e)))
+      if (is.null(type)) type <- "message"
     }
+    condition <- http_condition(result, type = type, task = task, call = call)
+    taskMessage <- "%s returned"
   }
+  condition$message <- activityInfoAPIConditionMessage(result, type, task, taskMessage)
+  class(condition) <- c("activityinfo_api", class(condition))
+  condition
+}
+
+#' @importFrom httr http_condition http_error status_code content
+activityInfoAPIConditionMessage <- function(result, type = "message", task = NULL, taskMessage = "%s returned") {
+  if (is.null(task)) task <- sprintf("%s request to %s", result$request$method, result$url)
+  # resultContent <- content(result, as = "text", encoding = "UTF-8")
+  resultContent <- content(result)
+  if (is.list(resultContent) && !is.null(resultContent$code)) {
+    messageString <- ifelse(is.null(resultContent$message), sprintf("See ActivityInfo %s code).", type), resultContent$message)
+    return(sprintf(paste0(taskMessage, " with code %s and http status %s: %s\n"), task, status_code(result), resultContent$code, messageString))
+  } else {
+    return(sprintf(paste0(taskMessage, " with status %d: %s\n"), task, status_code(result), ifelse(type == "message", "success", deparse(resultContent))))
+  }
+}
+
+#' @importFrom httr http_error status_code
+checkForError <- function(result, task = NULL, requireStatus = NULL) {
+  if (!is.null(requireStatus)) {
+    if (!is.numeric(requireStatus)) stop("Required status codes must be provided in a numeric vector.")
+    stats::na.fail(requireStatus)
+    status <- status_code(result)
+    if (any(requireStatus == status)) {
+      return(activityInfoAPICondition(result, task = task))
+    }
+  } else if (!httr::http_error(result)) {
+    return(activityInfoAPICondition(result, task = task))
+  }
+  stop(activityInfoAPICondition(result, type = "error", task = task))
 }
 
 
@@ -39,8 +90,7 @@ checkForError <- function(result, task = "<unset>") {
 #' @importFrom httr GET accept_json content http_status modify_url
 #' @importFrom rjson fromJSON
 #' @noRd
-getResource <- function(path, queryParams = list(...), ...) {
-
+getResource <- function(path, queryParams = list(), task = NULL, requireStatus = 200, ...) {
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
   url <- if (length(queryParams) == 0) {
     url
@@ -48,19 +98,13 @@ getResource <- function(path, queryParams = list(...), ...) {
     modify_url(url, query = queryParams)
   }
 
-  message("Sending GET request to ", url)
+  if (getOption("activityinfo.verbose.requests")) message("Sending GET request to ", url)
 
-  result <- GET(url, activityInfoAuthentication(), accept_json())
+  result <- GET(url, activityInfoAuthentication(), accept_json(), ...)
 
-  checkForError(result)
-  
-  if (result$status_code != 200) {
-    stop(sprintf("Request for %s failed with status code %d %s: %s",
-                 url, result$status_code, http_status(result$status_code)$message,
-                 content(result, as = "text", encoding = "UTF-8")))
-  } else {
-    message_for_status(result)
-  }
+  condition <- checkForError(result, task = task, requireStatus = requireStatus)
+
+  if (getOption("activityinfo.verbose.tasks")) message(condition)
 
   json <- content(result, as = "text", encoding = "UTF-8")
 
@@ -75,23 +119,19 @@ getResource <- function(path, queryParams = list(...), ...) {
 #' @importFrom httr POST accept_json content stop_for_status status_code modify_url
 #' @importFrom rjson fromJSON
 #' @noRd
-postResource <- function(path, body, task = NULL) {
-
+postResource <- function(path, body, task = NULL, requireStatus = NULL, encode = "json", ...) {
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
-  
-  if (is.null(task)) task <- sprintf("perform POST request to %s", url)
-  
-  message("Sending POST request to ", url)
 
-  result <- POST(url, body = body, encode = "json",  activityInfoAuthentication(), accept_json())
+  if (getOption("activityinfo.verbose.requests")) message("Sending POST request to ", url)
 
-  checkForError(result, task)
+  result <- POST(url, body = body, encode = encode, activityInfoAuthentication(), accept_json(), ...)
+
+  condition <- checkForError(result, task, requireStatus)
+
+  if (getOption("activityinfo.verbose.tasks")) message(condition)
   
-  # also display (short) success message:
-  message_for_status(result)
-
   json <- content(result, as = "text", encoding = "UTF-8")
-  if(!nzchar(json))  {
+  if (!nzchar(json)) {
     return(invisible())
   }
   fromJSON(json)
@@ -106,24 +146,22 @@ postResource <- function(path, body, task = NULL) {
 #' @importFrom httr PUT accept_json content stop_for_status modify_url
 #' @importFrom rjson fromJSON
 #' @noRd
-putResource <- function(path, body, task = NULL) {
-
+putResource <- function(path, body, task = NULL, requireStatus = NULL, silent = FALSE, encode = "json", ...) {
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
 
-  message("Sending PUT request to ", url)
+  if (getOption("activityinfo.verbose.requests")) message("Sending PUT request to ", url)
 
-  result <- PUT(url, body = body, encode = "json",  activityInfoAuthentication(), accept_json())
+  result <- PUT(url, body = body, encode = encode, activityInfoAuthentication(), accept_json(), ...)
 
-  if (is.null(task)) task <- sprintf("perform PUT request to %s", url)
-  
-  checkForError(result, task)
-  
+  condition <- checkForError(result, task, requireStatus)
+
   # also display (short) success message:
-  message_for_status(result)
+  if (getOption("activityinfo.verbose.tasks")) message(condition)
 
   json <- content(result, as = "text", encoding = "UTF-8")
-  if(nzchar(json)) return(fromJSON(json))
+  if (nzchar(json)) {
+    return(fromJSON(json))
+  }
 
   invisible()
 }
-

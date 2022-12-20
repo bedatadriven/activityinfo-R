@@ -17,25 +17,28 @@ Updates a role's definition in the database
 \examples{
 \dontrun{
 updateRole("cxy123", list(
-   id = "rp",
-   label = "Reporting partner",
-   permissions = permissions(
-      view = "ck5dxt1712 == @user.partner",
-      edit_record = "ck5dxt1712 == @user.partner",
-      export_records = TRUE),
-   parameters = list(
-     list(
-       parameterId = "partner",
-       label = "Partner",
-       range = "ck5dxt1712"
-     )
-   ),
-   filters = list(
-     list(id = "partner",
-       label = "partner is user's partner",
-       filter = "ck5dxt1712 == @user.partner")
-     )
- ))
+  id = "rp",
+  label = "Reporting partner",
+  permissions = permissions(
+    view = "ck5dxt1712 == @user.partner",
+    edit_record = "ck5dxt1712 == @user.partner",
+    export_records = TRUE
+  ),
+  parameters = list(
+    list(
+      parameterId = "partner",
+      label = "Partner",
+      range = "ck5dxt1712"
+    )
+  ),
+  filters = list(
+    list(
+      id = "partner",
+      label = "partner is user's partner",
+      filter = "ck5dxt1712 == @user.partner"
+    )
+  )
+))
 }
 
 }

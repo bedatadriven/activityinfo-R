@@ -6,6 +6,9 @@
 \usage{
 indicator.field.name(indicatorId)
 }
+\arguments{
+\item{indicatorId}{The legacy ID}
+}
 \description{
 Returns the name of the field containing the value of a 'classic' indicator
 }

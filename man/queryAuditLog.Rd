@@ -21,11 +21,11 @@ time; defaults to the time of the query.}
 
 \item{after}{an optional \emph{Date} or \emph{POSIX}}
 
+\item{resourceId}{a resource (i.e. form or folder) identifier to filter on.}
+
 \item{typeFilter}{a character string with the event type to filter on; default is none.}
 
 \item{limit}{the maximum number of events to return. Default is 1,000 events.}
-
-\item{resoureId}{a resource (i.e. form or folder) identifier to filter on.}
 }
 \value{
 A data frame with the results of the query and with three attributes as described in the \emph{Details}

@@ -1,0 +1,30 @@
+---
+title: "TestMessages"
+author: "Nicolas Dickinson"
+date: "2022-12-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+## This is a test of issue #29
+
+```{r code, results='asis'}
+try({
+  if (grepl(pattern = "activityinfo-R$", rstudioapi::getActiveProject())) {
+    devtools::load_all(".")
+    withr::with_options(new = list(activityinfo.interactive = FALSE), {
+      source(file = testthat::test_path("setup.R"))
+    })
+  }
+}, silent = TRUE)
+
+dt <- as.data.frame(getFormSchema(formId = personFormId))
+
+knitr::kable(dt[,c("fieldCode", "fieldType")])
+
+```

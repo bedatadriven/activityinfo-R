@@ -11,7 +11,7 @@ roleAssignment(roleId, roleParameters = list(), roleResources)
 
 \item{roleParameters}{a named list of parameters, if the role has any parameters}
 
-\item{roleResources}{the list of resources (database, folder, form, or report) 
+\item{roleResources}{the list of resources (database, folder, form, or report)
 to assign to this user. Using the databaseId assigns all resources to this user}
 }
 \description{
@@ -19,15 +19,18 @@ Creates a role assignment object
 }
 \examples{
 {
+  # Role assignment for a reporting role with a partner parameter
+  roleAssignment(
+    roleId = "rp",
+    roleParameters = list(partner = reference(formId = "cxadsfs32", recordId = "c3423423")),
+    roleResources = "cxa99335"
+  )
 
-# Role assignment for a reporting role with a partner parameter
-roleAssignment(roleId = "rp", 
-               roleParameters = list(partner = reference(formId="cxadsfs32", recordId="c3423423")), 
-               roleResources = "cxa99335")
-               
-               
-# Role assignment for an administrator role without any role parameters  
-roleAssignment(roleId = "admin",
-               roleResources = c("cxa99335", "c8234234"))
+
+  # Role assignment for an administrator role without any role parameters
+  roleAssignment(
+    roleId = "admin",
+    roleResources = c("cxa99335", "c8234234")
+  )
 }
 }

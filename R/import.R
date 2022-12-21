@@ -201,6 +201,9 @@ prepareMultiEnumImport <- function(field, items, columnName, column) {
 }
 
 prepareReference <- function(field, column) {
+  if(grepl(field$typeParameters$range, pattern = "@users$")) {
+    return(prepareUserReference(field, column))
+  }
   column <- as.character(column)
   valid <- grepl(column, pattern = "^[a-z][a-z0-9]{0,30}$")  
   invalid <- !is.na(column) & !valid
@@ -213,6 +216,21 @@ prepareReference <- function(field, column) {
   }
   column
 }
+
+prepareUserReference <- function(field, column) {
+  column <- as.character(column)
+  valid <- grepl(column, pattern = "^[0-9]{0,30}$")  
+  invalid <- !is.na(column) & !valid
+  if(any(invalid)) {
+    badLabels <- head(unique(column[invalid]), n = 5)
+    
+    stop(sprintf("Field '%s' contains invalid user ids: %s",
+                 field$label,
+                 paste(collapse = ", ", sprintf("'%s'", badLabels))))
+  }
+  column
+}
+
 
 prepareSerial <- function(field, columnName, column) {
   stop(sprintf("Column '%s': importing serial numbers not (yet) supported", columnName))

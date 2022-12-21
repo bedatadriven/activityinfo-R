@@ -45,6 +45,7 @@ getQuantityTable <- function(databaseId = NA, folderId, includeBlanks = FALSE) {
 executeJob <- function(type, descriptor) {
   
   request <- list(type = type,
+                  locale = "en",
                   descriptor = descriptor)
   
   job <- postResource("jobs", request)

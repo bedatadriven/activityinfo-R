@@ -4,12 +4,7 @@
 \alias{activityInfoAPICondition}
 \title{Create an ActivityInfo API condition}
 \usage{
-activityInfoAPICondition(
-  result,
-  type = NULL,
-  task = NULL,
-  call = sys.call(which = -4)
-)
+activityInfoAPICondition(result, type = NULL, task = NULL, call = sys.call(-1))
 }
 \arguments{
 \item{result}{The result of the API call}

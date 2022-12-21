@@ -33,7 +33,7 @@ message_for_status <- function(x, task = NULL) {
 #'
 #' @importFrom httr http_condition http_error
 #' @importFrom rjson fromJSON
-activityInfoAPICondition <- function(result, type = NULL, task = NULL, call = minSysCall(which = -7)) {
+activityInfoAPICondition <- function(result, type = NULL, task = NULL, call = sys.call(-1)) {
   if ((http_error(result) && is.null(type)) || (!is.null(type) && type == "error")) {
     condition <- http_condition(result, type = "error", task = task, call = call)
     type <- "error"
@@ -52,11 +52,6 @@ activityInfoAPICondition <- function(result, type = NULL, task = NULL, call = mi
   condition
 }
 
-minSysCall <- function(which = 0) {
-  sys.call(max(c(-max(length(sys.calls())-1,0),which)))
-}
-
-
 #' @importFrom httr http_condition http_error status_code content
 activityInfoAPIConditionMessage <- function(result, type = "message", task = NULL, taskMessage = "%s returned") {
   if (is.null(task)) task <- sprintf("%s request to %s", result$request$method, result$url)
@@ -71,7 +66,7 @@ activityInfoAPIConditionMessage <- function(result, type = "message", task = NUL
 }
 
 #' @importFrom httr http_error status_code
-checkForError <- function(result, task = NULL, requireStatus = NULL) {
+checkForError <- function(result, task = NULL, requireStatus = NULL, call = sys.call(-1)) {
   if (!is.null(requireStatus)) {
     if (!is.numeric(requireStatus)) stop("Required status codes must be provided in a numeric vector.")
     stats::na.fail(requireStatus)
@@ -82,7 +77,7 @@ checkForError <- function(result, task = NULL, requireStatus = NULL) {
   } else if (!httr::http_error(result)) {
     return(activityInfoAPICondition(result, task = task))
   }
-  stop(activityInfoAPICondition(result, type = "error", task = task))
+  stop(activityInfoAPICondition(result, type = "error", task = task, call))
 }
 
 
@@ -107,7 +102,7 @@ getResource <- function(path, queryParams = list(), task = NULL, requireStatus =
 
   result <- GET(url, activityInfoAuthentication(), accept_json(), ...)
 
-  condition <- checkForError(result, task = task, requireStatus = requireStatus)
+  condition <- checkForError(result, task = task, requireStatus = requireStatus, call = sys.call(-1))
 
   if (getOption("activityinfo.verbose.tasks")) message(condition)
 
@@ -131,7 +126,7 @@ postResource <- function(path, body, task = NULL, requireStatus = NULL, encode =
 
   result <- POST(url, body = body, encode = encode, activityInfoAuthentication(), accept_json(), ...)
 
-  condition <- checkForError(result, task, requireStatus)
+  condition <- checkForError(result, task = task, requireStatus = requireStatus, call = sys.call(-1))
 
   if (getOption("activityinfo.verbose.tasks")) message(condition)
   
@@ -158,7 +153,7 @@ putResource <- function(path, body, task = NULL, requireStatus = NULL, silent = 
 
   result <- PUT(url, body = body, encode = encode, activityInfoAuthentication(), accept_json(), ...)
 
-  condition <- checkForError(result, task, requireStatus)
+  condition <- checkForError(result, task = task, requireStatus = requireStatus, call = sys.call(-1))
 
   # also display (short) success message:
   if (getOption("activityinfo.verbose.tasks")) message(condition)

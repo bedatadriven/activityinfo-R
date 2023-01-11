@@ -85,8 +85,8 @@ message(sprintf("Adding user %s...\n", testUser$email))
 
 tryCatch(
   {
-    response <- httr::POST(preprodEndpoint, body = testUser, encode = "json", accept_json())
-    stop_for_status(response)
+    response <- httr::POST(preprodEndpoint, body = testUser, encode = "json", httr::accept_json())
+    httr::stop_for_status(response)
   },
   http_error = function(e) {
     stop(sprintf("HTTP error while trying to setup pre-production user: %s", e$message))
@@ -105,7 +105,7 @@ setAuthentication <- function() {
 
   # get a personal API token
   activityInfoToken(
-    token = postResource("accounts/tokens/generate", body = list(label = sprintf("read write testing token %s", cuid()), scope = "READ_WRITE"), task = "Creating test user token")$token
+    token = activityinfo:::postResource("accounts/tokens/generate", body = list(label = sprintf("read write testing token %s", cuid()), scope = "READ_WRITE"), task = "Creating test user token")$token
   )
 }
 

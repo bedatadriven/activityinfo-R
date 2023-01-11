@@ -49,7 +49,7 @@ AUDIT_LOG_EVENT_TYPES <- c("RECORD", "FORM", "FOLDER", "DATABASE", "LOCK", "USER
 #' @return A data frame with the results of the query and with three attributes as described in the \emph{Details}
 #' section.
 #' @export
-queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = NULL, typeFilter = NULL, limit = 1000) {
+queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = NULL, typeFilter = NULL, limit = 1000, verbose = FALSE) {
 
   stopifnot(limit >= 1)
   
@@ -73,7 +73,9 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
   
   while(TRUE) {
   
-    result <- postResource(path = path, body = request, task = "Query audit log")
+    withr::with_options(list(activityinfo.verbose.tasks = verbose), {
+      result <- postResource(path = path, body = request, task = "Fetching audit log events")
+    })
     
     page <- do.call(rbind, lapply(result$events, function(event) {
       event <- lapply(event, naForNull)
@@ -91,10 +93,10 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
       as.data.frame(event, stringsAsFactors = FALSE)
     }))
     
-    message(sprintf("Received %d events...", nrow(page)))
-    
     events <- rbind(events, page)
-  
+    
+    message(sprintf("Successfully received %d query audit log events (%d total) for database %s...", nrow(page), nrow(events), databaseId))
+
     # attach query metadata to the result:
     attr(events, "databaseId") <- databaseId
     attr(events, "moreEvents") <- as.logical(result$moreEvents)

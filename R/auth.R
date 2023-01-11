@@ -138,7 +138,7 @@ activityInfoToken <- function(token) {
 }
 
 deprecationOfBasicAuthWarning <- function() {
-  warning("The ActivityInfo API is deprecating the use of username and passwords. Update your code to use a personal API token before the functionality is removed.", call. = FALSE, noBreaks. = TRUE)
+  warning("The ActivityInfo API is deprecating the use of username and passwords. Update your code to use a personal API token with the function activityInfoToken() before the functionality is removed.", call. = FALSE, noBreaks. = TRUE)
 }
 
 #' Use Basic Authentication (deprecated) to authenticate and store user credentials to authorize requests for the

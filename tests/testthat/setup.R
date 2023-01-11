@@ -14,9 +14,9 @@ cuid <- local({
   }
 })
 
-wipeActivityInfoObject <- function(tree) {
+canonicalizeActivityInfoObject <- function(tree) {
   savedAttributes <- attributes(tree)
-  recursiveWipe <- function(x, path = "") {
+  recursiveCanonicalize <- function(x, path = "") {
     if (is.list(x)) {
       xNames <- names(x)
       n <- (grepl(pattern = "[Ii]d$", names(x)) &
@@ -47,21 +47,21 @@ wipeActivityInfoObject <- function(tree) {
         }
       })
 
-      # names(lapply(x, recursiveWipeId)) <- xNames
+      # names(lapply(x, recursiveCanonicalizeId)) <- xNames
       lapply(x, function(y) {
-        recursiveWipe(y, path = paste(c(path, path), collapse = "."))
+        recursiveCanonicalize(y, path = paste(c(path, path), collapse = "."))
       })
     } else {
       x
     }
   }
-  wipedTree <- recursiveWipe(tree)
-  attributes(wipedTree) <- savedAttributes
-  wipedTree
+  canonicalizedTree <- recursiveCanonicalize(tree)
+  attributes(canonicalizedTree) <- savedAttributes
+  canonicalizedTree
 }
 
 expectActivityInfoSnapshot <- function(x) {
-  testthat::expect_snapshot_value(wipeActivityInfoObject(x), style = "deparse")
+  testthat::expect_snapshot_value(canonicalizeActivityInfoObject(x), style = "deparse")
 }
 
 preprodEndpoint <- Sys.getenv("PREPROD_TESTING_ENDPOINT")
@@ -85,8 +85,8 @@ message(sprintf("Adding user %s...\n", testUser$email))
 
 tryCatch(
   {
-    response <- httr::POST(preprodEndpoint, body = testUser, encode = "json", accept_json())
-    stop_for_status(response)
+    response <- httr::POST(preprodEndpoint, body = testUser, encode = "json", httr::accept_json())
+    httr::stop_for_status(response)
   },
   http_error = function(e) {
     stop(sprintf("HTTP error while trying to setup pre-production user: %s", e$message))
@@ -105,7 +105,7 @@ setAuthentication <- function() {
 
   # get a personal API token
   activityInfoToken(
-    token = postResource("accounts/tokens/generate", body = list(label = sprintf("read write testing token %s", cuid()), scope = "READ_WRITE"), task = "Creating test user token")$token
+    token = activityinfo:::postResource("accounts/tokens/generate", body = list(label = sprintf("read write testing token %s", cuid()), scope = "READ_WRITE"), task = "Creating test user token")$token
   )
 }
 

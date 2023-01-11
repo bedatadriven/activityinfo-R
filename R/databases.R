@@ -36,7 +36,10 @@ getDatabaseSchema <- function(databaseId) {
 #' }
 #' @export
 getDatabaseTree <- function(databaseId) {
-  tree <- getResource(paste("databases", databaseId, sep = "/"))
+  tree <- getResource(
+    paste("databases", databaseId, sep = "/"), 
+    task = sprintf("Getting database tree for database %s", databaseId)
+    )
   class(tree$resources) <- "databaseResources"
   class(tree) <- "databaseTree"
   tree

@@ -10,6 +10,7 @@ AUDIT_LOG_EVENT_TYPES <- c("RECORD", "FORM", "FOLDER", "DATABASE", "LOCK", "USER
 #' @param resourceId a resource (i.e. form or folder) identifier to filter on.
 #' @param typeFilter a character string with the event type to filter on; default is none.
 #' @param limit the maximum number of events to return. Default is 1,000 events.
+#' @param verbose whether to provide the http status codes from requests to the ActivityInfo API, for debugging primarily.
 #'
 #' @details A database audit log contains details on a wide variety of events in the database. These events include the
 #' deletion of records or adding a user. This function queries the audit log and returns the event details as a data

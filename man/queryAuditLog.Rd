@@ -10,7 +10,8 @@ queryAuditLog(
   after,
   resourceId = NULL,
   typeFilter = NULL,
-  limit = 1000
+  limit = 1000,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ time; defaults to the time of the query.}
 \item{typeFilter}{a character string with the event type to filter on; default is none.}
 
 \item{limit}{the maximum number of events to return. Default is 1,000 events.}
+
+\item{verbose}{whether to provide the http status codes from requests to the ActivityInfo API, for debugging primarily.}
 }
 \value{
 A data frame with the results of the query and with three attributes as described in the \emph{Details}

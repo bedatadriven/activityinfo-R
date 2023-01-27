@@ -114,7 +114,7 @@ matchColumn <- function(colName, schema) {
 prepareImport <- function(field, columnName, column) {
   switch (field$type,
           FREE_TEXT = as.character(column),
-          narrative = as.character(column),
+          NARRATIVE = as.character(column),
           quantity = as.double(column),
           enumerated = prepareEnumImport(field, columnName, column),
           reference = prepareReference(field, column),

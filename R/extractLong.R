@@ -61,7 +61,8 @@ executeJob <- function(type, descriptor) {
       break
     }
     if(!identical(status$state, "started")) {
-      stop(sprintf("Job failed. Code: %s, Message: %s", 
+      stop(sprintf("Job %s failed. Code: %s, Message: %s", 
+                   job$id,
                    status$error$code, 
                    status$error$message))
     }

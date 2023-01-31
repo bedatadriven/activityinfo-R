@@ -86,7 +86,8 @@ parentIdFromData <- function(data, parentIdColumn, schema) {
   if(!all(validParentIds)) {
     stop(sprintf("The parent id column `%s` has %d invalid parent ids, including: %s",
                  parentIdColumn,
-                 paste(head(parentIds[!validParentIds]), collapse = ", ")))
+                 sum(!validParentIds),
+                 paste(head(parentId[!validParentIds]), collapse = ", ")))
   }
   return(parentId)
 }
@@ -114,7 +115,7 @@ matchColumn <- function(colName, schema) {
 prepareImport <- function(field, columnName, column) {
   switch (field$type,
           FREE_TEXT = as.character(column),
-          narrative = as.character(column),
+          NARRATIVE = as.character(column),
           quantity = as.double(column),
           enumerated = prepareEnumImport(field, columnName, column),
           reference = prepareReference(field, column),
@@ -330,12 +331,12 @@ formatImport <- function(data, recordId, parentId, fieldIds, fieldValues) {
       v <- fieldValues[[fieldIndex]][[recordIndex]]
       if(length(v) == 1 && is.na(v)) NULL else v
     })
-    recordLines[recordIndex] <- toJSON(record)
+    recordLines[recordIndex] <- rjson::toJSON(record)
   }
 
   c("LINE DELIMITED JSON RECORDS",
     as.character(nrow(data)),
-    toJSON(as.list(fieldIds)),
+    rjson::toJSON(as.list(fieldIds)),
     recordLines)
 }
 

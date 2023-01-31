@@ -7,12 +7,13 @@
 importTable(formId, data, recordIdColumn, parentIdColumn)
 }
 \arguments{
-\item{formId}{The id of the form to which the records should be imported}
+\item{formId}{The form ID}
 
-\item{data}{the data.frame to import}
+\item{data}{The data.frame to import}
 
-\item{recordIdColumn}{optional. If provided, this column will be used to provide
-the ActivityInfo record ids.}
+\item{recordIdColumn}{The record ID column}
+
+\item{parentIdColumn}{The parent ID column required when importing a subform}
 }
 \description{
 Batch imports a data.frame into an ActivityInfo form

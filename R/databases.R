@@ -8,6 +8,24 @@ getDatabases <- function() {
   getResource("databases", task = "Getting all databases")
 }
 
+databaseUpdates <- function() {
+  list(
+    resourceUpdates = list(),
+    resourceDeletions = list(),
+    lockUpdates = list(),
+    lockDeletions = list(),
+    roleUpdates = list(),
+    roleDeletions = list(),
+    languageUpdates = list(),
+    languageDeletions = list(),
+    originalLanguage = NULL,
+    continousTranslation = NULL,
+    translationFromDbMemory = NULL,
+    thirdPartyTranslation = NULL,
+    publishedTemplate = NULL
+  )
+}
+
 
 #' getDatabaseSchema
 #'
@@ -45,6 +63,52 @@ getDatabaseTree <- function(databaseId) {
   tree
 }
 
+#' createDatabase
+#'
+#' Creates a new database.
+#' 
+#' @export
+#' @param label The new database label
+#' @param databaseId The new database identifier; a cuid will be created if left empty
+#' @examples
+#' \dontrun{
+#' newDb <- createDatabase("Programme information system")
+#' }
+createDatabase <- function(label, databaseId = cuid()) {
+  postResource(
+    "databases", 
+    body = list(
+      id = databaseId, 
+      label = label, 
+      templateId = "blank"
+      ), 
+    task = sprintf("Creating new database '%s' with id %s", label, databaseId)
+    )
+}
+
+#' deleteDatabase
+#'
+#' Deletes a database.
+#' 
+#' @export
+#' 
+#' @param databaseId database identifier
+#' 
+#' @examples
+#' \dontrun{
+#' deleteDatabase(databaseId = "c10011c3x5pnoldk0ua1qr")
+#' }
+deleteDatabase <- function(databaseId) {
+  result <- deleteResource(
+    paste("databases", databaseId, sep = "/"),
+    task = sprintf("Requesting deletion of database %s", databaseId)
+  )
+  if (is.list(result)&&!is.null(result$code)&&result$code=="DELETED") {
+    message(sprintf("Deletion of database %s confirmed.", databaseId))
+    return(result)
+  }
+  stop(sprintf("Error while deleting database %s: %s", databaseId, deparse(result)))
+}
 
 #' @export
 print.databaseTree <- function(x, ...) {
@@ -66,7 +130,9 @@ print.databaseTree <- function(x, ...) {
 #' getDatabaseUsers
 #'
 #' Retrieves the list of users with access to the database.
+#' 
 #' @param databaseId The database ID
+#' 
 #' @export
 getDatabaseUsers <- function(databaseId) {
   users <- getResource(
@@ -80,8 +146,10 @@ getDatabaseUsers <- function(databaseId) {
 #' getDatabaseUser
 #'
 #' Retrieves a user's role and permissions. Returns a NULL value if there is no user with the corresponding IDs.
+#' 
 #' @param databaseId The database ID
 #' @param userId The user ID
+#' 
 #' @export
 getDatabaseUser <- function(databaseId, userId) {
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "grants", sep = "/")
@@ -104,8 +172,10 @@ getDatabaseUser <- function(databaseId, userId) {
 #' getDatabaseUser2
 #'
 #' Retrieves a user's role and permissions. This will throw an error if no user is found instead of returning a NULL value.
+#' 
 #' @param databaseId The database ID
 #' @param userId The user ID
+#' 
 #' @export
 getDatabaseUser2 <- function(databaseId, userId) {
   url <- paste("databases", databaseId, "users", userId, "grants", sep = "/")
@@ -126,6 +196,7 @@ getDatabaseUser2 <- function(databaseId, userId) {
 #'
 #'
 #' @importFrom stringr str_replace
+#' 
 #' @export
 addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId,
                             roleParameters = list(),
@@ -192,6 +263,7 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
 #' @param userId the (numeric) id of the user to remove from the database.
 #'
 #' @importFrom httr DELETE
+#' 
 #' @export
 deleteDatabaseUser <- function(databaseId, userId) {
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, sep = "/")
@@ -214,6 +286,7 @@ deleteDatabaseUser <- function(databaseId, userId) {
 #' @param databaseId the id of the database
 #' @param userId the (numeric) id of the user to update
 #' @param assignment the role assignment, \code{\link[activityinfo]{roleAssignment}}
+#' 
 #' @examples 
 #' \dontrun{
 #'
@@ -253,6 +326,7 @@ updateUserRole <- function(databaseId, userId, assignment) {
 #' @param roleParameters a named list of parameters, if the role has any parameters
 #' @param roleResources the list of resources (database, folder, form, or report)
 #' to assign to this user. Using the databaseId assigns all resources to this user
+#' 
 #' @examples {
 #'   # Role assignment for a reporting role with a partner parameter
 #'   roleAssignment(
@@ -268,6 +342,7 @@ updateUserRole <- function(databaseId, userId, assignment) {
 #'     roleResources = c("cxa99335", "c8234234")
 #'   )
 #' }
+#' 
 #' @export
 roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
   stopifnot(is.list(roleParameters))
@@ -309,6 +384,7 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
 #' @param publish_reports Allows the user to publish reports.
 #' @param manage_roles Add, modify and delete roles
 #' @param manage_reference_data Manage reference data
+#' 
 #' @export
 #'
 permissions <- function(view = TRUE,
@@ -359,7 +435,9 @@ permissions <- function(view = TRUE,
 #' @param userId the (numeric) id of the user to update
 #' @param resourceId the id of the form or folder
 #' @param permissions the permissions to grant to the user for the given resource
+#' 
 #' @export
+#' 
 #' @examples 
 #' \dontrun{
 #' updateGrant(
@@ -395,6 +473,7 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #'
 #'
 #' @export
+#' 
 #' @examples 
 #' \dontrun{
 #' updateRole("cxy123", list(

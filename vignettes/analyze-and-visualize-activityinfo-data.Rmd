@@ -3,6 +3,7 @@ title: "Analyze and visualize ActivityInfo Data"
 author: "BeDataDriven B.V."
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
+layout: docArticle
 vignette: >
   %\VignetteIndexEntry{Analyze and visualize ActivityInfo Data}
   %\VignetteEngine{knitr::rmarkdown}

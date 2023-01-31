@@ -86,6 +86,7 @@ parentIdFromData <- function(data, parentIdColumn, schema) {
   if(!all(validParentIds)) {
     stop(sprintf("The parent id column `%s` has %d invalid parent ids, including: %s",
                  parentIdColumn,
+                 sum(!validParentIds),
                  paste(head(parentId[!validParentIds]), collapse = ", ")))
   }
   return(parentId)

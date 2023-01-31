@@ -1,3 +1,17 @@
+testthat::test_that("createDatabase() and deleteDatabase() works", {
+  testthat::expect_no_error({
+    dbTest <- createDatabase("Another test database on the fly!")
+    dbTestTree <- getDatabaseTree(databaseId = dbTest$databaseId)
+  })
+  testthat::expect_identical(dbTest$databaseId, dbTestTree$databaseId)
+  
+  testthat::expect_no_error({
+    result <- deleteDatabase(databaseId = dbTest$databaseId)
+  })
+  
+  testthat::expect_identical(result$code, "DELETED")
+})
+
 testthat::test_that("getDatabases() works", {
   testthat::expect_no_error({
     databasesObject <- getDatabases()

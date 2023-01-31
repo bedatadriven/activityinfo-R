@@ -4,6 +4,8 @@ withr::local_options(list(
   warnPartialMatchAttr = TRUE
 ))
 
+##### Testing functions #####
+
 # creating a cuid that artificially enforces a sort order on IDs for snapshotting of API objects
 cuid <- local({
   i <- 10000L
@@ -14,56 +16,103 @@ cuid <- local({
   }
 })
 
-canonicalizeActivityInfoObject <- function(tree) {
-  savedAttributes <- attributes(tree)
+canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate = TRUE, replaceResource = TRUE) {
   recursiveCanonicalize <- function(x, path = "") {
     if (is.list(x)) {
-      xNames <- names(x)
-      n <- (grepl(pattern = "[Ii]d$", names(x)) &
-        !grepl(pattern = "roles", names(x))) |
-        grepl(pattern = "email", names(x))
-      x[n] <- "<id value>"
+      savedAttributes <- attributes(x)
+      
+      x <- x[order(namesOrIndexes(x))]
+      
+      # reorder names in saved attributes
+      savedAttributes$names <- names(x)
+      
+      if (replaceId) {
+        n <- (grepl(pattern = "[Ii]d$", names(x)) &
+                !grepl(pattern = "roles", names(x))) |
+          grepl(pattern = "email", names(x))
+        x[n] <- "<id value>"
+      }
+      
+      if (replaceDate) {
+        n <- grepl(pattern = "Time", names(x), ignore.case = TRUE) | grepl(pattern = "Date", names(x), ignore.case = TRUE)
+        x[n] <- "<date or time value>"
+      }
+      
+      if (replaceResource) {
+        n <- grepl(pattern = "resources", names(x)) & lengths(x) == 1
+        x[n] <- list("Empty resources until we can ensure a sort order in the API.")
+        
+        n <- grepl(pattern = "resources", names(x)) & lengths(x) > 1
+        
+        # replace a list or vector of resource ids
+        x[n] <- lapply(x[n], function(y) {
+          if (is.recursive(y)) {
+            # y
+            list("Empty resources until we can ensure a sort order in the API.")
+          } else if (is.list(y)) {
+            # yReturn <- list(rep("<resource id>", length(y)))
+            # names(yReturn) <- names(y)
+            list("Empty resources until we can ensure a sort order in the API.")
+          } else {
+            # rep("<resource id>", length(y))
+            list("Empty resources until we can ensure a sort order in the API.")
+          }
+        })
+      }
 
-      n <- grepl(pattern = "Time", names(x), ignore.case = TRUE) | grepl(pattern = "Date", names(x), ignore.case = TRUE)
-      x[n] <- "<date or time value>"
-
-      n <- grepl(pattern = "resources", names(x)) & lengths(x) == 1
-      x[n] <- list("Empty resources until we can ensure a sort order in the API.")
-
-      n <- grepl(pattern = "resources", names(x)) & lengths(x) > 1
-
-      # replace a list or vector of resource ids
-      x[n] <- lapply(x[n], function(y) {
-        if (is.recursive(y)) {
-          # y
-          list("Empty resources until we can ensure a sort order in the API.")
-        } else if (is.list(y)) {
-          # yReturn <- list(rep("<resource id>", length(y)))
-          # names(yReturn) <- names(y)
-          list("Empty resources until we can ensure a sort order in the API.")
-        } else {
-          # rep("<resource id>", length(y))
-          list("Empty resources until we can ensure a sort order in the API.")
-        }
-      })
-
-      # names(lapply(x, recursiveCanonicalizeId)) <- xNames
-      lapply(x, function(y) {
+      
+      x <- lapply(x, function(y) {
         recursiveCanonicalize(y, path = paste(c(path, path), collapse = "."))
       })
+      attributes(x) <- savedAttributes
+      x
     } else {
       x
     }
   }
   canonicalizedTree <- recursiveCanonicalize(tree)
-  attributes(canonicalizedTree) <- savedAttributes
   canonicalizedTree
 }
 
-expectActivityInfoSnapshot <- function(x) {
-  testthat::expect_snapshot_value(canonicalizeActivityInfoObject(x), style = "deparse")
+namesOrIndexes <- function(x) {
+  if (is.list(x)) {
+    if (is.null(names(x))) {
+      if (length(x)>0) {
+        return(seq(length(x)))
+      } else {
+        return(character())
+      }
+    }
+    names(x)
+  }
 }
 
+identicalForm <- function(a,b) {
+  a <- a[!(namesOrIndexes(a) %in% c("schemaVersion"))]
+  b <- b[!(namesOrIndexes(b) %in% c("schemaVersion"))]
+  a <- canonicalizeActivityInfoObject(a, replaceId = FALSE, replaceDate = FALSE, replaceResource = FALSE)
+  b <- canonicalizeActivityInfoObject(b, replaceId = FALSE, replaceDate = FALSE, replaceResource = FALSE)
+  testthat::expect_identical(a,b)
+}
+
+expectActivityInfoSnapshot <- function(x, ...) {
+  testthat::expect_snapshot_value(canonicalizeActivityInfoObject(x, ...), style = "deparse")
+}
+
+setAuthentication <- function() {
+  activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
+
+  # get a personal API token
+  activityInfoToken(
+    token = activityinfo:::postResource("accounts/tokens/generate", body = list(label = sprintf("read write testing token %s", cuid()), scope = "READ_WRITE"), task = "Creating test user token")$token
+  )
+}
+
+setupBlankDatabase <- function(label) {
+  activityinfo:::postResource("databases", body = list(id = cuid(), label = label, templateId = "blank"), task = sprintf("Creating test database '%s' post request", label))
+}
+
+##### Setup code #####
 preprodEndpoint <- Sys.getenv("PREPROD_TESTING_ENDPOINT")
 preprodRootUrl <- Sys.getenv("PREPROD_ROOT_URL")
 
@@ -100,22 +149,9 @@ tryCatch(
 # www.activityinfo.org
 activityInfoRootUrl(preprodRootUrl)
 
-setAuthentication <- function() {
-  activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
-
-  # get a personal API token
-  activityInfoToken(
-    token = activityinfo:::postResource("accounts/tokens/generate", body = list(label = sprintf("read write testing token %s", cuid()), scope = "READ_WRITE"), task = "Creating test user token")$token
-  )
-}
-
 tokenRequest <- setAuthentication()
 
 # Add a new database for this user
-setupBlankDatabase <- function(label) {
-  activityinfo:::postResource("databases", body = list(id = cuid(), label = label, templateId = "blank"), task = sprintf("Creating test database '%s' post request", label))
-}
-
 database <- setupBlankDatabase("My first database")
 database2 <- setupBlankDatabase("My second database")
 

@@ -125,7 +125,6 @@ getDatabaseUser2 <- function(databaseId, userId) {
 #' @param roleResources a list of folders in which this role should be assigned (or the databaseId if they should have this role in the whole database)
 #'
 #'
-#' @importFrom jsonlite toJSON
 #' @importFrom stringr str_replace
 #' @export
 addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId,

@@ -331,12 +331,12 @@ formatImport <- function(data, recordId, parentId, fieldIds, fieldValues) {
       v <- fieldValues[[fieldIndex]][[recordIndex]]
       if(length(v) == 1 && is.na(v)) NULL else v
     })
-    recordLines[recordIndex] <- toJSON(record)
+    recordLines[recordIndex] <- rjson::toJSON(record)
   }
 
   c("LINE DELIMITED JSON RECORDS",
     as.character(nrow(data)),
-    toJSON(as.list(fieldIds)),
+    rjson::toJSON(as.list(fieldIds)),
     recordLines)
 }
 

@@ -4,10 +4,42 @@
 \alias{textFieldSchema}
 \title{Create a text form field schema}
 \usage{
-textFieldSchema(...)
+textFieldSchema(
+  label,
+  description = NULL,
+  code = NULL,
+  id = cuid(),
+  key = FALSE,
+  required = FALSE,
+  hideFromEntry = FALSE,
+  hideInTable = FALSE,
+  relevanceRules = "",
+  validationRules = "",
+  reviewerOnly = FALSE
+)
 }
 \arguments{
-\item{...}{See arguments defined in \link[activityinfo]{formFieldSchema}}
+\item{label}{The label of the form field}
+
+\item{description}{The description of the form field}
+
+\item{code}{The code name of the form field}
+
+\item{id}{The id of the form Field; default is to generate a new cuid}
+
+\item{key}{Whether the form field is a key field; default is FALSE}
+
+\item{required}{Whether the form field is required; default is FALSE}
+
+\item{hideFromEntry}{Whether the form field is hidden during data entry; default is FALSE}
+
+\item{hideInTable}{Whether the form field is hidden during data display; default is FALSE}
+
+\item{relevanceRules}{Relevance rules for the form field}
+
+\item{validationRules}{Validation rules for the form field}
+
+\item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }
 \description{
 Create a text form field schema

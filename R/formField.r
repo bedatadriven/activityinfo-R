@@ -132,11 +132,22 @@ print.activityInfoFormFieldSchema <- function(x, ...) {
 
 #' Create a text form field schema
 #' 
-#' @param ... See arguments defined in \link[activityinfo]{formFieldSchema}
+#' @inheritParams formFieldSchema
 #'
 #' @export
-textFieldSchema <- function(...) {
-  schema <- formFieldSchema(type = "FREE_TEXT", typeParameters = list("barcode" = FALSE), ...)
+textFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
+  schema <- do.call(
+    formFieldSchema, 
+    args = c(
+      list(type = "FREE_TEXT"),
+      as.list(environment()),
+      list(
+        typeParameters = list("barcode" = FALSE)
+        )
+      )
+  )
+  
+  # schema <- formFieldSchema(type = "FREE_TEXT", typeParameters = )
   validateTextFieldSchema(schema)
   schema
 }

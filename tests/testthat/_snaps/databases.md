@@ -59,6 +59,15 @@
         storage = "", suspended = FALSE, thirdPartyTranslation = FALSE, 
         translationFromDbMemory = FALSE, userId = "<id value>", version = "3"), class = "databaseTree")
 
+# getDatabaseResources() works
+
+    Code
+      dbResources
+    Output
+                id       label   parentId     type visibility
+      1 <id value> Person form <id value>     FORM    PRIVATE
+      2 <id value>    Children <id value> SUB_FORM    PRIVATE
+
 # addDatabaseUser() and deleteDatabaseUser() and getDatabaseUsers() and getDatabaseUser() and getDatabaseUser2() work
 
     list(list(added = TRUE, user = list(activationStatus = "PENDING", 

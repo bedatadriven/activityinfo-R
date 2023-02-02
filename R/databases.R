@@ -63,18 +63,46 @@ getDatabaseTree <- function(databaseId) {
   tree
 }
 
-#' createDatabase
+#' getDatabaseResources
 #'
-#' Creates a new database.
+#' Creates a data.frame of database resources, types, parentIds and ids. 
+#' This can be used to access a list of folders, forms, and sub-forms.
+#'
+#' @param databaseTree Database tree
+#' 
+#' @examples 
+#' \dontrun{
+#' dbTree <- getDatabaseTree("c9mudk52")
+#' dbResources <- getDatabaseResources(dbTree)
+#' folders <- dbResources[dbResources$type == "FOLDER",]
+#' forms <- dbResources[dbResources$type == "FORM",]
+#' subForms <- dbResources[dbResources$type == "SUB_FORM",]
+#' }
+#' 
+#' @export
+getDatabaseResources <- function(databaseTree) {
+  data.frame(
+    id = unlist(lapply(databaseTree$resources, function(x) {x$id})),
+    label = unlist(lapply(databaseTree$resources, function(x) {x$label})),
+    type = unlist(lapply(databaseTree$resources, function(x) {x$type})),
+    parentId = unlist(lapply(databaseTree$resources, function(x) {x$parentId})),
+    visibility = unlist(lapply(databaseTree$resources, function(x) {x$visibility}))
+  )
+}
+
+
+#' addDatabase
+#'
+#' Adds a new database.
 #' 
 #' @export
 #' @param label The new database label
 #' @param databaseId The new database identifier; a cuid will be created if left empty
 #' @examples
 #' \dontrun{
-#' newDb <- createDatabase("Programme information system")
+#' newDb <- addDatabase("Programme information system")
 #' }
-createDatabase <- function(label, databaseId = cuid()) {
+addDatabase <- function(label, databaseId = cuid()) {
   postResource(
     "databases", 
     body = list(

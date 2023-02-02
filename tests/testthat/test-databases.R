@@ -1,6 +1,6 @@
-testthat::test_that("createDatabase() and deleteDatabase() works", {
+testthat::test_that("addDatabase() and deleteDatabase() works", {
   testthat::expect_no_error({
-    dbTest <- createDatabase("Another test database on the fly!")
+    dbTest <- addDatabase("Another test database on the fly!")
     dbTestTree <- getDatabaseTree(databaseId = dbTest$databaseId)
   })
   testthat::expect_identical(dbTest$databaseId, dbTestTree$databaseId)
@@ -41,6 +41,19 @@ testthat::test_that("getDatabaseTree() works", {
   expectActivityInfoSnapshot(tree)
 })
 
+testthat::test_that("getDatabaseResources() works", {
+  testthat::expect_no_error({
+    dbTree <- getDatabaseTree(databaseId = database$databaseId)
+    dbResources <- getDatabaseResources(dbTree)
+    folders <- dbResources[dbResources$type == "FOLDER",]
+    forms <- dbResources[dbResources$type == "FORM",]
+    subForms <- dbResources[dbResources$type == "SUB_FORM",]
+  })
+  
+  dbResources <- canonicalizeActivityInfoObject(dbResources)
+  
+  testthat::expect_snapshot(dbResources)
+})
 
 addTestUsers <- function(database, tree, nUsers = 1) {
   lapply(1:nUsers, function(x) {

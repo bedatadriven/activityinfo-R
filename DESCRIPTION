@@ -19,6 +19,7 @@ Suggests:
     rmarkdown,
     markdown,
     withr,
-    assertthat
+    assertthat,
+    purrr
 VignetteBuilder: knitr
 Config/testthat/edition: 3

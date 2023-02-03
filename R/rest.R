@@ -68,7 +68,9 @@ activityInfoAPIConditionMessage <- function(result, type = "message", task = NUL
 
 #' @importFrom httr http_error status_code
 checkForError <- function(result, task = NULL, requireStatus = NULL, call = sys.call(-1)) {
-  if (nchar(task) == 0) stop("The task message must be defined with >0 length.")
+  if (is.null(task) || length(task) == 0 || nchar(task) == 0) {
+    task <- "request"
+  }
   if (!is.null(requireStatus)) {
     if (!is.numeric(requireStatus)) stop("Required status codes must be provided in a numeric vector.")
     stats::na.fail(requireStatus)

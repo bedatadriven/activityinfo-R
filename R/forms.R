@@ -1,43 +1,5 @@
 
 
-legacy <- function(domain, id) {
-  stopifnot(nchar(domain) == 1)
-  stopifnot(is.numeric(id))
-
-  sprintf("%s%010d", domain, id)
-}
-
-#' Returns the id of the form containing the sites
-#' associated with a 'classic' activity
-#' @param activityId The activity ID
-site.form.id <- function(activityId) legacy("a", activityId)
-
-#' Returns the id of the form containing the monthly reports
-#' associated with a 'classic' activity
-#' @param activityId The activity ID
-monthly.reports.form.id <- function(activityId) legacy("M", activityId)
-
-#' Returns the id of the form using the value of a 'classic' admin level form id
-#' @param adminLevelId The admin level ID
-admin.level.form.id <- function(adminLevelId) legacy("E", adminLevelId)
-
-#' Returns the name of the field containing the value of a 'classic' attribute group
-#' @param attributeGroupId The legacy ID
-attribute.field.name <- function(attributeGroupId) legacy("Q", attributeGroupId)
-
-#' Returns the name of the field containing the value of a 'classic' indicator
-#' @param indicatorId The legacy ID
-indicator.field.name <- function(indicatorId) legacy("i", indicatorId)
-
-
-extractOldId <- function(s) {
-  if (all(grepl("^[[:alpha:]]0*", s))) {
-    as.integer(sub("^[[:alpha:]]0*", "", s))
-  } else {
-    s
-  }
-}
-
 
 changeName <- function(x, from, to) {
   if (is.null(names(x))) {

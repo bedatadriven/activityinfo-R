@@ -50,7 +50,9 @@ testthat::test_that("getDatabaseResources() works", {
     subForms <- dbResources[dbResources$type == "SUB_FORM",]
   })
   
+  dbResources[order(dbResources$id, dbResources$parentId, dbResources$label, dbResources$visibility),]
   dbResources <- canonicalizeActivityInfoObject(dbResources)
+  
   
   testthat::expect_snapshot(dbResources)
 })

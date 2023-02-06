@@ -95,8 +95,9 @@ identicalForm <- function(a,b) {
   testthat::expect_identical(a,b)
 }
 
-expectActivityInfoSnapshot <- function(x, ...) {
-  testthat::expect_snapshot_value(canonicalizeActivityInfoObject(x, ...), style = "deparse")
+expectActivityInfoSnapshot <- function(x, replaceId = TRUE, replaceDate = TRUE, replaceResource = TRUE) {
+  x <- canonicalizeActivityInfoObject(x, replaceId, replaceDate, replaceResource)
+  testthat::expect_snapshot_value(x, style = "deparse")
 }
 
 setAuthentication <- function() {

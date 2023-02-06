@@ -263,7 +263,7 @@ formSchema <- function(databaseId, label, id = cuid(), elements = list(), folder
 validateFormSchema <- function(form) {
   stopifnot("activityInfoFormSchema" %in% class(form))
   for(e in form$elements) {
-    validateFormFieldSchema(e)
+    isFormFieldSchema(e)
   }
 }
 

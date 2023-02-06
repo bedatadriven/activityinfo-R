@@ -20,12 +20,12 @@
 #'
 #' @export
 formFieldSchema <- function(type, label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE, typeParameters = NULL) {
-  stopifnot("The label is required to be a character string" = (is.character(label)&&length(label)>1&&nchar(label)>0))
-  stopifnot("The description must be a character string" = is.null(description)||(is.character(description)&&length(description)>1&&nchar(description)>0))
-  stopifnot("The code must be a character string" = is.null(code)||(is.character(code)&&length(code)>1&&nchar(code)>0))
-  stopifnot("The id is required and must be a character string" = !is.null(id)&&(is.character(id)&&length(id)>1&&nchar(id)>0))
-  stopifnot("`relevanceRules` must be given as a character string" = !is.null(relevanceRules)&&(is.character(relevanceRules)&&length(relevanceRules)>1))
-  stopifnot("`validationRules` must be given as a character string" = !is.null(validationRules)&&(is.character(validationRules)&&length(validationRules)>1))
+  stopifnot("The label is required to be a character string" = (is.character(label)&&length(label)==1&&nchar(label)>0))
+  stopifnot("The description must be a character string" = is.null(description)||(is.character(description)&&length(description)==1&&nchar(description)>0))
+  stopifnot("The code must be a character string" = is.null(code)||(is.character(code)&&length(code)==1&&nchar(code)>0))
+  stopifnot("The id is required and must be a character string" = !is.null(id)&&(is.character(id)&&length(id)==1&&nchar(id)>0))
+  stopifnot("`relevanceRules` must be given as a character string" = !is.null(relevanceRules)&&(is.character(relevanceRules)&&length(relevanceRules)==1))
+  stopifnot("`validationRules` must be given as a character string" = !is.null(validationRules)&&(is.character(validationRules)&&length(validationRules)==1))
   stopifnot("The key must be a logical/boolean of length 1" = is.logical(key)&&length(key)==1)
   stopifnot("`required` must be a logical/boolean of length 1" = is.logical(required)&&length(required)==1)
   stopifnot("`hideFromEntry` must be a logical/boolean of length 1" = is.logical(hideFromEntry)&&length(hideFromEntry)==1)
@@ -87,6 +87,42 @@ addFormFieldSchemaCustomClass <- function(e) {
     }
   } else if (e$type == "serial") {
     class(e) <- c("activityInfoSerialNumberFieldSchema", class(e))
+  } else if (e$type == "quantity") {
+    class(e) <- c("activityInfoQuantityFieldSchema", class(e))
+  } else if (e$type == "NARRATIVE") {
+    class(e) <- c("activityInfoMultilineFieldSchema", class(e))
+  } else if (e$type == "date") {
+    class(e) <- c("activityInfoDateFieldSchema", class(e))
+  } else if (e$type == "epiweek") {
+    class(e) <- c("activityInfoWeekFieldSchema", class(e))
+  } else if (e$type == "fortnight") {
+    class(e) <- c("activityInfoFortnightFieldSchema", class(e))
+  } else if (e$type == "month") {
+    class(e) <- c("activityInfoMonthFieldSchema", class(e))
+  } else if (e$type == "enumerated") {
+    if (e$typeParameters$cardinality == "single") {
+      class(e) <- c("activityInfoSingleSelectFieldSchema", class(e))
+    } else if (e$typeParameters$cardinality == "multiple") {
+      class(e) <- c("activityInfoMultipleSelectFieldSchema", class(e))
+    }
+  } else if (e$type == "attachment") {
+    class(e) <- c("activityInfoAttachmentFieldSchema", class(e))
+  } else if (e$type == "calculated") {
+    class(e) <- c("activityInfoCalculatedFieldSchema", class(e))
+  } else if (e$type == "attachment") {
+    class(e) <- c("activityInfoAttachmentFieldSchema", class(e))
+  } else if (e$type == "subform") {
+    class(e) <- c("activityInfoSubformFieldSchema", class(e))
+  } else if (e$type == "geopoint") {
+    class(e) <- c("activityInfoGeopointFieldSchema", class(e))
+  } else if (e$type == "reference") {
+    if (grepl("@user$", e$typeParameters$range[[1]]$formId)) {
+      class(e) <- c("activityInfoUserFieldSchema", class(e))
+    } else {
+      class(e) <- c("activityInfoReferenceFieldSchema", class(e))
+    }
+  } else if (e$type == "section") {
+    class(e) <- c("activityInfoSectionFieldSchema", class(e))
   }
   return(e)
 }
@@ -116,21 +152,25 @@ print.activityInfoFormFieldSchema <- function(x, ...) {
   }
   
   
-  attrs <- c(
-    if (x$key) "Key" else NULL,
-    if (x$required) "Required" else NULL
-  )
-  
-  if (length(attrs)) {
-    cat(sprintf("      %s\n", paste(attrs, collapse = ", ")))
-  }
-  
-  if (is.character(x$description)) {
-    cat(sprintf("      description: %s\n", x$description))
-  }
-  
-  cat(sprintf("      type: %s\n", x$type))
-  
+  # attrs <- c(
+  #   if (x$key) "Key" else NULL,
+  #   if (x$required) "Required" else NULL
+  # )
+  # 
+  # if (length(attrs)) {
+  #   cat(sprintf("      %s\n", paste(attrs, collapse = ", ")))
+  # }
+  # 
+  # if (is.character(x$description)) {
+  #   cat(sprintf("      description: %s\n", x$description))
+  # }
+  # 
+}
+
+formFieldArgsList <- names(formals(formFieldSchema))
+
+formFieldArgs <- function(x) {
+  x[(names(x) %in% formFieldArgsList)]
 }
 
 #' Create a text form field schema
@@ -147,57 +187,34 @@ textFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(),
     formFieldSchema, 
     args = c(
       list(type = "FREE_TEXT"),
-      as.list(environment()),
+      formFieldArgs(as.list(environment())),
       list(
         typeParameters = list("barcode" = FALSE)
         )
       )
   )
   
-  # schema <- formFieldSchema(type = "FREE_TEXT", typeParameters = )
-  validateTextFieldSchema(schema)
   schema
-}
-
-#' Validate a text form field schema
-#'
-#' @param schema The text form field schema to validate
-#'
-#' @export
-validateTextFieldSchema <- function(schema) {
-  validateTextFieldOrBarcodeSchema(schema)
-  stopifnot(schema$typeParameters$barcode==FALSE)
-  stopifnot("activityInfoTextFieldSchema" %in% class(schema))
-}
-
-validateTextFieldOrBarcodeSchema <- function(schema) {
-  validateFormFieldSchema(schema)
-  stopifnot(schema$type == "FREE_TEXT")
-  stopifnot(is.logical(schema$typeParameters$barcode))
-  stopifnot(length(schema$typeParameters$barcode)==1)
-  stopifnot(length(schema$typeParameters)==1)
 }
 
 #' Create a barcode form field schema
 #'
-#' @param ... See arguments defined in \link[activityinfo]{formFieldSchema}
+#' @inheritParams formFieldSchema
 #'
 #' @export
-barcodeFieldSchema <- function(...) {
-  schema <- formFieldSchema(type = "FREE_TEXT", typeParameters = list("barcode" = TRUE), ...)
-  validateBarcodeFieldSchema(schema)
+barcodeFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
+  schema <- do.call(
+    formFieldSchema, 
+    args = c(
+      list(type = "FREE_TEXT"),
+      formFieldArgs(as.list(environment())),
+      list(
+        typeParameters = list("barcode" = TRUE)
+      )
+    )
+  )
+  
   schema
-}
-
-#' Validate a barcode form field schema
-#'  
-#' @param schema The barcode form field schema to validate
-#' 
-#' @export
-validateBarcodeFieldSchema <- function(schema) {
-  validateTextFieldOrBarcodeSchema(schema)
-  stopifnot("activityInfoBarcodeFieldSchema" %in% class(schema))
-  stopifnot("A barcode Field Schema must have the type parameter barcode = TRUE." = identical(schema$typeParameters$barcode, TRUE))
 }
 
 #' Create a serial number form field schema
@@ -210,39 +227,26 @@ validateBarcodeFieldSchema <- function(schema) {
 #' @param digits The number of digits in the serial number
 #' @param prefixFormula A formula as a character string defining the prefix for 
 #' the serial number
-#' @param ... See arguments defined in \link[activityinfo]{formFieldSchema}
+#' @inheritParams formFieldSchema
 #'
 #' @export
-serialNumberFieldSchema <- function(..., digits = 5, prefixFormula = NULL) {
+serialNumberFieldSchema <- function(label, description = NULL, digits = 5, prefixFormula = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
+  stopifnot("The prefix formula must be NULL or a character string" = is.null(prefixFormula)||(is.character(prefixFormula)&&length(prefixFormula)==1&&nchar(prefixFormula)>0))
+  stopifnot("The digits must be an integer" = is.numeric(digits)&&as.integer(digits)==digits)
+  
   typeParameters <- list(digits = digits)
-  if(!is.null(prefixFormula)&&is.character(prefixFormula)&&length(prefixFormula)>0) {
-    typeParameters$prefixFormula = prefixFormula
-  }
-  schema <- formFieldSchema(type = "serial", typeParameters = typeParameters, ...)
-  validateSerialNumberFieldSchema(schema)
+  typeParameters$prefixFormula = prefixFormula
+
+  schema <- do.call(
+    formFieldSchema, 
+    args = c(
+      list(type = "serial"),
+      formFieldArgs(as.list(environment()))
+    )
+  )
+  
   schema
 }
-
-#' Validate a serial number form field schema
-#' 
-#' @param schema The schema of the serial number form field
-#'
-#' @export
-validateSerialNumberFieldSchema <- function(schema) {
-  validateFormFieldSchema(schema)
-  parameters <- names(schema)
-  stopifnot(schema$validationCondition=="")
-  stopifnot(schema$relevanceCondition=="")
-  stopifnot(identical(schema$required, FALSE))
-  stopifnot(schema$type == "serial")
-  stopifnot("activityInfoSerialNumberFieldSchema" %in% class(schema))
-  stopifnot(is.numeric(schema$typeParameters$digits))
-  stopifnot(length(schema$typeParameters$digits)==1)
-  if("prefixFormula" %in% names(schema$typeParameters)) {
-    stopifnot(is.character(schema$typeParameters$prefixFormula)&&length(schema$typeParameters$prefixFormula)==1)
-  }
-}
-
 
 #' Create a quantity form field schema
 #' 
@@ -264,7 +268,7 @@ quantityFieldSchema <- function(label, description = NULL, units = "", aggregati
     formFieldSchema, 
     args = c(
       list(type = "quantity"),
-      as.list(environment()),
+      formFieldArgs(as.list(environment())),
       list(
         typeParameters = list(
           "units" = units,
@@ -381,11 +385,12 @@ monthFieldSchema <- function(label, description = NULL, code = NULL, id = cuid()
 
 selectFieldSchema <- function(cardinality, label, description = NULL, values = list(), presentation = "automatic", code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
   stopifnot("Presentation must be a character string" = is.character(presentation)&&length(presentation)==1)
+  stopifnot("Cardinality must be a character string 'single' or 'multiple'" = is.character(cardinality)&&length(cardinality)==1&&(cardinality %in% c("single", "multiple")))
   schema <- do.call(
     formFieldSchema, 
     args = c(
       list(type = "enumerated"),
-      as.list(environment()),
+      formFieldArgs(as.list(environment())),
       list(
         typeParameters = list(
           "cardinality" = cardinality,
@@ -502,10 +507,10 @@ attachmentsFieldSchema <- function(label, description = NULL, code = NULL, id = 
     formFieldSchema, 
     args = c(
       list(type = "attachment"),
-      as.list(environment()),
+      formFieldArgs(as.list(environment())),
       list(
         typeParameters = list(
-          "cardinality" = multiple,
+          "cardinality" = "multiple",
           "kind" = "attachment"
         )
       )
@@ -528,12 +533,12 @@ attachmentsFieldSchema <- function(label, description = NULL, code = NULL, id = 
 #'
 #' @export
 calculatedFieldSchema <- function(label, description = NULL, formula, code = NULL, id = cuid(), hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
-  stopifnot("Formula must be a character string" = is.character(formula)&&length(formula)==1&&nchar(formula)>1)
+  stopifnot("Formula must be a character string" = is.character(formula)&&length(formula)==1&&nchar(formula)>0)
   schema <- do.call(
     formFieldSchema, 
     args = c(
       list(type = "calculated"),
-      as.list(environment()),
+      formFieldArgs(as.list(environment())),
       list(
         typeParameters = list(
           "formula" = formula
@@ -556,12 +561,12 @@ calculatedFieldSchema <- function(label, description = NULL, formula, code = NUL
 #'
 #' @export
 subformFieldSchema <- function(label, description = NULL, subformId, code = NULL, id = cuid(), hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
-  stopifnot("The subform id must be a character string" = is.character(subformId)&&length(subformId)==1&&nchar(subformId)>1)
+  stopifnot("The subform id must be a character string" = is.character(subformId)&&length(subformId)==1&&nchar(subformId)>0)
   schema <- do.call(
     formFieldSchema, 
     args = c(
       list(type = "subform"),
-      as.list(environment()),
+      formFieldArgs(as.list(environment())),
       list(
         typeParameters = list(
           "formId" = subformId
@@ -582,16 +587,20 @@ subformFieldSchema <- function(label, description = NULL, subformId, code = NULL
 #'
 #' @export
 referenceFieldSchema <- function(label, description = NULL, formId, code = NULL, id = cuid(), key = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
-  stopifnot("The referenced form id must be a character string" = is.character(formId)&&length(formId)==1&&nchar(formId)>1)
+  stopifnot("The referenced form id must be a character string" = is.character(formId)&&length(formId)==1&&nchar(formId)>0)
   schema <- do.call(
     formFieldSchema, 
     args = c(
       list(type = "reference"),
-      as.list(environment()),
+      formFieldArgs(as.list(environment())),
       list(
         typeParameters = list(
           "cardinality" = "single",
-          "formId" = formId
+          "range" = list(
+            list(
+              "formId" = formId
+              )
+          )
         )
       )
     )
@@ -624,10 +633,10 @@ geopointFieldSchema <- function(label, description = NULL, requiredAccuracy = NU
   
   schemaArgs <- c(
       list(type = "geopoint"),
-      as.list(environment()),
+      formFieldArgs(as.list(environment())),
       list(
         typeParameters = list(
-          "aggregation" = aggregation
+          "manualEntryAllowed" = manualEntryAllowed
         )
       )
       )
@@ -662,7 +671,7 @@ userFieldSchema <- function(label, description = NULL, databaseId, code = NULL, 
     formFieldSchema, 
     args = c(
       list(type = "reference"),
-      as.list(environment()),
+      formFieldArgs(as.list(environment())),
       list(
         typeParameters = list(
           "cardinality" = "single",
@@ -696,6 +705,9 @@ sectionFieldSchema <- function(label, description = NULL) {
   schema
 }
 
+isFormFieldSchema <- function(schema) {
+  "activityInfoFormFieldSchema" %in% class(schema)
+}
 
 #' Add a new form field
 #' 
@@ -720,7 +732,6 @@ addFormField <- function(...) {
 #' @rdname addFormField
 #' @export
 addFormField.character <- function(formId, schema, upload = FALSE, ...) {
-  validateFormFieldSchema(schema)
   formSchema <- getFormSchema(formId = formId)
   formSchema$elements[[length(formSchema$elements)+1]] <- schema
   if (upload == TRUE) {
@@ -733,8 +744,6 @@ addFormField.character <- function(formId, schema, upload = FALSE, ...) {
 #' @rdname addFormField
 #' @export
 addFormField.formSchema <- function(formSchema, schema, upload = FALSE, ...) {
-  validateFormFieldSchema(schema)
-  validateFormSchema(formSchema)
   formSchema$elements[[length(formSchema$elements)+1]] <- schema
   if (upload == TRUE) {
     updateFormSchema(formSchema)

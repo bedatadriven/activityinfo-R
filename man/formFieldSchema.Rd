@@ -169,7 +169,7 @@ monthFieldSchema(
 singleSelectFieldSchema(
   label,
   description = NULL,
-  values = list(),
+  options = list(),
   presentation = "automatic",
   code = NULL,
   id = cuid(),
@@ -185,7 +185,7 @@ singleSelectFieldSchema(
 multipleSelectFieldSchema(
   label,
   description = NULL,
-  values = list(),
+  options = list(),
   presentation = "automatic",
   code = NULL,
   id = cuid(),
@@ -320,7 +320,7 @@ the serial number}
 \item{aggregation}{A character string giving the aggregation function; "SUM" 
 is default}
 
-\item{values}{A list of the multiple select field values}
+\item{options}{A list of the multiple select field options}
 
 \item{presentation}{Default is "automatic"}
 

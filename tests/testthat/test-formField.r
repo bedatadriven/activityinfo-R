@@ -56,7 +56,7 @@ test_that("Test roundtrip of multilineFieldSchema()", {
 
 test_that("Test roundtrip of multipleSelectFieldSchema()", {
   testField(multipleSelectFieldSchema(label = "A multipleSelectFieldSchema field"))
-  testField(multipleSelectFieldSchema(label = "A multipleSelectFieldSchema field", values = toSelectValues(c(
+  testField(multipleSelectFieldSchema(label = "A multipleSelectFieldSchema field", options = toSelectOptions(c(
     "Option 1",
     "Option 2",
     "Option 3"
@@ -81,7 +81,7 @@ test_that("Serial number fields can be created and uploaded and downloaded and a
 
 test_that("Test roundtrip of singleSelectFieldSchema()", {
   testField(singleSelectFieldSchema(label = "A singleSelectFieldSchema field"))
-  testField(singleSelectFieldSchema(label = "A singleSelectFieldSchema field", values = toSelectValues(c(
+  testField(singleSelectFieldSchema(label = "A singleSelectFieldSchema field", options = toSelectOptions(c(
     "Option 1",
     "Option 2",
     "Option 3"
@@ -110,7 +110,7 @@ test_that("Test roundtrip of weekFieldSchema()", {
   testField(weekFieldSchema(label = "A weekFieldSchema field"))
 })
 
-test_that("Test toSelectValues()", {
+test_that("Test toSelectOptions()", {
 })
 
 test_that("Form with many fields can be created and uploaded and downloaded and are identical", {

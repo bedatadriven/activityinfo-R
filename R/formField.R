@@ -389,7 +389,7 @@ monthFieldSchema <- function(label, description = NULL, code = NULL, id = cuid()
   schema
 }
 
-selectFieldSchema <- function(cardinality, label, description = NULL, values = list(), presentation = "automatic", code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
+selectFieldSchema <- function(cardinality, label, description = NULL, options = list(), presentation = "automatic", code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
   stopifnot("Presentation must be a character string" = is.character(presentation)&&length(presentation)==1)
   stopifnot("Cardinality must be a character string 'single' or 'multiple'" = is.character(cardinality)&&length(cardinality)==1&&(cardinality %in% c("single", "multiple")))
   schema <- do.call(
@@ -401,7 +401,7 @@ selectFieldSchema <- function(cardinality, label, description = NULL, values = l
         typeParameters = list(
           "cardinality" = cardinality,
           "presentation" = presentation,
-          "values" = values
+          "values" = options
         )
       )
     )
@@ -420,11 +420,11 @@ selectFieldSchema <- function(cardinality, label, description = NULL, values = l
 #' too.
 #' 
 #' @inheritParams formFieldSchema
-#' @param values A list of the single select field values
+#' @param options A list of the single select field options
 #' @param presentation Default is "automatic"
 #' @rdname formFieldSchema
 #' @export
-singleSelectFieldSchema <- function(label, description = NULL, values = list(), presentation = "automatic", code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
+singleSelectFieldSchema <- function(label, description = NULL, options = list(), presentation = "automatic", code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
   schema <- do.call(
     selectFieldSchema, 
     args = c(
@@ -441,11 +441,11 @@ singleSelectFieldSchema <- function(label, description = NULL, values = list(), 
 #' options as an answer.
 #' 
 #' @inheritParams formFieldSchema
-#' @param values A list of the multiple select field values
+#' @param options A list of the multiple select field options
 #' @param presentation Default is "automatic"
 #' @rdname formFieldSchema
 #' @export
-multipleSelectFieldSchema <- function(label, description = NULL, values = list(), presentation = "automatic", code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
+multipleSelectFieldSchema <- function(label, description = NULL, options = list(), presentation = "automatic", code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
   schema <- do.call(
     selectFieldSchema, 
     args = c(
@@ -455,25 +455,25 @@ multipleSelectFieldSchema <- function(label, description = NULL, values = list()
   )
 }
 
-#' Converts a factor, list or vector to select values
+#' Converts a factor, list or vector to select options
 #' 
-#' Creates a list of values in the ActivityInfo format for Single Select or
+#' Creates a list of options in the ActivityInfo format for Single Select or
 #' Multiple Select form fields.
 #' 
-#' @rdname toSelectValues
-#' @param values The values to convert
+#' @rdname toSelectOptions
+#' @param options The character vector or list to convert to options
 #'
 #' @export
-toSelectValues <- function(values) {
-  UseMethod("toSelectValues")
+toSelectOptions <- function(options) {
+  UseMethod("toSelectOptions")
 }
 
 
-#' @rdname toSelectValues
+#' @rdname toSelectOptions
 #' @export
-toSelectValues.character <- function(values) {
+toSelectOptions.character <- function(options) {
   lapply(
-    values,
+    options,
     function(x) {
       list(
         id = cuid(), 
@@ -481,22 +481,22 @@ toSelectValues.character <- function(values) {
       })
 }
 
-#' @rdname toSelectValues
+#' @rdname toSelectOptions
 #' @export
-toSelectValues.default <- toSelectValues.character
+toSelectOptions.default <- toSelectOptions.character
 
 
-#' @rdname toSelectValues
+#' @rdname toSelectOptions
 #' @export
-toSelectValues.list <- function(values) {
-  values <- as.character(values)
-  toSelectValues.character(values)
+toSelectOptions.list <- function(options) {
+  options <- as.character(options)
+  toSelectOptions.character(options)
 }
 
-#' @rdname toSelectValues
+#' @rdname toSelectOptions
 #' @export
-toSelectValues.factor <- function(values) {
-  toSelectValues.character(levels(values))
+toSelectOptions.factor <- function(options) {
+  toSelectOptions.character(levels(options))
 }
 
 #' Create an attachments form field schema
@@ -669,7 +669,6 @@ geopointFieldSchema <- function(label, description = NULL, requiredAccuracy = NU
 #' 
 #' @inheritParams formFieldSchema
 #' @param databaseId The database id of the form and users
-#' @rdname formFieldSchema
 #' @export
 userFieldSchema <- function(label, description = NULL, databaseId, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRules = "", validationRules = "", reviewerOnly = FALSE) {
   stopifnot("`databaseId` must be a character string" = is.character(databaseId)&&length(databaseId)==1&&nchar(databaseId)>0)

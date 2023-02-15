@@ -2,29 +2,23 @@
 % Please edit documentation in R/formField.R
 \name{addFormField}
 \alias{addFormField}
-\alias{addFormField.character}
-\alias{addFormField.formSchema}
-\alias{addFormField.default}
 \title{Add a new form field}
 \usage{
 addFormField(...)
-
-\method{addFormField}{character}(formId, schema, upload = FALSE, ...)
-
-\method{addFormField}{formSchema}(formSchema, schema, upload = FALSE, ...)
-
-\method{addFormField}{default}(formId, schema, upload = FALSE, ...)
 }
 \arguments{
 \item{...}{ignored}
 
 \item{formId}{The identifier of the form online}
 
+\item{formSchema}{The offline schema of the form}
+
 \item{schema}{The form field schema to be added to the form}
 
 \item{upload}{Default is FALSE. If TRUE the modified form schema will be uploaded.}
-
-\item{formSchema}{The offline schema of the form}
+}
+\value{
+The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
 }
 \description{
 Adds a new form field to an offline form schema or else downloads the form 

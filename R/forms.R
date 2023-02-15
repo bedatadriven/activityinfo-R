@@ -164,7 +164,6 @@ addForm <- function(...) {
   UseMethod("addForm")
 }
 
-#' @rdname addForm
 #' @export
 addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
   schema <- prepFormSchemaForUpload(schema)
@@ -187,7 +186,6 @@ addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
   )
 }
 
-#' @rdname addForm
 #' @export
 addForm.character <- function(databaseId, schema, folderId = databaseId, ...) {
   schema$databaseId <- databaseId
@@ -197,7 +195,6 @@ addForm.character <- function(databaseId, schema, folderId = databaseId, ...) {
   addForm(schema, folderId)
 }
 
-#' @rdname addForm
 #' @export
 addForm.default <- addForm.character
 
@@ -232,6 +229,9 @@ validateFormSchema <- function(form) {
 #' Updates a form schema
 #'
 #' @param schema a form schema
+#' 
+#' @return Returns the updated form schema from the ActivityInfo server
+#' 
 #' @export
 updateFormSchema <- function(schema) {
   schema <- prepFormSchemaForUpload(schema)
@@ -242,8 +242,8 @@ updateFormSchema <- function(schema) {
     task = sprintf("Update of form schema for form %s (%s)", schema$label, schema$id),
     requireStatus = 200
   )
-
-  result
+  
+  asFormSchema(result$forms[[1]]$schema)
 }
 
 # Touch up structure to avoid problems with toJson

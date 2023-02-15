@@ -8,15 +8,14 @@ multipleSelectFieldSchema(
   label,
   description = NULL,
   options = list(),
-  presentation = "automatic",
   code = NULL,
   id = cuid(),
   key = FALSE,
   required = FALSE,
   hideFromEntry = FALSE,
   hideInTable = FALSE,
-  relevanceRules = "",
-  validationRules = "",
+  relevanceRule = "",
+  validationRule = "",
   reviewerOnly = FALSE
 )
 }
@@ -26,8 +25,6 @@ multipleSelectFieldSchema(
 \item{description}{The description of the form field}
 
 \item{options}{A list of the multiple select field options}
-
-\item{presentation}{Default is "automatic"}
 
 \item{code}{The code name of the form field}
 
@@ -41,9 +38,9 @@ multipleSelectFieldSchema(
 
 \item{hideInTable}{Whether the form field is hidden during data display; default is FALSE}
 
-\item{relevanceRules}{Relevance rules for the form field given as a character string; default is ""}
+\item{relevanceRule}{Relevance rules for the form field given as a single character string; default is ""}
 
-\item{validationRules}{Validation rules for the form field given as a character string; default is ""}
+\item{validationRule}{Validation rules for the form field given as a single character string; default is ""}
 
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }

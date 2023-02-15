@@ -2,27 +2,18 @@
 % Please edit documentation in R/forms.R
 \name{addForm}
 \alias{addForm}
-\alias{addForm.formSchema}
-\alias{addForm.character}
-\alias{addForm.default}
 \title{Adds a new form to a database}
 \usage{
 addForm(...)
-
-\method{addForm}{formSchema}(schema, folderId = schema$databaseId, ...)
-
-\method{addForm}{character}(databaseId, schema, folderId = databaseId, ...)
-
-\method{addForm}{default}(databaseId, schema, folderId = databaseId, ...)
 }
 \arguments{
 \item{...}{ignored}
 
+\item{databaseId}{the id of the database}
+
 \item{schema}{the schema of the form to add}
 
 \item{folderId}{the id of the folder to which this form should be added}
-
-\item{databaseId}{the id of the database}
 }
 \description{
 Adds a new form to a database

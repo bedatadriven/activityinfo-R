@@ -53,6 +53,7 @@ testthat::test_that("getDatabaseResources() works", {
   dbResources <- dbResources[order(dbResources$id, dbResources$parentId, dbResources$label, dbResources$visibility),]
   dbResources$id <- substr(dbResources$id,1,9)
   dbResources$parentId <- substr(dbResources$parentId,1,9)
+  row.names(dbResources) <- NULL
   dbResources <- canonicalizeActivityInfoObject(dbResources, replaceId = FALSE)
   
   

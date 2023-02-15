@@ -33,7 +33,7 @@ test_that("Test deleteFormField()", {
   test2 <- fmSchm %>% deleteFormField(id = c("Text4"))
   expectActivityInfoSnapshot(test2)
   
-  test3 <- fmSchm %>% deleteFormField(code = c("Text field 1", "Text field 5"))
+  test3 <- fmSchm %>% deleteFormField(label = c("Text field 1", "Text field 5"))
   expectActivityInfoSnapshot(test3)
 
   testthat::expect_warning({

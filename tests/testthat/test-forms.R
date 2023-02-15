@@ -70,7 +70,7 @@ testthat::test_that("getFormTree() returns a formTree for parent and child forms
   # expectActivityInfoSnapshot(childForm)
 })
 
-# updateFormSchemaResult should have names forms and database - why does it not return the updated schema?
+# updateFormSchemaResult now returns the updated schema
 testthat::test_that("updateFormSchema() api call returns form schema", {
   testthat::expect_s3_class(object = updateFormSchemaResult, class = "activityInfoFormSchema")
 

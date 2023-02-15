@@ -165,6 +165,7 @@ addForm <- function(...) {
 }
 
 #' @export
+#' @rdname addForm
 addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
   schema <- prepFormSchemaForUpload(schema)
   
@@ -187,6 +188,7 @@ addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
 }
 
 #' @export
+#' @rdname addForm
 addForm.character <- function(databaseId, schema, folderId = databaseId, ...) {
   schema$databaseId <- databaseId
   if (!("activityInfoFormSchema" %in% class(schema))) {
@@ -196,6 +198,7 @@ addForm.character <- function(databaseId, schema, folderId = databaseId, ...) {
 }
 
 #' @export
+#' @rdname addForm
 addForm.default <- addForm.character
 
 #' Create a blank form schema offline

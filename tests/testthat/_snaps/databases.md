@@ -64,9 +64,9 @@
     Code
       dbResources
     Output
-                id       label   parentId     type visibility
-      1 <id value>    Children <id value> SUB_FORM    PRIVATE
-      2 <id value> Person form <id value>     FORM    PRIVATE
+               id       label  parentId     type visibility
+      1 c10000005 Person form c10000003     FORM    PRIVATE
+      2 c10000006    Children c10000005 SUB_FORM    PRIVATE
 
 # addDatabaseUser() and deleteDatabaseUser() and getDatabaseUsers() and getDatabaseUser() and getDatabaseUser2() work
 

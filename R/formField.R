@@ -792,6 +792,7 @@ addFormField <- function(...) {
 
 
 #' @export
+#' @rdname addFormField
 addFormField.character <- function(formId, schema, upload = FALSE, ...) {
   formSchema <- getFormSchema(formId = formId)
   formSchema$elements[[length(formSchema$elements)+1]] <- schema
@@ -804,6 +805,7 @@ addFormField.character <- function(formId, schema, upload = FALSE, ...) {
 
 
 #' @export
+#' @rdname addFormField
 addFormField.formSchema <- function(formSchema, schema, upload = FALSE, ...) {
   formSchema$elements[[length(formSchema$elements)+1]] <- schema
   if (upload == TRUE) {
@@ -815,4 +817,5 @@ addFormField.formSchema <- function(formSchema, schema, upload = FALSE, ...) {
 
 
 #' @export
+#' @rdname addFormField
 addFormField.default <- addFormField.character

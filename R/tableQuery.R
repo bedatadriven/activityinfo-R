@@ -164,3 +164,15 @@ parseColumnSet <- function(columnSet) {
     stringsAsFactors = FALSE
   )
 }
+
+legacy <- function(domain, id) {
+  stopifnot(nchar(domain) == 1)
+  stopifnot(is.numeric(id))
+  
+  sprintf("%s%010d", domain, id)
+}
+
+#' Returns the id of the form containing the sites
+#' associated with a 'classic' activity
+#' @param activityId The activity ID
+site.form.id <- function(activityId) legacy("a", activityId)

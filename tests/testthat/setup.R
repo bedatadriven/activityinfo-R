@@ -8,7 +8,7 @@ withr::local_options(list(
 
 # creating a cuid that artificially enforces a sort order on IDs for snapshotting of API objects
 cuid <- local({
-  i <- 10000L
+  i <- 10000000L
 
   function() {
     i <<- i + 1L

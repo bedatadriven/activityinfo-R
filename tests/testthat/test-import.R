@@ -1,8 +1,10 @@
+
+
 test_that("importTable() works", {
-  database <- addDatabase("Test database")
+  database <- addDatabase("Import tests")
   schema <- addForm(schema = formSchema(
     databaseId = database$databaseId,
-    label = "Import test",
+    label = "Simple form",
     elements = list(
       textFieldSchema(label = "Name", key = TRUE),
       quantityFieldSchema(label = "How old are you?", code = "AGE"),
@@ -12,13 +14,16 @@ test_that("importTable() works", {
   
   df <- data.frame(
     Name = c("Bob", "Alice"),
-    Age = c(29, 42),
+    AGE = c(29, 42),
     DOB = c("1980-01-15", "1990-03-10"),
     Sex = c("Male", "Female"),
     Month = c("2022-01", "2022-02"))
   
   importTable(schema$id, data = df)
   
-  fmSchm <- addFormField(formSchema = fmSchm, schema = fieldSchema)
-  dbMetadata <- addForm(databaseId = databaseId, schema = fmSchm)
+  imported <- queryTable(schema$id)
+  
+  expect_equal(nrow(imported), 2)
+  expect_identical(imported$Name[1], "Bob")
+  expect_identical(imported$Name[2], "Alice")
 })

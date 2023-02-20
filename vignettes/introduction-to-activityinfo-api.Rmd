@@ -24,8 +24,8 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-This introductory vignette is about the *ActivityInfo API R Client* that is an *R* package to access 
-to the *ActivityInfo API*. 
+This tutorial is about the *ActivityInfo R Package* that is a client used to access to the *ActivityInfo API*. While this is an API client, names of functions and arguments are modelled more closely to web user interface to facilitate its use.
+
 With this client, you can programmatically obtain and modify your data.
 
 For the problems related to *ActivityInfo* itself, not API, please read the

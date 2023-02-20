@@ -1,0 +1,135 @@
+---
+title: "Create and manipulate databases and forms using R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Create and manipulate forms using R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(activityinfo)
+```
+
+# Introduction
+
+This tutorial will provide a quick introduction to how to work with forms to create and manipulate them using R. This tutorial is about the *ActivityInfo R Package* that is a client used to access to the *ActivityInfo API*. While this is an API client, names of functions and arguments are modelled more closely to web user interface to facilitate its use.
+
+Note: in order to fully follow this tutorial you must have an ActivityInfo user account or a trail account with the permission to create a new database. Setup a free trial here: https://www.activityinfo.org/signUp
+
+# 1. Creating a new databases for your forms
+
+To create a new database for this tutorial use `addDatabase(label)`.
+
+```{r}
+
+newDb <- addDatabase("A new ActivityInfo tutorial database!")
+
+```
+
+In order to get a list of the databases that you have access to, use `getDatabases()`.
+
+```{r include=FALSE}
+
+dbList <- getDatabases()
+
+# get the first database
+firstDb <- dbList[[1]]
+
+# Make the list a data.frame
+dbListDf <- do.call(rbind, lapply(dbList, data.frame))
+
+# Get the record 
+newDbRecord <- dbListDf[dbListDf$databaseId == newDb$databaseId,]
+
+```
+
+The `getDatabaseTree(databaseId)` call, which actually retrieves "`/resources/database/{databaseId}`" from the API and provides more information about the database. Use `getDatabaseUsers(databaseId)` and `getDatabaseResources(databaseId)` to get further information. This will be demonstrated further down.
+
+```{r include=FALSE}
+dbTree <- getDatabaseTree(databaseId = newDb$databaseId)
+head(dbTree)
+```
+
+It is possible to add database users as well using `addDatabaseUser(databaseId, name, email)` and to retrieve the list of all database users using `getDatabaseUsers(databaseId)`.
+
+```{r}
+
+addDatabaseUser(databaseId = newDb$databaseId, name = "Tutorial database user", email = "activityinfo1@example.com")
+addDatabaseUser(databaseId = newDb$databaseId, name = "Tutorial database user", email = "activityinfo2@example.com")
+
+# Retrieve a list of all the database users
+dbUsers <- getDatabaseUsers(databaseId = newDb$databaseId)
+
+```
+
+# 2. Forms
+
+Creating a new form is also possible in R by first creating a form schema object with `formSchema(databaseId, label, elements, folderId)` that can be populated with new fields using `addFormField(formSchema/formId, schema, upload)` and then uploading the newly constructed schema to your database. To create the form field, there are a number of functions available that can be found in the documentation. Some examples are presented below.
+
+```{r}
+fmSchema <- formSchema(databaseId = newDb$databaseId, label = "ActivityInfo form generated from R")
+
+consentField <- singleSelectFieldSchema(
+  label = "Have you agreed and signed the consent statment", 
+  code = "consent", 
+  description = "Each respondant should be provided with the consent form.",
+  options = toSelectOptions(c("Yes","No"))
+)
+
+dobField <- dateFieldSchema(label = "When were you born?", code = "dob")
+
+# Note that it is possible to chain together
+
+fmSchema <- fmSchema |>
+  addFormField(consentField) |>
+  addFormField(dobField) |>
+  addFormField(textFieldSchema(label = "What is your name?", code = "respondant"))
+
+
+```
+
+It is also possible to remove a single question with `deleteFormField(formSchema/formId, label/code/id)`.
+
+```{r}
+
+fmSchema <- deleteFormField(fmSchema, label = "What is your name?")
+
+```
+
+After the form is completed, it can be uploaded with `updateFormSchema(schema)`.
+
+```{r}
+
+updateFormSchema(fmSchema)
+
+```
+In order to get the form or sub-form schemas that you have access to, use `getFormSchema(formId)` call, which actually retrieves "`resources/form/{id}/schema`" from the API.
+
+```{r}
+
+getFormSchema(fmSchema$id)
+
+```
+
+It is possible to access the list of all the database forms as a data.frame with the function `getDatabaseResources(databaseTree)`.
+
+```{r}
+
+# Update the database tree as new resources and users have been added.
+dbTree <- getDatabaseTree(databaseId = newDb$databaseId)
+
+# Retrieve a list of all the resources (forms, sub-forms)
+dbResources <- getDatabaseResources(databaseTree = dbTree)
+
+dbResources
+
+```
+

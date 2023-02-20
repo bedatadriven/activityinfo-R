@@ -33,4 +33,5 @@ Creates a role assignment object
     roleResources = c("cxa99335", "c8234234")
   )
 }
+
 }

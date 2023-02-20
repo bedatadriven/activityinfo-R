@@ -11,27 +11,27 @@ credentialsFile <- "~/.activityinfo.credentials"
 
 credentials <- environment()
 
-#' Get or set the root url for the ActivityInfo
+#' Get or set the root url for the ActivityInfo server
 #'
 #' @description
-#' This call gets or sets the root url used for a session, \emph{valid only
-#' during the session}.
+#' Get or set the root url for the ActivityInfo server
 #'
 #' @param newUrl The new URL to set as the ActivityInfo root URL
-#' @param new.url Deprecated: please use newUrl. The new URL to set as the 
-#' ActivityInfo root URL
 #'
+#' @details 
+#' If you are using the [ActivityInfo Self-Managed Server](https://www.activityinfo.org/support/docs/self-managed/index.html),
+#' you can use this function to point the R package to your own server. 
+#' 
+#' @examples
+#' # Connect to a self-managed ActivityInfo server
+#' activityInfoRootUrl("https://activityinfo.example.org")
 #'
 #' @export
 activityInfoRootUrl <- local({
   url <- "https://www.activityinfo.org"
-  function(newUrl, new.url) {
+  function(newUrl) {
     if (!missing(newUrl)) {
       url <<- newUrl
-      invisible()
-    } else if (!missing(new.url)) {
-      warning("The parameter new.url in activityInfoRootUrl is deprecated. Please switch to from new.url to newUrl.", call. = FALSE, noBreaks. = TRUE)
-      url <<- new.url
       invisible()
     } else {
       url
@@ -109,10 +109,23 @@ interactive2 <- function() {
 #' ActivityInfo API
 #'
 #' @description
-#' Configures the current session to use a personal token for authentication to \href{www.activityinfo.org}{ActivityInfo.org}
+#' Configures the current session to use a personal token for authentication to 
+#' the ActivityInfo Server. 
 #'
 #' @param token The personal token used to authenticate with to ActivityInfo.org
 #'
+#' @details 
+#' Users can generate a personal API token from the [Profile Settings](https://www.activityinfo.org/support/docs/m/84880/l/1333305.html)
+#' page of ActivityInfo's user interface. This token is used instead of a password
+#' when connecting to the ActivityInfo API.
+#' 
+#' When run interactively, you will be prompted to store the token locally on 
+#' your device. This avoids the need to provide the token each time you run
+#' a script. The token is stored in plaintext, however, so you should only 
+#' agree to store your token when your device is properly secured with a screenlock
+#' and not shared with others.
+#' 
+#' 
 #' @examples 
 #' \dontrun{
 #' activityInfoToken("<API TOKEN>")

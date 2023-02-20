@@ -55,6 +55,7 @@ activityInfoAPICondition <- function(result, type = NULL, task = NULL, call = sy
 #' @importFrom httr http_condition http_error status_code content
 activityInfoAPIConditionMessage <- function(result, type = "message", task = NULL, taskMessage = "%s returned") {
   if (is.null(task)) task <- sprintf("%s request to %s", result$request$method, result$url)
+  # if (!is.character(task)) task <- sprintf("Task object: %s", deparse(task))
   # resultContent <- content(result, as = "text", encoding = "UTF-8")
   resultContent <- content(result)
   if (is.list(resultContent) && !is.null(resultContent$code)) {
@@ -67,6 +68,9 @@ activityInfoAPIConditionMessage <- function(result, type = "message", task = NUL
 
 #' @importFrom httr http_error status_code
 checkForError <- function(result, task = NULL, requireStatus = NULL, call = sys.call(-1)) {
+  if (is.null(task) || length(task) == 0 || nchar(task) == 0) {
+    task <- "request"
+  }
   if (!is.null(requireStatus)) {
     if (!is.numeric(requireStatus)) stop("Required status codes must be provided in a numeric vector.")
     stats::na.fail(requireStatus)
@@ -120,6 +124,7 @@ getResource <- function(path, queryParams = list(), task = NULL, requireStatus =
 #' @importFrom rjson fromJSON
 #' @noRd
 postResource <- function(path, body, task = NULL, requireStatus = NULL, encode = "json", ...) {
+  
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
 
   if (getOption("activityinfo.verbose.requests")) message("Sending POST request to ", url)
@@ -163,5 +168,36 @@ putResource <- function(path, body, task = NULL, requireStatus = NULL, silent = 
     return(fromJSON(json))
   }
 
+  invisible()
+}
+
+#' deleteResource
+#' 
+#' @param path path to API endpoint (excluding the base URL and '/resources')
+#' @param body body
+#' @param task A string to explain what task is being performed. Will be shown if an error occurs.
+#'
+#' @importFrom httr DELETE accept_json content stop_for_status modify_url
+#' @importFrom rjson fromJSON
+#' @noRd
+deleteResource <- function(path, body = NULL, task = NULL, requireStatus = NULL, silent = FALSE, encode = "json", ...) {
+  url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
+  
+  if (getOption("activityinfo.verbose.requests")) message("Sending DELETE request to ", url)
+  
+  result <- DELETE(url, body = body, encode = encode, activityInfoAuthentication(), accept_json(), ...)
+  
+  message(sprintf("DELETE resources task: %s", task))
+  
+  condition <- checkForError(result, task = task, requireStatus = requireStatus, call = sys.call(-1))
+  
+  # also display (short) success message:
+  if (getOption("activityinfo.verbose.tasks")) message(condition)
+  
+  json <- content(result, as = "text", encoding = "UTF-8")
+  if (nzchar(json)) {
+    return(fromJSON(json))
+  }
+  
   invisible()
 }

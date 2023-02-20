@@ -1,11 +1,11 @@
 Package: activityinfo
 Type: Package
 Title: Query and update datasets from ActivityInfo.org
-Version: 4.31
-Date: 2023-01-11
-Author: Alex Bertram <alex@bedatadriven.com>
+Version: 4.32
+Date: 2023-02-20
+Author: Alex Bertram <alex@bedatadriven.com>, Nicholas Dickinson <dickinson@washnote.com>
 Maintainer: Alex Bertram <alex@bedatadriven.com>
-Description: An interface to ActivityInfo.org, which is an information management (IM) system.
+Description: An interface to ActivityInfo, an information management system.
 License: GPL-3
 Imports: stats, utils, httr, rjson, jsonlite, stringr
 Encoding: UTF-8
@@ -19,6 +19,7 @@ Suggests:
     rmarkdown,
     markdown,
     withr,
-    assertthat
+    assertthat,
+    purrr
 VignetteBuilder: knitr
 Config/testthat/edition: 3

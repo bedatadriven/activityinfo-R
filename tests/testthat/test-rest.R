@@ -1,8 +1,8 @@
 testthat::test_that("checkForError() send stop condition on http errors", {
-  testthat::expect_error(checkForError(GET("http://httpbin.org/status/404")), class = "http_404")
-  testthat::expect_error(checkForError(GET("http://httpbin.org/status/505")), class = "activityinfo_api")
-  testthat::expect_error(checkForError(GET("http://httpbin.org/status/204"), requireStatus = c(200, 206)), class = "activityinfo_api")
-  testthat::expect_no_error(checkForError(GET("http://httpbin.org/status/206"), requireStatus = c(200, 206)), class = "activityinfo_api")
+  testthat::expect_error(checkForError(GET("http://httpbin.org/status/404"), task = "Test 404"), class = "http_404")
+  testthat::expect_error(checkForError(GET("http://httpbin.org/status/505"), task = "Test 505"), class = "activityinfo_api")
+  testthat::expect_error(checkForError(GET("http://httpbin.org/status/204"), task = "Test 204", requireStatus = c(200, 206)), class = "activityinfo_api")
+  testthat::expect_no_error(checkForError(GET("http://httpbin.org/status/206"), task = "Test 206 no error", requireStatus = c(200, 206)), class = "activityinfo_api")
 })
 
 testthat::test_that("activityInfoAPICondition() returns correct conditions", {
@@ -33,9 +33,9 @@ testthat::test_that("activityInfoAPICondition() returns correct conditions", {
 })
 
 testthat::test_that("getResource() is working", {
-  testthat::expect_no_error(schema <- getResource(sprintf("form/%s/schema", personFormId)))
+  testthat::expect_no_error(schema <- getResource(sprintf("form/%s/schema", personFormId), task = "Testing getResource with a form schema."))
   testthat::expect_equal(schema$id, personFormId)
-  testthat::expect_error(getResource("form/INVALID/schema"), class = "activityinfo_api")
+  testthat::expect_error(getResource("form/INVALID/schema", task = "Testing getResource with an invalid form id."), class = "activityinfo_api")
 })
 
 testthat::test_that("Messages are being regulated by the package options during HTTP requests", {
@@ -73,6 +73,11 @@ testthat::test_that("Messages are being regulated by the package options during 
     })
   })
 })
+
+testthat::test_that("deleteResource() is working", {
+  
+})
+
 
 testthat::test_that("postResource() is working", {
 

@@ -2,17 +2,22 @@
 % Please edit documentation in R/auth.R
 \name{activityInfoRootUrl}
 \alias{activityInfoRootUrl}
-\title{Get or set the root url for the ActivityInfo}
+\title{Get or set the root url for the ActivityInfo server}
 \usage{
-activityInfoRootUrl(newUrl, new.url)
+activityInfoRootUrl(newUrl)
 }
 \arguments{
 \item{newUrl}{The new URL to set as the ActivityInfo root URL}
-
-\item{new.url}{Deprecated: please use newUrl. The new URL to set as the 
-ActivityInfo root URL}
 }
 \description{
-This call gets or sets the root url used for a session, \emph{valid only
-during the session}.
+Get or set the root url for the ActivityInfo server
+}
+\details{
+If you are using the [ActivityInfo Self-Managed Server](https://www.activityinfo.org/support/docs/self-managed/index.html),
+you can use this function to point the R package to your own server.
+}
+\examples{
+# Connect to a self-managed ActivityInfo server
+activityInfoRootUrl("https://activityinfo.example.org")
+
 }

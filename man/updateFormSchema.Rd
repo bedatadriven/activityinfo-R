@@ -9,6 +9,9 @@ updateFormSchema(schema)
 \arguments{
 \item{schema}{a form schema}
 }
+\value{
+Returns the updated form schema from the ActivityInfo server
+}
 \description{
 Updates a form schema
 }

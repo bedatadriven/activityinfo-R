@@ -1,43 +1,5 @@
 
 
-legacy <- function(domain, id) {
-  stopifnot(nchar(domain) == 1)
-  stopifnot(is.numeric(id))
-
-  sprintf("%s%010d", domain, id)
-}
-
-#' Returns the id of the form containing the sites
-#' associated with a 'classic' activity
-#' @param activityId The activity ID
-site.form.id <- function(activityId) legacy("a", activityId)
-
-#' Returns the id of the form containing the monthly reports
-#' associated with a 'classic' activity
-#' @param activityId The activity ID
-monthly.reports.form.id <- function(activityId) legacy("M", activityId)
-
-#' Returns the id of the form using the value of a 'classic' admin level form id
-#' @param adminLevelId The admin level ID
-admin.level.form.id <- function(adminLevelId) legacy("E", adminLevelId)
-
-#' Returns the name of the field containing the value of a 'classic' attribute group
-#' @param attributeGroupId The legacy ID
-attribute.field.name <- function(attributeGroupId) legacy("Q", attributeGroupId)
-
-#' Returns the name of the field containing the value of a 'classic' indicator
-#' @param indicatorId The legacy ID
-indicator.field.name <- function(indicatorId) legacy("i", indicatorId)
-
-
-extractOldId <- function(s) {
-  if (all(grepl("^[[:alpha:]]0*", s))) {
-    as.integer(sub("^[[:alpha:]]0*", "", s))
-  } else {
-    s
-  }
-}
-
 
 changeName <- function(x, from, to) {
   if (is.null(names(x))) {
@@ -76,19 +38,16 @@ getFormSchema <- function(formId) {
     task = sprintf("Getting form %s schema", formId)
   )
 
-  as.schema(schema)
+  asFormSchema(schema)
 }
 
 # Enforce some types to make other
 # operations easier
-as.schema <- function(schema) {
+asFormSchema <- function(schema) {
   schema$elements <- lapply(schema$elements, function(e) {
-    e$key <- identical(e$key, TRUE)
-    e$required <- identical(e$required, TRUE)
-    class(e) <- "formField"
-    e
+    asFormFieldSchema(e)
   })
-  class(schema) <- "formSchema"
+  class(schema) <- c("activityInfoFormSchema", "formSchema", class(schema))
   schema
 }
 
@@ -109,23 +68,23 @@ print.formSchema <- function(x, ...) {
   cat(sprintf("  elements: %d\n", length(schema$elements)))
 
   for (field in schema$elements) {
-    cat(sprintf("    %s: %s\n", field$id, field$label))
-    attrs <- c(
-      if (field$key) "Key" else NULL,
-      if (field$required) "Required" else NULL
-    )
-
-    if (length(attrs)) {
-      cat(sprintf("      %s\n", paste(attrs, collapse = ", ")))
-    }
-
-    if (is.character(field$description)) {
-      cat(sprintf("      description: %s\n", field$description))
-    }
-    cat(sprintf("      type: %s\n", field$type))
+    # cat(sprintf("    %s: %s\n", field$id, field$label))
+    # attrs <- c(
+    #   if (field$key) "Key" else NULL,
+    #   if (field$required) "Required" else NULL
+    # )
+    # 
+    # if (length(attrs)) {
+    #   cat(sprintf("      %s\n", paste(attrs, collapse = ", ")))
+    # }
+    # 
+    # if (is.character(field$description)) {
+    #   cat(sprintf("      description: %s\n", field$description))
+    # }
+    # cat(sprintf("      type: %s\n", field$type))
+    print(field)
   }
 }
-
 
 #' Flatten form schema to a table
 #'
@@ -163,44 +122,129 @@ as.data.frame.formSchema <- function(x, row.names = NULL, optional = FALSE, ...)
   )
 }
 
+#' Delete a form
+#' 
+#' Deletes a form given the form identifier and the database identifier of the 
+#' database containing that form.
+#' 
+#' @param databaseId The identifier of the database containing the form
+#' @param formId The identifier of the form
+#' 
+#' @export
+deleteForm <- function(databaseId, formId) {
+  request <- databaseUpdates()
+  request$resourceDeletions <- list(formId)
+  
+  result <- postResource(
+    sprintf("databases/%s", databaseId),
+    request,
+    task = sprintf("Requesting to delete form with id %s from database %s", formId, databaseId)
+  )
+  
+  tryCatch(
+    expr = {
+      getFormSchema(formId = formId)
+      stop(sprintf("Failed to delete form %s: it is still on the server.", formId))
+    }, 
+    error = function(e) {
+      message(sprintf("Confirmed deletion of form %s", formId))
+      invisible(TRUE)
+    }
+    )
+}
+
 #' Adds a new form to a database
+#' @rdname addForm
 #' @param databaseId the id of the database
 #' @param schema the schema of the form to add
 #' @param folderId the id of the folder to which this form should be added
+#' @param ... ignored
 #' @export
-addForm <- function(databaseId, schema, folderId = databaseId) {
-  schema$databaseId <- databaseId
+addForm <- function(...) {
+  UseMethod("addForm")
+}
 
+#' @export
+#' @rdname addForm
+addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
+  schema <- prepFormSchemaForUpload(schema)
+  
   request <- list(
     formResource = list(
       id = schema$id,
-      parentId = databaseId,
+      parentId = schema$databaseId,
       type = "FORM",
       label = schema$label,
       visibility = "PRIVATE"
     ),
     formClass = schema
   )
-
-  postResource(
-    sprintf("databases/%s/forms", databaseId),
+  
+  result <- postResource(
+    sprintf("databases/%s/forms", schema$databaseId),
     request,
-    task = sprintf("Adding a new form '%s' with id %s in database %s", schema$label, schema$id, databaseId)
+    task = sprintf("Adding a new form '%s' with id %s in database %s", schema$label, schema$id, schema$databaseId)
   )
+  
+  # The API returns all affected forms, as well as the database tree.
+  # Extract only the form we added
+  schemaResult <- result$forms[[ which(sapply(result$forms, function(f) f$id == schema$id)) ]]$schema
+  
+  asFormSchema(schemaResult)
+  
 }
 
+#' @export
+#' @rdname addForm
+addForm.character <- function(databaseId, schema, folderId = databaseId, ...) {
+  schema$databaseId <- databaseId
+  if (!("activityInfoFormSchema" %in% class(schema))) {
+    schema <- asFormSchema(schema)
+  }
+  addForm(schema, folderId)
+}
+
+#' @export
+#' @rdname addForm
+addForm.default <- addForm.character
+
+#' Create a blank form schema offline
+#'
+#' Generates a new form schema offline which can be used to build a new form
+#'
+#' @param databaseId The identifier of the database containing the form
+#' @param label The label of the form
+#' @param id The identifier of the form; if unused will generate a new cuid
+#' @param elements The elements/form fields of the form
+#' @param folderId The identifier of the folder containing the form
+#' @export
+formSchema <- function(databaseId, label, id = cuid(), elements = list(), folderId = databaseId) {
+  stopifnot(is.character(label))
+  stopifnot("The label must have one or more characters." = nchar(label)>0)
+  asFormSchema(list(
+    id = id,
+    databaseId = databaseId,
+    label = label,
+    elements = elements
+  ))
+}
+
+validateFormSchema <- function(form) {
+  stopifnot("activityInfoFormSchema" %in% class(form))
+  for(e in form$elements) {
+    isFormFieldSchema(e)
+  }
+}
 
 #' Updates a form schema
 #'
 #' @param schema a form schema
+#' 
+#' @return Returns the updated form schema from the ActivityInfo server
+#' 
 #' @export
 updateFormSchema <- function(schema) {
-  # Touch up structure to avoid problems with toJson
-  schema$elements <- lapply(schema$elements, function(x) {
-    n <- sapply(x, length)
-    x <- x[n != 0]
-    x
-  })
+  schema <- prepFormSchemaForUpload(schema)
 
   result <- postResource(
     sprintf("form/%s/schema", schema$id),
@@ -208,8 +252,18 @@ updateFormSchema <- function(schema) {
     task = sprintf("Update of form schema for form %s (%s)", schema$label, schema$id),
     requireStatus = 200
   )
+  
+  asFormSchema(result$forms[[1]]$schema)
+}
 
-  result
+# Touch up structure to avoid problems with toJson
+prepFormSchemaForUpload <- function(schema) {
+  schema$elements <- lapply(schema$elements, function(x) {
+    n <- sapply(x, length)
+    x <- x[n != 0]
+    x
+  })
+  schema
 }
 
 #' Queries the Form Tree of a Form

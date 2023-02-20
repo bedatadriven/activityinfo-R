@@ -8,6 +8,24 @@ getDatabases <- function() {
   getResource("databases", task = "Getting all databases")
 }
 
+databaseUpdates <- function() {
+  list(
+    resourceUpdates = list(),
+    resourceDeletions = list(),
+    lockUpdates = list(),
+    lockDeletions = list(),
+    roleUpdates = list(),
+    roleDeletions = list(),
+    languageUpdates = list(),
+    languageDeletions = list(),
+    originalLanguage = NULL,
+    continousTranslation = NULL,
+    translationFromDbMemory = NULL,
+    thirdPartyTranslation = NULL,
+    publishedTemplate = NULL
+  )
+}
+
 
 #' getDatabaseSchema
 #'
@@ -45,6 +63,80 @@ getDatabaseTree <- function(databaseId) {
   tree
 }
 
+#' getDatabaseResources
+#'
+#' Creates a data.frame of database resources, types, parentIds and ids. 
+#' This can be used to access a list of folders, forms, and sub-forms.
+#'
+#' @param databaseTree Database tree
+#' 
+#' @examples 
+#' \dontrun{
+#' dbTree <- getDatabaseTree("c9mudk52")
+#' dbResources <- getDatabaseResources(dbTree)
+#' folders <- dbResources[dbResources$type == "FOLDER",]
+#' forms <- dbResources[dbResources$type == "FORM",]
+#' subForms <- dbResources[dbResources$type == "SUB_FORM",]
+#' }
+#' 
+#' @export
+getDatabaseResources <- function(databaseTree) {
+  data.frame(
+    id = unlist(lapply(databaseTree$resources, function(x) {x$id})),
+    label = unlist(lapply(databaseTree$resources, function(x) {x$label})),
+    type = unlist(lapply(databaseTree$resources, function(x) {x$type})),
+    parentId = unlist(lapply(databaseTree$resources, function(x) {x$parentId})),
+    visibility = unlist(lapply(databaseTree$resources, function(x) {x$visibility}))
+  )
+}
+
+
+#' addDatabase
+#'
+#' Adds a new database.
+#' 
+#' @export
+#' @param label The new database label
+#' @param databaseId The new database identifier; a cuid will be generated if missing
+#' @examples
+#' \dontrun{
+#' newDb <- addDatabase("Programme information system")
+#' }
+addDatabase <- function(label, databaseId = cuid()) {
+  postResource(
+    "databases", 
+    body = list(
+      id = databaseId, 
+      label = label, 
+      templateId = "blank"
+      ), 
+    task = sprintf("Creating new database '%s' with id %s", label, databaseId)
+    )
+}
+
+#' deleteDatabase
+#'
+#' Deletes a database.
+#' 
+#' @export
+#' 
+#' @param databaseId database identifier
+#' 
+#' @examples
+#' \dontrun{
+#' deleteDatabase(databaseId = "c10011c3x5pnoldk0ua1qr")
+#' }
+deleteDatabase <- function(databaseId) {
+  result <- deleteResource(
+    paste("databases", databaseId, sep = "/"),
+    task = sprintf("Requesting deletion of database %s", databaseId)
+  )
+  if (is.list(result)&&!is.null(result$code)&&result$code=="DELETED") {
+    message(sprintf("Deletion of database %s confirmed.", databaseId))
+    return(result)
+  }
+  stop(sprintf("Error while deleting database %s: %s", databaseId, deparse(result)))
+}
 
 #' @export
 print.databaseTree <- function(x, ...) {
@@ -66,7 +158,9 @@ print.databaseTree <- function(x, ...) {
 #' getDatabaseUsers
 #'
 #' Retrieves the list of users with access to the database.
+#' 
 #' @param databaseId The database ID
+#' 
 #' @export
 getDatabaseUsers <- function(databaseId) {
   users <- getResource(
@@ -80,8 +174,10 @@ getDatabaseUsers <- function(databaseId) {
 #' getDatabaseUser
 #'
 #' Retrieves a user's role and permissions. Returns a NULL value if there is no user with the corresponding IDs.
+#' 
 #' @param databaseId The database ID
 #' @param userId The user ID
+#' 
 #' @export
 getDatabaseUser <- function(databaseId, userId) {
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "grants", sep = "/")
@@ -104,8 +200,10 @@ getDatabaseUser <- function(databaseId, userId) {
 #' getDatabaseUser2
 #'
 #' Retrieves a user's role and permissions. This will throw an error if no user is found instead of returning a NULL value.
+#' 
 #' @param databaseId The database ID
 #' @param userId The user ID
+#' 
 #' @export
 getDatabaseUser2 <- function(databaseId, userId) {
   url <- paste("databases", databaseId, "users", userId, "grants", sep = "/")
@@ -120,34 +218,56 @@ getDatabaseUser2 <- function(databaseId, userId) {
 #' @param email the user's email
 #' @param name the user's name (only used if they do not already have an ActivityInfo account)
 #' @param locale the locale ("en', "fr", "ar", etc) to use inviting the user (only used if they do not already have an ActivityInfo account)
-#' @param roleId the id of the role to assign to the user
+#' @param roleId the id of the role to assign to the user.
 #' @param roleParameters a named list containing the role parameter values
 #' @param roleResources a list of folders in which this role should be assigned (or the databaseId if they should have this role in the whole database)
-#'
-#'
-#' @importFrom jsonlite toJSON
+#' 
+#' @details 
+#' 
+#' This function adds a new user to a database and assigns them a role.
+#' 
+#' If there is no user account with the given email address, an email
+#' is sent in the given locale to the email address inviting the user to 
+#' activate their account.
+#' 
+#' If there is an ActivityInfo account with the given email address, an email is sent
+#' notifying the user of their new role.
+#' 
+#' In ActivityInfo, permissions are managed through _roles_. Roles include a set of
+#' permissions. When a user is assigned a role, they inherit those permissions from the 
+#' role. 
+#' 
+#' Some roles are _parameterized_. For example, the "Reporting Partner" role included
+#' in many database templates has a `partner` parameter that is used to filter which 
+#' records are visible to the user. The value of this parameter is the record id of the
+#' user's partner in the related Partner form.
+#'  
+#' @examples
+#' \dontrun{
+#' # Invite a user in the French locale, in the admin role. 
+#' # The invitation email will be in French.
+#' addDatabaseUser(databaseId = "ck3pqrp9a1z", 
+#'    email = "alice@example.fr",
+#'    name = "Alice Otieno", 
+#'    locale = "fr",
+#'    roleId = "admin")
+#'  
+#' # Add a user with a "Reporting Partner" role (rp) 
+#' redcrossPartnerRecordId <- "ck5m79b9c2"
+#' addDatabaseUser(databaseId = "ck3pqrp9a1z",
+#'    email = "bob@example.org",
+#'    name = "Bob",
+#'    roleId = "rp",
+#'    roleParameters = list(partner = redcrossPartnerRecordId))
+#' }
+#' 
 #' @importFrom stringr str_replace
+#' 
 #' @export
 addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId,
                             roleParameters = list(),
                             roleResources = list(databaseId)) {
   
-  # urlPreflight <- paste("databases", databaseId, "users", "preflight", sep = "/")
-  # 
-  # requestPreflight <- list(
-  #   email = email,
-  #   grants = list(),
-  #   name = "",
-  #   locale = "",
-  #   role = list(
-  #     id = "default",
-  #     parameters = NULL,
-  #     resources = list()
-  #   )
-  # )
-
-  #responsePreflight <- postResource(urlPreflight, body = requestPreflight)
-
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", sep = "/")
 
   request <- list(
@@ -193,6 +313,7 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
 #' @param userId the (numeric) id of the user to remove from the database.
 #'
 #' @importFrom httr DELETE
+#' 
 #' @export
 deleteDatabaseUser <- function(databaseId, userId) {
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, sep = "/")
@@ -215,6 +336,7 @@ deleteDatabaseUser <- function(databaseId, userId) {
 #' @param databaseId the id of the database
 #' @param userId the (numeric) id of the user to update
 #' @param assignment the role assignment, \code{\link[activityinfo]{roleAssignment}}
+#' 
 #' @examples 
 #' \dontrun{
 #'
@@ -254,6 +376,7 @@ updateUserRole <- function(databaseId, userId, assignment) {
 #' @param roleParameters a named list of parameters, if the role has any parameters
 #' @param roleResources the list of resources (database, folder, form, or report)
 #' to assign to this user. Using the databaseId assigns all resources to this user
+#' 
 #' @examples {
 #'   # Role assignment for a reporting role with a partner parameter
 #'   roleAssignment(
@@ -269,6 +392,7 @@ updateUserRole <- function(databaseId, userId, assignment) {
 #'     roleResources = c("cxa99335", "c8234234")
 #'   )
 #' }
+#' 
 #' @export
 roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
   stopifnot(is.list(roleParameters))
@@ -310,6 +434,7 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
 #' @param publish_reports Allows the user to publish reports.
 #' @param manage_roles Add, modify and delete roles
 #' @param manage_reference_data Manage reference data
+#' 
 #' @export
 #'
 permissions <- function(view = TRUE,
@@ -360,7 +485,9 @@ permissions <- function(view = TRUE,
 #' @param userId the (numeric) id of the user to update
 #' @param resourceId the id of the form or folder
 #' @param permissions the permissions to grant to the user for the given resource
+#' 
 #' @export
+#' 
 #' @examples 
 #' \dontrun{
 #' updateGrant(
@@ -396,6 +523,7 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #'
 #'
 #' @export
+#' 
 #' @examples 
 #' \dontrun{
 #' updateRole("cxy123", list(

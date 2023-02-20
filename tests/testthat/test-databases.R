@@ -1,3 +1,17 @@
+testthat::test_that("addDatabase() and deleteDatabase() works", {
+  testthat::expect_no_error({
+    dbTest <- addDatabase("Another test database on the fly!")
+    dbTestTree <- getDatabaseTree(databaseId = dbTest$databaseId)
+  })
+  testthat::expect_identical(dbTest$databaseId, dbTestTree$databaseId)
+  
+  testthat::expect_no_error({
+    result <- deleteDatabase(databaseId = dbTest$databaseId)
+  })
+  
+  testthat::expect_identical(result$code, "DELETED")
+})
+
 testthat::test_that("getDatabases() works", {
   testthat::expect_no_error({
     databasesObject <- getDatabases()
@@ -27,6 +41,24 @@ testthat::test_that("getDatabaseTree() works", {
   expectActivityInfoSnapshot(tree)
 })
 
+testthat::test_that("getDatabaseResources() works", {
+  testthat::expect_no_error({
+    dbTree <- getDatabaseTree(databaseId = database$databaseId)
+    dbResources <- getDatabaseResources(dbTree)
+    folders <- dbResources[dbResources$type == "FOLDER",]
+    forms <- dbResources[dbResources$type == "FORM",]
+    subForms <- dbResources[dbResources$type == "SUB_FORM",]
+  })
+  
+  dbResources <- dbResources[order(dbResources$id, dbResources$parentId, dbResources$label, dbResources$visibility),]
+  dbResources$id <- substr(dbResources$id,1,9)
+  dbResources$parentId <- substr(dbResources$parentId,1,9)
+  row.names(dbResources) <- NULL
+  dbResources <- canonicalizeActivityInfoObject(dbResources, replaceId = FALSE)
+  
+  
+  testthat::expect_snapshot(dbResources)
+})
 
 addTestUsers <- function(database, tree, nUsers = 1) {
   lapply(1:nUsers, function(x) {

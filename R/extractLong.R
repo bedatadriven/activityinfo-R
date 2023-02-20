@@ -45,6 +45,7 @@ getQuantityTable <- function(databaseId = NA, folderId, includeBlanks = FALSE) {
 executeJob <- function(type, descriptor) {
   
   request <- list(type = type,
+                  locale = "en",
                   descriptor = descriptor)
   
   job <- postResource("jobs", request)
@@ -60,7 +61,8 @@ executeJob <- function(type, descriptor) {
       break
     }
     if(!identical(status$state, "started")) {
-      stop(sprintf("Job failed. Code: %s, Message: %s", 
+      stop(sprintf("Job %s failed. Code: %s, Message: %s", 
+                   job$id,
                    status$error$code, 
                    status$error$message))
     }

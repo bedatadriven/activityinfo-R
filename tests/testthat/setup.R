@@ -114,10 +114,11 @@ setupBlankDatabase <- function(label) {
 }
 
 ##### Setup code #####
-preprodEndpoint <- Sys.getenv("PREPROD_TESTING_ENDPOINT")
 preprodRootUrl <- Sys.getenv("PREPROD_ROOT_URL")
 
-if (preprodEndpoint == "" || preprodRootUrl == "") stop("Pre-production environment variables are not available.")
+if (preprodRootUrl == "") stop("PREPROD_ROOT_URL environment variable is not set.")
+
+preprodEndpoint <- sprintf("%s/resources/testing", preprodRootUrl)
 
 # Isolate every test completely by creating a completely new user.
 # We will use the testing API to do this, which is only enabled in pre-production.
@@ -161,48 +162,24 @@ personFormId <- cuid()
 childrenSubformId <- cuid()
 
 addForm(database$databaseId,
-  schema =
-    list(
-      id = personFormId,
-      databaseId = database$databaseId,
-      label = "Person form",
-      elements = list(
-        list(
-          id = cuid(),
-          code = "NAME",
-          label = "Respondent name",
-          description = "Ask the respondent their name",
-          relevanceCondition = "",
-          validationCondition = "",
-          key = TRUE,
-          required = TRUE,
-          type = "FREE_TEXT",
-          typeParameters = list(
-            inputMask = "",
-            barcode = FALSE
-          ),
-          tableVisible = TRUE,
-          dataEntryVisible = TRUE
-        ),
-        list(
-          id = cuid(),
-          code = "CHILDREN",
-          label = "Children",
-          description = "List the children present in the household",
-          relevanceCondition = "",
-          validationCondition = "",
-          key = FALSE,
-          required = TRUE,
-          type = "subform",
-          typeParameters = list(
-            formId = childrenSubformId
-          ),
-          tableVisible = TRUE,
-          dataEntryVisible = TRUE
-        )
-      )
-    )
-)
+        schema =
+          list(
+            id = personFormId,
+            databaseId = database$databaseId,
+            label = "Person form",
+            elements = list(
+              textFieldSchema(
+                code = "NAME",
+                label = "Respondent name",
+                description = "Ask the respondent their name",
+                key = TRUE),
+              subformFieldSchema(
+                code = "CHILDREN",
+                label = "Children",
+                description = "List the children present in the household",
+                subformId = childrenSubformId)
+            )
+          ))
 
 # Add some records to the form
 addRecord(formId = personFormId, fieldValues = list(NAME = "Bob"))

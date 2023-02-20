@@ -373,7 +373,7 @@ selectFieldSchema <- function(cardinality, label, description = NULL, options = 
         typeParameters = list(
           "cardinality" = cardinality,
           "presentation" = "automatic",
-          "values" = options
+          "values" = toSelectOptions(options)
         )
       )
     )

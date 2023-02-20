@@ -180,11 +180,18 @@ addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
     formClass = schema
   )
   
-  postResource(
+  result <- postResource(
     sprintf("databases/%s/forms", schema$databaseId),
     request,
     task = sprintf("Adding a new form '%s' with id %s in database %s", schema$label, schema$id, schema$databaseId)
   )
+  
+  # The API returns all affected forms, as well as the database tree.
+  # Extract only the form we added
+  schemaResult <- result$forms[[ which(sapply(result$forms, function(f) f$id == schema$id)) ]]$schema
+  
+  asFormSchema(schemaResult)
+  
 }
 
 #' @export

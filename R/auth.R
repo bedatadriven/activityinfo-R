@@ -11,27 +11,27 @@ credentialsFile <- "~/.activityinfo.credentials"
 
 credentials <- environment()
 
-#' Get or set the root url for the ActivityInfo
+#' Get or set the root url for the ActivityInfo server
 #'
 #' @description
-#' This call gets or sets the root url used for a session, \emph{valid only
-#' during the session}.
+#' Get or set the root url for the ActivityInfo server
 #'
 #' @param newUrl The new URL to set as the ActivityInfo root URL
-#' @param new.url Deprecated: please use newUrl. The new URL to set as the 
-#' ActivityInfo root URL
 #'
+#' @details 
+#' If you are using the [ActivityInfo Self-Managed Server](https://www.activityinfo.org/support/docs/self-managed/index.html),
+#' you can use this function to point the R package to your own server. 
+#' 
+#' @examples
+#' # Connect to a self-managed ActivityInfo server
+#' activityInfoRootUrl("https://activityinfo.example.org")
 #'
 #' @export
 activityInfoRootUrl <- local({
   url <- "https://www.activityinfo.org"
-  function(newUrl, new.url) {
+  function(newUrl) {
     if (!missing(newUrl)) {
       url <<- newUrl
-      invisible()
-    } else if (!missing(new.url)) {
-      warning("The parameter new.url in activityInfoRootUrl is deprecated. Please switch to from new.url to newUrl.", call. = FALSE, noBreaks. = TRUE)
-      url <<- new.url
       invisible()
     } else {
       url

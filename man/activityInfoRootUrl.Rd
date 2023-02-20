@@ -4,15 +4,21 @@
 \alias{activityInfoRootUrl}
 \title{Get or set the root url for the ActivityInfo}
 \usage{
-activityInfoRootUrl(newUrl, new.url)
+activityInfoRootUrl(newUrl)
 }
 \arguments{
 \item{newUrl}{The new URL to set as the ActivityInfo root URL}
-
-\item{new.url}{Deprecated: please use newUrl. The new URL to set as the 
-ActivityInfo root URL}
 }
 \description{
-This call gets or sets the root url used for a session, \emph{valid only
-during the session}.
+This call gets or sets the root url used for a session, valid only
+during this session.
+}
+\details{
+If you are using the [ActivityInfo Self-Managed Server](https://www.activityinfo.org/support/docs/self-managed/index.html),
+you can use this function to point the R package to your own server.
+}
+\examples{
+# Connect to a self-managed ActivityInfo server
+activityInfoRootUrl("https://activityinfo.example.org")
+
 }

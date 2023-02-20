@@ -52,3 +52,23 @@ or any other type of question that can be answered with one option. Single
 Selection fields can be used in Prefix Formulas to customize Serial Numbers 
 too.
 }
+\seealso{
+Other field schemas: 
+\code{\link{attachmentFieldSchema}()},
+\code{\link{barcodeFieldSchema}()},
+\code{\link{calculatedFieldSchema}()},
+\code{\link{dateFieldSchema}()},
+\code{\link{formFieldSchema}()},
+\code{\link{geopointFieldSchema}()},
+\code{\link{monthFieldSchema}()},
+\code{\link{multilineFieldSchema}()},
+\code{\link{multipleSelectFieldSchema}()},
+\code{\link{quantityFieldSchema}()},
+\code{\link{referenceFieldSchema}()},
+\code{\link{sectionFieldSchema}()},
+\code{\link{serialNumberFieldSchema}()},
+\code{\link{subformFieldSchema}()},
+\code{\link{userFieldSchema}()},
+\code{\link{weekFieldSchema}()}
+}
+\concept{field schemas}

@@ -17,7 +17,8 @@
 #' @param validationRule Validation rules for the form field given as a single character string; default is ""
 #' @param reviewerOnly Whether the form field is for reviewers only; default is FALSE
 #' @param typeParameters The type parameters object specific to the type given.
-#'
+#' 
+#' @family field schemas
 #' @export
 formFieldSchema <- function(type, label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, typeParameters = NULL) {
   stopifnot("The label is required to be a character string" = (is.character(label)&&length(label)==1&&nchar(label)>0))
@@ -200,7 +201,8 @@ textFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(),
 #' Create a barcode form field schema
 #'
 #' @inheritParams formFieldSchema
-#'
+#' 
+#' @family field schemas
 #' @export
 barcodeFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   schema <- do.call(
@@ -228,7 +230,7 @@ barcodeFieldSchema <- function(label, description = NULL, code = NULL, id = cuid
 #' @param prefixFormula A formula as a character string defining the prefix for 
 #' the serial number
 #' @inheritParams formFieldSchema
-#'
+#' @family field schemas
 #' @export
 serialNumberFieldSchema <- function(label, description = NULL, digits = 5, prefixFormula = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   stopifnot("The prefix formula must be NULL or a character string" = is.null(prefixFormula)||(is.character(prefixFormula)&&length(prefixFormula)==1&&nchar(prefixFormula)>0))
@@ -259,7 +261,7 @@ serialNumberFieldSchema <- function(label, description = NULL, digits = 5, prefi
 #' @param units A character string describing the units, e.g. "litres per day"
 #' @param aggregation A character string giving the aggregation function; "SUM" 
 #' is default
-#'
+#' @family field schemas
 #' @export
 quantityFieldSchema <- function(label, description = NULL, units = "", aggregation = "SUM", code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   stopifnot("Units must be a character string (empty or not)" = is.character(units)&&length(units)==1)
@@ -288,7 +290,7 @@ quantityFieldSchema <- function(label, description = NULL, units = "", aggregati
 #' specific Form or an Extended Narrative. It cannot be a key field.
 #' 
 #' @inheritParams formFieldSchema
-#'
+#' @family field schemas
 #' @export
 multilineFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   schema <- do.call(
@@ -308,7 +310,7 @@ multilineFieldSchema <- function(label, description = NULL, code = NULL, id = cu
 #' is typed by a user it will always appear in this format.
 #' 
 #' @inheritParams formFieldSchema
-#'
+#' @family field schemas
 #' @export
 dateFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   schema <- do.call(
@@ -329,7 +331,7 @@ dateFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(),
 #' field uses the EPI week convention.
 #' 
 #' @inheritParams formFieldSchema
-#'
+#' @family field schemas
 #' @export
 weekFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   schema <- do.call(
@@ -348,7 +350,7 @@ weekFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(),
 #' The Month format in ActivityInfo is YYYY-MM.
 #' 
 #' @inheritParams formFieldSchema
-#'
+#' @family field schemas
 #' @export
 monthFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   schema <- do.call(
@@ -393,7 +395,7 @@ selectFieldSchema <- function(cardinality, label, description = NULL, options = 
 #' 
 #' @inheritParams formFieldSchema
 #' @param options A list of the single select field options
-#'
+#' @family field schemas
 #' @export
 singleSelectFieldSchema <- function(label, description = NULL, options = list(), code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   schema <- do.call(
@@ -413,7 +415,7 @@ singleSelectFieldSchema <- function(label, description = NULL, options = list(),
 #' 
 #' @inheritParams formFieldSchema
 #' @param options A list of the multiple select field options
-#'
+#' @family field schemas
 #' @export
 multipleSelectFieldSchema <- function(label, description = NULL, options = list(), code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   schema <- do.call(
@@ -472,7 +474,7 @@ toSelectOptions.factor <- function(options) {
 #' An attachments field cannot be a key field.
 #' 
 #' @inheritParams formFieldSchema
-#'
+#' @family field schemas
 #' @export
 attachmentFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   schema <- do.call(
@@ -502,7 +504,7 @@ attachmentFieldSchema <- function(label, description = NULL, code = NULL, id = c
 #' 
 #' @inheritParams formFieldSchema
 #' @param formula A character string with the calculation formula
-#'
+#' @family field schemas
 #' @export
 calculatedFieldSchema <- function(label, description = NULL, formula, code = NULL, id = cuid(), hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   stopifnot("Formula must be a character string" = is.character(formula)&&length(formula)==1&&nchar(formula)>0)
@@ -530,7 +532,7 @@ calculatedFieldSchema <- function(label, description = NULL, formula, code = NUL
 #' 
 #' @inheritParams formFieldSchema
 #' @param subformId The id of the sub-form
-#'
+#' @family field schemas
 #' @export
 subformFieldSchema <- function(label, description = NULL, subformId, code = NULL, id = cuid(), hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   stopifnot("The subform id must be a character string" = is.character(subformId)&&length(subformId)==1&&nchar(subformId)>0)
@@ -556,7 +558,7 @@ subformFieldSchema <- function(label, description = NULL, subformId, code = NULL
 #' 
 #' @inheritParams formFieldSchema
 #' @param referencedFormId The id of the referenced form
-#'
+#' @family field schemas
 #' @export
 referenceFieldSchema <- function(label, description = NULL, referencedFormId, code = NULL, id = cuid(), key = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   stopifnot("The referenced form id must be a character string" = is.character(referencedFormId)&&length(referencedFormId)==1&&nchar(referencedFormId)>0)
@@ -597,7 +599,7 @@ referenceFieldSchema <- function(label, description = NULL, referencedFormId, co
 #' @param requiredAccuracy Minimum required accuracy in metres/meters.
 #' @param manualEntryAllowed Whether coordinates may be added manually; default
 #' is TRUE
-#'
+#' @family field schemas
 #' @export
 geopointFieldSchema <- function(label, description = NULL, requiredAccuracy = NULL, manualEntryAllowed = TRUE, code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   stopifnot("requiredAccuracy must be a single numeric value or NULL" = is.null(requiredAccuracy)||(is.numeric(requiredAccuracy)&&length(requiredAccuracy)==1))
@@ -635,6 +637,7 @@ geopointFieldSchema <- function(label, description = NULL, requiredAccuracy = NU
 #' 
 #' @inheritParams formFieldSchema
 #' @param databaseId The database id of the form and users
+#' @family field schemas
 #' @export
 userFieldSchema <- function(label, description = NULL, databaseId, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
   stopifnot("`databaseId` must be a character string" = is.character(databaseId)&&length(databaseId)==1&&nchar(databaseId)>0)
@@ -662,7 +665,7 @@ userFieldSchema <- function(label, description = NULL, databaseId, code = NULL, 
 #' A special form field to define a section header for the form.
 #' 
 #' @inheritParams formFieldSchema
-#'
+#' @family field schemas
 #' @export
 sectionFieldSchema <- function(label, description = NULL) {
   schema <- do.call(

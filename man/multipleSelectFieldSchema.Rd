@@ -49,3 +49,23 @@ There is an options parameter for the list of multiple select items. Multiple
 Selection fields can be used to ask from users to select any number of 
 options as an answer.
 }
+\seealso{
+Other field schemas: 
+\code{\link{attachmentFieldSchema}()},
+\code{\link{barcodeFieldSchema}()},
+\code{\link{calculatedFieldSchema}()},
+\code{\link{dateFieldSchema}()},
+\code{\link{formFieldSchema}()},
+\code{\link{geopointFieldSchema}()},
+\code{\link{monthFieldSchema}()},
+\code{\link{multilineFieldSchema}()},
+\code{\link{quantityFieldSchema}()},
+\code{\link{referenceFieldSchema}()},
+\code{\link{sectionFieldSchema}()},
+\code{\link{serialNumberFieldSchema}()},
+\code{\link{singleSelectFieldSchema}()},
+\code{\link{subformFieldSchema}()},
+\code{\link{userFieldSchema}()},
+\code{\link{weekFieldSchema}()}
+}
+\concept{field schemas}

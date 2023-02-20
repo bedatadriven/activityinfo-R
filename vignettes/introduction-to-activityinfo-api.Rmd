@@ -1,15 +1,18 @@
 ---
-title: "Introduction to ActivityInfo API"
+title: "Introduction to ActivityInfo and R"
 author: "BeDataDriven B.V."
 date: "`r Sys.Date()`"
 layout: docArticle
 category: tutorials
+order: 0
 output:
   rmarkdown::html_vignette:
     toc: true
     toc_depth: 2
+relatedVideos:
+- /support/webinars/2022-09-22-introduction-to-R-and-ActivityInfo
 vignette: >
-  %\VignetteIndexEntry{Introduction to ActivityInfo API}
+  %\VignetteIndexEntry{Introduction to ActivityInfo and R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -26,12 +29,11 @@ knitr::opts_chunk$set(
 
 This tutorial is about the *ActivityInfo R Package* that is a client used to access to the *ActivityInfo API*. While this is an API client, names of functions and arguments are modelled more closely to web user interface to facilitate its use.
 
-With this client, you can programmatically obtain and modify your data.
+With this client, you can programmatically obtain and modify your data. You can also manage users, create new
+databases and forms, or define reports. Any thing else that is possible through
+ActivityInfo's user interface can be automated using the API and this R package.
 
-For the problems related to *ActivityInfo* itself, not API, please read the
-[ActivityInfo Documentation](https://www.activityinfo.org/support/docs/index.html) thoroughly or contact us.
-
-## 1. Install the R client
+## Install the R client
 
 First, you should install *ActivityInfo API R client* in your system.
 
@@ -46,9 +48,15 @@ Then, put the library call at the top of your script file.
 library(activityinfo)
 ```
 
-## 2. Authentication
+If you are using the [ActivityInfo Self-Managed  Server](http://localhost:4000/support/docs/self-managed/index.html), you must
+provide the URL of your server using [activityInfoRootUrl](../reference/activityInfoRootUrl.html)
 
-In order to access to the *ActivityInfo API*, an authentication process has first to be done. One must setup a personal access token using the ActivityInfo dashboard. Logging in by email and password through the API is now deprecated and insecure.
+## Authentication
+
+In order to access to the *ActivityInfo API*, an authentication process has first to be done. One must 
+[generate a personal access token](https://www.activityinfo.org/support/docs/m/84880/l/1333305.html)
+from the Profile Settings page in ActivityInfo. Logging in by email and password through the API is now
+deprecated and insecure.
 
 ```{r, eval=FALSE}
 activityInfoToken(token)
@@ -58,7 +66,7 @@ After the authentication process has been successfully completed, a prompt will 
 
 Before start working on the API calls, do not forget to restart your *R* session to have changes applied.
 
-## 3. Databases
+## Databases
 
 In order to get the database schemas that you have access to, use`getDatabaseSchema(databaseId)` call, which actually retrieves "`/resources/database/{databaseId}`" from the API.
 
@@ -67,7 +75,7 @@ db_schema <- getDatabaseSchema("ck35o0kja3")
 head(db_schema)
 ```
 
-## 4. Forms
+## Forms
 
 In order to get the form or sub-form schemas that you have access to, use `getFormSchema(databaseId)` call, which actually retrieves "`resources/form/{id}/schema`" from the API.
 
@@ -76,20 +84,9 @@ form_schema <- getFormSchema("ck35pixlz9")
 head(form_schema, 4)
 ```
 
-## 5. Querying
+## Querying
 
-#### 5.1. Querying databases/forms in "long" format 
-
-In the ActivityInfo API, this call requests "`resources/form/{formId}/query/rows`" (or `database` and `databaseId`) under the hood. The same call can be requested with `query/rows`; however, since *R* stores its data in column major format, there should generally be no reason to use `query/rows` from *R*.
-
-```{r, warning=FALSE}
-records <- getDatabaseRecordTable("ck35o0kja3", as.single.table = TRUE)
-head(records)
-```
-
-#### 5.2. Query individual forms as data.frame
-
-It's also possible to query individual forms as a `data.frame`. With the `columns` argument, it's possible to specify the query parameters for which columns to fetch and that can also be used to rename the column names.
+You can query an ActivityInfo form as a `data.frame`. With the `columns` argument, it's possible to specify the query parameters for which columns to fetch and that can also be used to rename the column names.
 
 ```{r}
 qt <- queryTable("ck2ll1o1ec", columns = c(

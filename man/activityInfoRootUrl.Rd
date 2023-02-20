@@ -2,7 +2,7 @@
 % Please edit documentation in R/auth.R
 \name{activityInfoRootUrl}
 \alias{activityInfoRootUrl}
-\title{Get or set the root url for the ActivityInfo}
+\title{Get or set the root url for the ActivityInfo server}
 \usage{
 activityInfoRootUrl(newUrl)
 }
@@ -10,8 +10,7 @@ activityInfoRootUrl(newUrl)
 \item{newUrl}{The new URL to set as the ActivityInfo root URL}
 }
 \description{
-This call gets or sets the root url used for a session, valid only
-during this session.
+Get or set the root url for the ActivityInfo server
 }
 \details{
 If you are using the [ActivityInfo Self-Managed Server](https://www.activityinfo.org/support/docs/self-managed/index.html),

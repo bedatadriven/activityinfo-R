@@ -44,3 +44,23 @@ A subform field can be used to define a field that contains a subform.
 \details{
 A subform field cannot be a key field.
 }
+\seealso{
+Other field schemas: 
+\code{\link{attachmentFieldSchema}()},
+\code{\link{barcodeFieldSchema}()},
+\code{\link{calculatedFieldSchema}()},
+\code{\link{dateFieldSchema}()},
+\code{\link{formFieldSchema}()},
+\code{\link{geopointFieldSchema}()},
+\code{\link{monthFieldSchema}()},
+\code{\link{multilineFieldSchema}()},
+\code{\link{multipleSelectFieldSchema}()},
+\code{\link{quantityFieldSchema}()},
+\code{\link{referenceFieldSchema}()},
+\code{\link{sectionFieldSchema}()},
+\code{\link{serialNumberFieldSchema}()},
+\code{\link{singleSelectFieldSchema}()},
+\code{\link{userFieldSchema}()},
+\code{\link{weekFieldSchema}()}
+}
+\concept{field schemas}

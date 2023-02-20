@@ -1,8 +1,11 @@
 ---
-title: "Create and manipulate databases and forms using R"
+title: "Add and manipulate databases and forms using R"
 output: rmarkdown::html_vignette
+layout: docArticle
+order: 10
+category: tutorials
 vignette: >
-  %\VignetteIndexEntry{Create and manipulate databases and forms using R}
+  %\VignetteIndexEntry{Add and manipulate databases and forms using R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,15 +21,15 @@ knitr::opts_chunk$set(
 library(activityinfo)
 ```
 
-# Introduction
+## Introduction
 
 This tutorial will provide a quick introduction to how to work with forms to create and manipulate them using R. This tutorial is about the *ActivityInfo R Package* that is a client used to access to the *ActivityInfo API*. While this is an API client, names of functions and arguments are modelled more closely to web user interface to facilitate its use.
 
-Note: in order to fully follow this tutorial you must have an ActivityInfo user account or a trail account with the permission to create a new database. Setup a free trial here: https://www.activityinfo.org/signUp
+Note: in order to fully follow this tutorial you must have an ActivityInfo user account or a trial account with the permission to add a new database. Setup a free trial here: https://www.activityinfo.org/signUp
 
-# 1. Creating a new database
+## Adding a new database
 
-To create a new database for this tutorial use `addDatabase(label)`.
+To add a new database for this tutorial use `addDatabase(label)`.
 
 ```{r eval=FALSE, include=TRUE}
 
@@ -92,10 +95,10 @@ dbUsers
 
 ```
 
-# 2. Forms
+## Forms
 
-Creating a new form is also possible in R in three steps:
-1. Create a form schema with `formSchema(databaseId, label, elements, folderId)`
+Adding a new form is also possible in R in three steps:
+1. Define a form schema with `formSchema(databaseId, label, elements, folderId)`
 2. Add new fields using `addFormField(formSchema/formId, schema, upload)`
 3. Upload the newly constructed schema to your database
 
@@ -167,7 +170,7 @@ getFormSchema(fmSchema$id)
 
 ```
 
-# List all forms and database resources
+## List all forms and database resources
 
 It is possible to access the list of all the database forms as a data.frame with the function `getDatabaseResources(databaseTree)`.
 

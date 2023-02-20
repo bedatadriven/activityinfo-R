@@ -97,7 +97,7 @@ getDatabaseResources <- function(databaseTree) {
 #' 
 #' @export
 #' @param label The new database label
-#' @param databaseId The new database identifier; a cuid will be created if left empty
+#' @param databaseId The new database identifier; a cuid will be generated if missing
 #' @examples
 #' \dontrun{
 #' newDb <- addDatabase("Programme information system")
@@ -218,11 +218,49 @@ getDatabaseUser2 <- function(databaseId, userId) {
 #' @param email the user's email
 #' @param name the user's name (only used if they do not already have an ActivityInfo account)
 #' @param locale the locale ("en', "fr", "ar", etc) to use inviting the user (only used if they do not already have an ActivityInfo account)
-#' @param roleId the id of the role to assign to the user
+#' @param roleId the id of the role to assign to the user.
 #' @param roleParameters a named list containing the role parameter values
 #' @param roleResources a list of folders in which this role should be assigned (or the databaseId if they should have this role in the whole database)
-#'
-#'
+#' 
+#' @details 
+#' 
+#' This function adds a new user to a database and assigns them a role.
+#' 
+#' If there is no user account with the given email address, an email
+#' is sent in the given locale to the email address inviting the user to 
+#' activate their account.
+#' 
+#' If there is an ActivityInfo account with the given email address, an email is sent
+#' notifying the user of their new role.
+#' 
+#' In ActivityInfo, permissions are managed through _roles_. Roles include a set of
+#' permissions. When a user is assigned a role, they inherit those permissions from the 
+#' role. 
+#' 
+#' Some roles are _parameterized_. For example, the "Reporting Partner" role included
+#' in many database templates has a `partner` parameter that is used to filter which 
+#' records are visible to the user. The value of this parameter is the record id of the
+#' user's partner in the related Partner form.
+#'  
+#' @examples
+#' \dontrun{
+#' # Invite a user in the French locale, in the admin role. 
+#' # The invitation email will be in French.
+#' addDatabaseUser(databaseId = "ck3pqrp9a1z", 
+#'    email = "alice@example.fr",
+#'    name = "Alice Otieno", 
+#'    locale = "fr",
+#'    roleId = "admin")
+#'  
+#' # Add a user with a "Reporting Partner" role (rp) 
+#' redcrossPartnerRecordId <- "ck5m79b9c2"
+#' addDatabaseUser(databaseId = "ck3pqrp9a1z",
+#'    email = "bob@example.org",
+#'    name = "Bob",
+#'    roleId = "rp",
+#'    roleParameters = list(partner = redcrossPartnerRecordId))
+#' }
+#' 
 #' @importFrom stringr str_replace
 #' 
 #' @export
@@ -230,22 +268,6 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
                             roleParameters = list(),
                             roleResources = list(databaseId)) {
   
-  # urlPreflight <- paste("databases", databaseId, "users", "preflight", sep = "/")
-  # 
-  # requestPreflight <- list(
-  #   email = email,
-  #   grants = list(),
-  #   name = "",
-  #   locale = "",
-  #   role = list(
-  #     id = "default",
-  #     parameters = NULL,
-  #     resources = list()
-  #   )
-  # )
-
-  #responsePreflight <- postResource(urlPreflight, body = requestPreflight)
-
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", sep = "/")
 
   request <- list(

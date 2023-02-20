@@ -9,7 +9,7 @@ addDatabase(label, databaseId = cuid())
 \arguments{
 \item{label}{The new database label}
 
-\item{databaseId}{The new database identifier; a cuid will be created if left empty}
+\item{databaseId}{The new database identifier; a cuid will be generated if missing}
 }
 \description{
 Adds a new database.

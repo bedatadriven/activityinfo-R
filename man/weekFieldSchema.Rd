@@ -46,3 +46,23 @@ The Week format in ActivityInfo is YYYY-WW. Users can directly type using
 this format or use the calendar to select a week. Please note that the Week 
 field uses the EPI week convention.
 }
+\seealso{
+Other field schemas: 
+\code{\link{attachmentFieldSchema}()},
+\code{\link{barcodeFieldSchema}()},
+\code{\link{calculatedFieldSchema}()},
+\code{\link{dateFieldSchema}()},
+\code{\link{formFieldSchema}()},
+\code{\link{geopointFieldSchema}()},
+\code{\link{monthFieldSchema}()},
+\code{\link{multilineFieldSchema}()},
+\code{\link{multipleSelectFieldSchema}()},
+\code{\link{quantityFieldSchema}()},
+\code{\link{referenceFieldSchema}()},
+\code{\link{sectionFieldSchema}()},
+\code{\link{serialNumberFieldSchema}()},
+\code{\link{singleSelectFieldSchema}()},
+\code{\link{subformFieldSchema}()},
+\code{\link{userFieldSchema}()}
+}
+\concept{field schemas}

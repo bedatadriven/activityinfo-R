@@ -52,3 +52,23 @@ the User field in your Form and a user who has added Records to the Form, is
 no longer active, instead of deleting that user, create a new Role empty of 
 permissions and assign it to that user.
 }
+\seealso{
+Other field schemas: 
+\code{\link{attachmentFieldSchema}()},
+\code{\link{barcodeFieldSchema}()},
+\code{\link{calculatedFieldSchema}()},
+\code{\link{dateFieldSchema}()},
+\code{\link{formFieldSchema}()},
+\code{\link{geopointFieldSchema}()},
+\code{\link{monthFieldSchema}()},
+\code{\link{multilineFieldSchema}()},
+\code{\link{multipleSelectFieldSchema}()},
+\code{\link{quantityFieldSchema}()},
+\code{\link{referenceFieldSchema}()},
+\code{\link{sectionFieldSchema}()},
+\code{\link{serialNumberFieldSchema}()},
+\code{\link{singleSelectFieldSchema}()},
+\code{\link{subformFieldSchema}()},
+\code{\link{weekFieldSchema}()}
+}
+\concept{field schemas}

@@ -43,3 +43,23 @@ Multi-Line Text fields can be used to collect long answers to open-ended
 questions. They could be used for example to collect Comments about a 
 specific Form or an Extended Narrative. It cannot be a key field.
 }
+\seealso{
+Other field schemas: 
+\code{\link{attachmentFieldSchema}()},
+\code{\link{barcodeFieldSchema}()},
+\code{\link{calculatedFieldSchema}()},
+\code{\link{dateFieldSchema}()},
+\code{\link{formFieldSchema}()},
+\code{\link{geopointFieldSchema}()},
+\code{\link{monthFieldSchema}()},
+\code{\link{multipleSelectFieldSchema}()},
+\code{\link{quantityFieldSchema}()},
+\code{\link{referenceFieldSchema}()},
+\code{\link{sectionFieldSchema}()},
+\code{\link{serialNumberFieldSchema}()},
+\code{\link{singleSelectFieldSchema}()},
+\code{\link{subformFieldSchema}()},
+\code{\link{userFieldSchema}()},
+\code{\link{weekFieldSchema}()}
+}
+\concept{field schemas}

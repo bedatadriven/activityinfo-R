@@ -45,3 +45,23 @@ dateFieldSchema(
 The Date format in ActivityInfo is YYYY-MM-DD so no matter the way the Date 
 is typed by a user it will always appear in this format.
 }
+\seealso{
+Other field schemas: 
+\code{\link{attachmentFieldSchema}()},
+\code{\link{barcodeFieldSchema}()},
+\code{\link{calculatedFieldSchema}()},
+\code{\link{formFieldSchema}()},
+\code{\link{geopointFieldSchema}()},
+\code{\link{monthFieldSchema}()},
+\code{\link{multilineFieldSchema}()},
+\code{\link{multipleSelectFieldSchema}()},
+\code{\link{quantityFieldSchema}()},
+\code{\link{referenceFieldSchema}()},
+\code{\link{sectionFieldSchema}()},
+\code{\link{serialNumberFieldSchema}()},
+\code{\link{singleSelectFieldSchema}()},
+\code{\link{subformFieldSchema}()},
+\code{\link{userFieldSchema}()},
+\code{\link{weekFieldSchema}()}
+}
+\concept{field schemas}

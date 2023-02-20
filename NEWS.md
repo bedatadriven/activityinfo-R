@@ -1,3 +1,11 @@
+## [4.32]
+- Helper functions to create ActivityInfo form and field schemas (#32)
+- Improve documentation and examples in package website (#35)
+- getDatabaseResources() to get database resources as a table (#61)
+- addField(), deleteField() (#62)
+- FIXED: importTable() cannot handle updates to fields of type "user" (#50)
+- FIXED: Support narrative (multi-line) text fields in importTable() #63
+
 ## [4.31]
 - Fixed error in messaging stack (#52)
 - Improved messaging in queryAuditLog() (#41)

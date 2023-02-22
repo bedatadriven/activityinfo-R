@@ -103,8 +103,10 @@ addFormFieldSchemaCustomClass <- function(e) {
   } else if (e$type == "enumerated") {
     if (e$typeParameters$cardinality == "single") {
       class(e) <- c("activityInfoSingleSelectFieldSchema", class(e))
+      class(e$typeParameters$values) <- c("activityInfoSelectOptions", "list")
     } else if (e$typeParameters$cardinality == "multiple") {
       class(e) <- c("activityInfoMultipleSelectFieldSchema", class(e))
+      class(e$typeParameters$values) <- c("activityInfoSelectOptions", "list")
     }
   } else if (e$type == "attachment") {
     class(e) <- c("activityInfoAttachmentFieldSchema", class(e))
@@ -443,28 +445,66 @@ toSelectOptions <- function(options) {
 
 #' @export
 toSelectOptions.character <- function(options) {
-  lapply(
-    options,
-    function(x) {
-      list(
-        id = cuid(), 
-        label = x)
+  if(length(unique(options))!=length(options)) stop("Select options must not contain any duplicates.")
+  if (!is.null(names(options))&&
+      length(names(options))==length(options)&&
+      length(unique(names(options)))==length(names(options))&&
+      !"" %in% names(options)
+  ) {
+    x <- list()
+    for (nm in names(options)) {
+      x <- c(x, list(list(
+        id = nm,
+        label = unname(options[[nm]])
+      )))
+    }
+  } else {
+    if (!is.null(names(options))) warning("Names provided for the options will be ignored and replaced. Supplied names must be unique to be used for an option id and there must be a name for each option defined.")
+    x <- lapply(
+      unname(options),
+      function(x) {
+        list(
+          id = cuid(), 
+          label = x)
       })
+  }
+  class(x) <- c("activityInfoSelectOptions", "list")
+  x
 }
 
 #' @export
 toSelectOptions.default <- toSelectOptions.character
 
-
 #' @export
 toSelectOptions.list <- function(options) {
-  options <- as.character(options)
+  if (
+    !is.null(names(options))
+    ) {
+    optionNames <- names(options)
+    options <- as.character(options)
+    names(options) <- optionNames
+  } else {
+    options <- as.character(options)
+  }
   toSelectOptions.character(options)
 }
 
 #' @export
 toSelectOptions.factor <- function(options) {
   toSelectOptions.character(levels(options))
+}
+
+#' @export
+toSelectOptions.activityInfoSelectOptions <- function(options) {
+  options
+}
+
+#' @export
+print.activityInfoSelectOptions <- function(x, ...) {
+  cat("ActivityInfo Select Options Object\n\tOption ID:\tOption Label\n")
+  for(option in 1:length(x)) {
+    cat(sprintf("\t%s:\t%s\n", x[[option]]$id, x[[option]]$label))
+  }
 }
 
 #' Create an attachment form field schema

@@ -189,3 +189,23 @@ recoverRecord <- function(formId, recordId) {
   postResource(path = path, NULL, task = sprintf("Recover record %s from form %s", recordId, formId))
 }
 
+#' Get a table of records
+#'
+#' @description
+#' This function will retrieve a remote table of records from the server. To download the table use the collect() function.
+#'
+#' @param formId a form id
+#' @param recordId a record id
+#' @export
+getRecords <- function() {
+  UseMethod("getRecords")
+}
+getRecords.character <- function(formId) {
+  
+}
+getRecords.activityInfoFormSchema <- function(form){
+  
+}
+getRecords.default <- getRecords.character
+
+

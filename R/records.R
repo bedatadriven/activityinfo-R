@@ -19,8 +19,8 @@ updateRecord <- function(formId, recordId, fieldValues) {
   )
 
   postResource(
-    path = "update", 
-    body = list(changes = changes), 
+    path = "update",
+    body = list(changes = changes),
     task = sprintf("Updating record %s in form %s", recordId, formId)
   )
 }
@@ -52,10 +52,10 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
                          sprintf("%s with parentRecordId %s", formId, parentRecordId)
                   )
   )
-  
+
   postResource(
-    path = "update", 
-    body = list(changes = changes), 
+    path = "update",
+    body = list(changes = changes),
     task = task
     )
 }
@@ -83,18 +83,18 @@ deleteRecord <- function(formId, recordId) {
   )
 
   postResource(
-    path = "update", 
-    body = list(changes = changes), 
+    path = "update",
+    body = list(changes = changes),
     task = sprintf("Delete record %s in form %s", recordId, formId)
     )
 }
 
 #' Gets the list of changes to a record
-#' 
-#' @description 
+#'
+#' @description
 #' This calls retrieves a list of all changes to the record, and the users
-#' who are 
-#' 
+#' who are
+#'
 #' @param formId a form id
 #' @param recordId a record id
 #' @export
@@ -106,11 +106,11 @@ getRecordHistory <- function(formId, recordId) {
 }
 
 #' Gets a single record
-#' 
+#'
 #' @param formId a form id
 #' @param recordId the record Id
 #' @export
-#' 
+#'
 getRecord <- function(formId, recordId) {
   getResource(
     sprintf("form/%s/record/%s", formId, recordId),
@@ -119,30 +119,30 @@ getRecord <- function(formId, recordId) {
 }
 
 #' Gets an attachment
-#' 
+#'
 #' Retrieve an attachment and store it to a temporary file. The name
 #' of the temporary file is returned.
-#' 
+#'
 #' @param formId a form id
 #' @param recordId the record Id
 #' @param fieldId the attachment field id
 #' @param blobId the attachment blob id
 #' @export
-#' 
+#'
 getAttachment <- function(formId, recordId, fieldId, blobId) {
-  url <- modify_url(activityInfoRootUrl(), path = sprintf("resources/form/%s/record/%s/field/%s/blob/%s/signature.png", 
-                                                          formId, 
+  url <- modify_url(activityInfoRootUrl(), path = sprintf("resources/form/%s/record/%s/field/%s/blob/%s/signature.png",
+                                                          formId,
                                                           recordId,
                                                           fieldId,
                                                           blobId))
   message("Sending GET request to ", url)
-  
+
   tmp <- tempfile()
-  
+
   result <- GET(url, activityInfoAuthentication(), accept_json(), write_disk(tmp))
-  
+
   checkForError(result)
-  
+
   if (result$status_code != 200) {
     stop(sprintf("Request for %s failed with status code %d %s: %s",
                  url, result$status_code, http_status(result$status_code)$message,
@@ -150,7 +150,7 @@ getAttachment <- function(formId, recordId, fieldId, blobId) {
   } else {
     message_for_status(result)
   }
-  
+
   tmp
 }
 
@@ -184,7 +184,7 @@ reference <- function(formId, recordId) {
 recoverRecord <- function(formId, recordId) {
   stopifnot(is.character(formId))
   stopifnot(is.character(recordId))
-  
+
   path<-sprintf("form/%s/record/%s/recover",formId,recordId)
   postResource(path = path, NULL, task = sprintf("Recover record %s from form %s", recordId, formId))
 }
@@ -192,7 +192,7 @@ recoverRecord <- function(formId, recordId) {
 #' Get a table of records
 #'
 #' @description
-#' This function will retrieve a remote table of records from the server. To download the table use the collect() function.
+#' This function will create a reference to records on the server. You can use this like a data.frame or to download the table use the collect() function.
 #'
 #' @param formId a form id
 #' @param recordId a record id
@@ -200,12 +200,35 @@ recoverRecord <- function(formId, recordId) {
 getRecords <- function() {
   UseMethod("getRecords")
 }
+
 getRecords.character <- function(formId) {
-  
+  getFormScema(formId)
 }
 getRecords.activityInfoFormSchema <- function(form){
-  
+  firstStep(form)
 }
 getRecords.default <- getRecords.character
+
+firstStep <- function(parent, env = caller_env()) {
+  stopifnot(inherits(parent, "activityInfoRemoteRecords"))
+
+  newStep(parent,
+          vars = names(parent)
+          )
+}
+
+formVars <- function(form) {
+  if(!missing(form)&&inherits(form, "activityInfoFormSchema")) {
+
+  }
+}
+
+newStep <- function(parent, vars = parent$vars) {
+
+}
+
+select.activityInfoRemoteRecords <- function() {
+  stop("Please first use collect() to download the table. select() is not yet implemented for records on the server.")
+}
 
 

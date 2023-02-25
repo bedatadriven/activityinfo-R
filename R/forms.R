@@ -277,22 +277,15 @@ getFormTree <- function(formId) {
     paste("form", formId, "tree", sep = "/"),
     task = sprintf("Getting form %s tree", formId)
   )
+  
+  if (length(tree$forms)==0) stop("The form id %s provided an empty form tree. Please check access rights and whether the id is correct.")
 
   # enforce some types to make other operations easier:
   tree$forms <- lapply(tree$forms, function(form) {
-    schema <- form$schema
-    schema$elements <- lapply(schema$elements, function(e) {
-      e$key <- identical(e$key, TRUE)
-      e$required <- identical(e$required, TRUE)
-      class(e) <- "formField"
-      e
-    })
-
-    class(schema) <- "formSchema"
-    schema
+    asFormSchema(form$schema)
   })
 
-  class(tree) <- "formTree"
+  class(tree) <- c("activityInfoFormTree", "formTree")
   tree
 }
 

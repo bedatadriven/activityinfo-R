@@ -11,6 +11,8 @@ credentialsFile <- "~/.activityinfo.credentials"
 
 credentials <- environment()
 
+# ---- activityInfoRootUrl() ----
+
 #' Get or set the root url for the ActivityInfo server
 #'
 #' @description
@@ -39,6 +41,7 @@ activityInfoRootUrl <- local({
   }
 })
 
+# ---- ActivityInfoAuthentication() ----
 
 #' Constructs a httr::authentication object from saved credentials
 #' from the user's home directory at ~/.activityinfo.credentials
@@ -80,6 +83,7 @@ activityInfoAuthentication <- local({
   }
 })
 
+# ---- Other functions ----
 credentialType <- function(credentials) {
   if (nchar(credentials) > 2) {
     if (grepl(credentials, pattern = ".+:.+")) {

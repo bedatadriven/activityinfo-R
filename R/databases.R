@@ -3,9 +3,16 @@
 #' Retrieves a list of databases the authenticated user owns, or has been shared
 #'  with
 #'
+#' @param asDf Default is false but if TRUE will return the list of databases as a dataframe.
+#'
 #' @export
-getDatabases <- function() {
-  getResource("databases", task = "Getting all databases")
+getDatabases <- function(asDf = FALSE) {
+  x <- getResource("databases", task = "Getting all databases")
+  if (asDf) {
+    do.call(rbind, lapply(x, data.frame))
+  } else {
+    x
+  }
 }
 
 databaseUpdates <- function() {

@@ -189,6 +189,9 @@ recoverRecord <- function(formId, recordId) {
   postResource(path = path, NULL, task = sprintf("Recover record %s from form %s", recordId, formId))
 }
 
+
+# ---- Get records ----
+
 #' Get a table of records
 #'
 #' @description
@@ -202,15 +205,160 @@ getRecords <- function() {
 }
 
 getRecords.character <- function(formId) {
-  getFormScema(formId)
+  getFormSchema(formId)
 }
+
 getRecords.activityInfoFormSchema <- function(form){
+  src <- form$databaseId
   firstStep(form)
 }
 getRecords.default <- getRecords.character
 
-firstStep <- function(parent, env = caller_env()) {
-  stopifnot(inherits(parent, "activityInfoRemoteRecords"))
+# ---- Functions to get correct column references ----
+
+# naming can be "id", "label", c("code", "label") or c("code", "id")
+columnVarStyle <- function(x) {
+  getOption("activityInfoColumnVarStyle", default = list(
+    referencedId = TRUE,
+    referencedKey = TRUE,
+    columnNames = c("code", "label")
+  ))
+}
+
+
+#' @export
+dimnames.activityInfoFormTree <- function(x) {
+  style <- attr(x, "style")
+  if (is.null(style)) style <- columnVarStyle()
+  
+  list(
+    NULL,
+    varNames(x, style)
+  )
+}
+
+#' @export
+dimnames.activityInfoFormSchema <- dimnames.activityInfoFormTree
+dimnames.activityInfoRemoteRecords <- dimnames.activityInfoFormSchema
+
+elementVarName <- function(y, style) {
+  colNameStyle <- style$columnNames[[1]]
+
+  if(colNameStyle == "code") {
+    message("Getting code")
+    colName <- y[["code"]]
+    if(is.null(colName)) {
+      message("No code")
+      if (length(style$columnNames)>1&&style$columnNames[[2]] %in% c("label", "id")) {
+        colNameStyle <- style$columnNames[[2]]
+      } else {
+        colNameStyle <- "id"
+      }
+    }
+  }
+  
+  message("colNameStyle = ", colNameStyle)
+  
+  # need to add escaping of labels
+  if(colNameStyle == "label") {
+    message("Checking label for name")
+    if(nchar(y[["label"]])>20) {
+      colNameStyle <- "id"
+    } else {
+      colName <- sprintf("[%s]", y[["label"]])
+    }
+  } 
+  
+  if (colNameStyle == "id") {
+    message("Checking id for name")
+    colName <- y[["id"]]
+  }
+  
+  colName
+}
+
+#' @export
+varNames <- function(x, style) {
+  UseMethod("varNames")
+}
+#' @export
+varNames.activityInfoFormTree <- function(x, style) {
+  fmSchema <- x$forms[[x$root]]
+  
+  unlist(lapply(fmSchema$elements, function(y) {
+
+    message("Checking name for ", y$label)
+    
+    colName <- NULL
+        
+    if (inherits(y,"activityInfoReferenceFieldSchema")) {
+      message("Checking reference field name")
+      
+      if (style$referencedId) colName <- elementVarName(y, style)
+      
+      if (style$referencedKey){
+        refId <- y$typeParameters$range[[1]]$formId
+        refFormSchema <- x$forms[[refId]]
+        refFormSchemaKey <- lapply(refFormSchema$elements, function(z) {
+          message("Checking reference table field name: ", z$label)
+          
+          if (z$key) {
+            message("Returning references key field: ", z$label)
+            z
+          } else {
+            NULL
+          }
+        })
+        refFormSchemaKey <- refFormSchemaKey[lengths(refFormSchemaKey)!=0]
+        c(colName, unlist(lapply(refFormSchemaKey, function(z) {
+          paste0(refId, ".", elementVarName(z, style))
+        })))
+      }
+
+    } else {
+      colName <- elementVarName(y, style)
+    }
+    
+    colName
+
+  }))
+}
+#' @export
+varNames.activityInfoFormSchema <- function(x, style) {
+  varNames(getFormTree(x$id), style)
+}
+varNames.activityInfoRemoteRecords <- function(x, style) {
+  
+}
+
+#elementToVarName(style)
+
+
+
+# ---- Lazy remote table ----
+
+# #' @export
+# dplyr::tbl
+#' @export
+tbl.src_activityInfoFormTree <- function(src, id, style, ...) {
+  stopifnot(id %in% src_tbls(src))
+  
+  rootForm <- src$formTree$forms[[src$formTree$root]]
+  
+  vars <- unlist(lapply(rootForm$elements, function(x) {elementToVar()}))
+
+  dplyr::make_tbl(
+    c("activityInfoRemoteRecords", "lazy"),
+    src = src,
+    step = firstStep(src, id, vars)
+  )
+
+}
+
+
+# ---- Lazy steps ----
+
+firstStep <- function(src, id, vars) {
 
   newStep(parent,
           vars = names(parent)
@@ -224,11 +372,37 @@ formVars <- function(form) {
 }
 
 newStep <- function(parent, vars = parent$vars) {
-
+  stopifnot(inherits(parent, "activityInfoRemoteRecords"))
+  
 }
+
+# ---- Source ----
+
+src_activityInfo <- function(x) {
+  UseMethod("src_activityInfo")
+}
+src_activityInfo.formTree <- function(formTree) {
+  dplyr::src(subclass = c("activityInfoFormTree", "activityInfo"), formTree = formTree)
+}
+src_activityInfo.databaseTree <- function(dbTree) {
+  dplyr::src(subclass = c("activityInfoDatabaseTree", "activityInfo"), databaseTree = dbTree)
+}
+
+# #' @export
+# dplyr::src_tbls
+
+#' @export
+src_tbls.src_activityInfoFormTree <- function(x, ...) {
+  names(x$formTree$forms)
+}
+#' @export
+src_tbls.src_activityInfoDatabaseTree <- function(x, ...) {
+  getDatabaseResources(dbTree)$id
+}
+
+# ---- Verbs ----
 
 select.activityInfoRemoteRecords <- function() {
   stop("Please first use collect() to download the table. select() is not yet implemented for records on the server.")
 }
-
 

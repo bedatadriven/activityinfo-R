@@ -4,7 +4,10 @@
 \alias{getDatabases}
 \title{getDatabases()}
 \usage{
-getDatabases()
+getDatabases(asDf = FALSE)
+}
+\arguments{
+\item{asDf}{Default is false but if TRUE will return the list of databases as a dataframe.}
 }
 \description{
 Retrieves a list of databases the authenticated user owns, or has been shared

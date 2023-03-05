@@ -20,30 +20,30 @@ canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate =
   recursiveCanonicalize <- function(x, path = "") {
     if (is.list(x)) {
       savedAttributes <- attributes(x)
-      
+
       x <- x[order(namesOrIndexes(x))]
-      
+
       # reorder names in saved attributes
       savedAttributes$names <- names(x)
-      
+
       if (replaceId) {
         n <- (grepl(pattern = "[Ii]d$", names(x)) &
                 !grepl(pattern = "roles", names(x))) |
           grepl(pattern = "email", names(x))
         x[n] <- "<id value>"
       }
-      
+
       if (replaceDate) {
         n <- grepl(pattern = "Time", names(x), ignore.case = TRUE) | grepl(pattern = "Date", names(x), ignore.case = TRUE)
         x[n] <- "<date or time value>"
       }
-      
+
       if (replaceResource) {
         n <- grepl(pattern = "resources", names(x)) & lengths(x) == 1
         x[n] <- list("Empty resources until we can ensure a sort order in the API.")
-        
+
         n <- grepl(pattern = "resources", names(x)) & lengths(x) > 1
-        
+
         # replace a list or vector of resource ids
         x[n] <- lapply(x[n], function(y) {
           if (is.recursive(y)) {
@@ -60,7 +60,7 @@ canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate =
         })
       }
 
-      
+
       x <- lapply(x, function(y) {
         recursiveCanonicalize(y, path = paste(c(path, path), collapse = "."))
       })
@@ -231,7 +231,7 @@ childrenNames <- paste0("child", 1:nChildren)
 childrenDOB <- withr::with_seed(100, as.Date("1990-01-01") + runif(nChildren, min = 1, max = 10000))
 childrenParent <- c(rep("Alice", nChildren / 2), rep("Bob", nChildren / 2))
 parentRecordId <- lapply(childrenParent, function(x) {
-  records[records$NAME == x, ]$X.id
+  records[records$NAME == x, ]$`@id`
 })
 
 lapply(1:nChildren, function(x) {

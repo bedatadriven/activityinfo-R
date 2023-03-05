@@ -10,7 +10,7 @@ getDatabaseResources(databaseTree)
 \item{databaseTree}{Database tree}
 }
 \description{
-Creates a data.frame of database resources, types, parentIds and ids. 
+Creates a data.frame of database resources, types, parentIds and ids.
 This can be used to access a list of folders, forms, and sub-forms.
 }
 \examples{

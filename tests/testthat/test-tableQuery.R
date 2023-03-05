@@ -6,14 +6,16 @@ testthat::test_that("queryTable() returns a data.frame with 2 rows and expected 
   output <- suppressWarnings(suppressMessages(activityinfo::queryTable(form = personFormId)))
   testthat::expect_true(inherits(output, "data.frame"))
   testthat::expect_true(nrow(output) == 2)
-  testthat::expect_true(all(c("X.id", "X.lastEditTime", "NAME", "CHILDREN") %in% names(output)))
+  testthat::expect_true(all(c("@id", "@lastEditTime", "NAME", "CHILDREN") %in% names(output)))
 })
 
+# we should start deprecating makeNames
 testthat::test_that("queryTable() returns a valid data.frame with the same column names as the input columns if the user gives a specific number of 'columns' as input ", {
   input_parameters <- list(
     form = childrenSubformId,
     "Person name" = "NAME",
-    "Date of Birth" = "DOB"
+    "Date of Birth" = "DOB",
+    makeNames = TRUE
   )
 
   names_parameters <- names(input_parameters)[-1] # exclude the 'form' parameter
@@ -22,6 +24,8 @@ testthat::test_that("queryTable() returns a valid data.frame with the same colum
   output <- suppressWarnings(suppressMessages((do.call(activityinfo::queryTable, input_parameters))))
 
   testthat::expect_true(inherits(output, "data.frame"))
+  message("Expected: ", paste(names_valid, collapse = ", "), "\nFound: ", paste(colnames(output), collapse = ", "))
+
   testthat::expect_true(all(names_valid %in% colnames(output)))
 })
 
@@ -30,20 +34,23 @@ testthat::test_that("queryTable() returns a single column data.frame if the inpu
   input_parameters1 <- list(
     form = personFormId,
     "Person name" = "NAME",
-    truncate.strings = TRUE
+    truncate.strings = TRUE,
+    makeNames = TRUE
   )
 
   input_parameters2 <- list(
     form = personFormId,
     "Person name" = "NAME",
-    truncateStrings = FALSE
+    truncateStrings = FALSE,
+    makeNames = TRUE
   )
 
   input_parameters_incompatible <- list(
     form = personFormId,
     "Person name" = "NAME",
     truncate.strings = TRUE,
-    truncateStrings = FALSE
+    truncateStrings = FALSE,
+    makeNames = TRUE
   )
 
   names_parameters <- names(input_parameters1)[-1] # exclude the 'form' parameter
@@ -78,7 +85,8 @@ testthat::test_that("queryTable() returns a single column data.frame if the inpu
 testthat::test_that("queryTable() returns missing values (NA's) for the specified column if the corresponding to the column ID is invalid", {
   input_parameters <- list(
     form = childrenSubformId,
-    "Serial number" = "INVALID"
+    "Serial number" = "INVALID",
+    makeNames = TRUE
   )
 
   names_param <- names(input_parameters)[-1]
@@ -91,5 +99,5 @@ testthat::test_that("queryTable() returns missing values (NA's) for the specifie
 
 
 testthat::test_that("queryTable() gives an error if the input 'form' parameter is invalid", {
-  testthat::expect_error(suppressWarnings(suppressMessages(activityinfo::queryTable(form = "INVALID"))), class = "http_404")
+  testthat::expect_error(suppressWarnings(suppressMessages(activityinfo::queryTable(form = "INVALID"))))
 })

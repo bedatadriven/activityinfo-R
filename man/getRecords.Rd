@@ -4,7 +4,7 @@
 \alias{getRecords}
 \title{Get a table of records}
 \usage{
-getRecords()
+getRecords(form)
 }
 \arguments{
 \item{formId}{a form id}

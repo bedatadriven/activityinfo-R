@@ -9,6 +9,9 @@ queryTable(
   columns,
   ...,
   truncateStrings = TRUE,
+  asTibble = TRUE,
+  makeNames = FALSE,
+  asUI = TRUE,
   truncate.strings = truncateStrings,
   filter
 )

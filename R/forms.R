@@ -24,7 +24,7 @@ changeName <- function(x, from, to) {
 #'
 #'
 #' @param formId the form identifier
-#' @examples 
+#' @examples
 #' \dontrun{
 #' formSchema <- getFormSchema("ck2lt9wp3g")
 #' formSchemaTable <- as.data.frame(getFormSchema("ck2lt9wp3g"))
@@ -73,11 +73,11 @@ print.formSchema <- function(x, ...) {
     #   if (field$key) "Key" else NULL,
     #   if (field$required) "Required" else NULL
     # )
-    # 
+    #
     # if (length(attrs)) {
     #   cat(sprintf("      %s\n", paste(attrs, collapse = ", ")))
     # }
-    # 
+    #
     # if (is.character(field$description)) {
     #   cat(sprintf("      description: %s\n", field$description))
     # }
@@ -122,30 +122,35 @@ as.data.frame.formSchema <- function(x, row.names = NULL, optional = FALSE, ...)
   )
 }
 
+#' @export
+as_tibble.formSchema <- function(x) {
+  as_tibble(as.data.frame(x))
+}
+
 #' Delete a form
-#' 
-#' Deletes a form given the form identifier and the database identifier of the 
+#'
+#' Deletes a form given the form identifier and the database identifier of the
 #' database containing that form.
-#' 
+#'
 #' @param databaseId The identifier of the database containing the form
 #' @param formId The identifier of the form
-#' 
+#'
 #' @export
 deleteForm <- function(databaseId, formId) {
   request <- databaseUpdates()
   request$resourceDeletions <- list(formId)
-  
+
   result <- postResource(
     sprintf("databases/%s", databaseId),
     request,
     task = sprintf("Requesting to delete form with id %s from database %s", formId, databaseId)
   )
-  
+
   tryCatch(
     expr = {
       getFormSchema(formId = formId)
       stop(sprintf("Failed to delete form %s: it is still on the server.", formId))
-    }, 
+    },
     error = function(e) {
       message(sprintf("Confirmed deletion of form %s", formId))
       invisible(TRUE)
@@ -168,7 +173,7 @@ addForm <- function(...) {
 #' @rdname addForm
 addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
   schema <- prepFormSchemaForUpload(schema)
-  
+
   request <- list(
     formResource = list(
       id = schema$id,
@@ -179,19 +184,19 @@ addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
     ),
     formClass = schema
   )
-  
+
   result <- postResource(
     sprintf("databases/%s/forms", schema$databaseId),
     request,
     task = sprintf("Adding a new form '%s' with id %s in database %s", schema$label, schema$id, schema$databaseId)
   )
-  
+
   # The API returns all affected forms, as well as the database tree.
   # Extract only the form we added
   schemaResult <- result$forms[[ which(sapply(result$forms, function(f) f$id == schema$id)) ]]$schema
-  
+
   asFormSchema(schemaResult)
-  
+
 }
 
 #' @export
@@ -239,9 +244,9 @@ validateFormSchema <- function(form) {
 #' Updates a form schema
 #'
 #' @param schema a form schema
-#' 
+#'
 #' @return Returns the updated form schema from the ActivityInfo server
-#' 
+#'
 #' @export
 updateFormSchema <- function(schema) {
   schema <- prepFormSchemaForUpload(schema)
@@ -252,7 +257,7 @@ updateFormSchema <- function(schema) {
     task = sprintf("Update of form schema for form %s (%s)", schema$label, schema$id),
     requireStatus = 200
   )
-  
+
   asFormSchema(result$forms[[1]]$schema)
 }
 
@@ -277,7 +282,7 @@ getFormTree <- function(formId) {
     paste("form", formId, "tree", sep = "/"),
     task = sprintf("Getting form %s tree", formId)
   )
-  
+
   if (length(tree$forms)==0) stop("The form id %s provided an empty form tree. Please check access rights and whether the id is correct.")
 
   # enforce some types to make other operations easier:
@@ -304,4 +309,69 @@ relocateForm <- function(formId, newDatabaseId) {
     body = list(databaseId = newDatabaseId),
     task = sprintf("Relocating form %s to database %s", formId, newDatabaseId)
   )
+}
+
+#' @export
+formSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyColumns = character(), logicalAsSingleSelect = TRUE, logicalText = c("True","False")) {
+  stopifnot("A data frame or tibble must be provided to formSchemaFromData()" = is.data.frame(x))
+  stopifnot("databaseId must be a singe character string" = is.character(databaseId)&&length(databaseId)==1)
+  stopifnot("The label for the new form schema must not be empty" = !missing(label)&&is.character(label)&&length(label)==1&&nchar(label)>0)
+  stopifnot("The folderId must be a single character string if defined" = is.character(folderId)&&length(folderId)==1)
+  stopifnot("The keyColumns named must be provided as a character vector" = is.character(keyColumns))
+  stopifnot("logicalAsSingelSelect must be TRUE or FALSE" = is.logical(logicalAsSingleSelect))
+  stopifnot("Logical text values must be length 2" = is.character(logicalText)&&length(logicalText)==2)
+
+  providedCols <- names(x)
+
+  fmSchema <- formSchema(databaseId, label, folderId)
+
+  addIt <- function(fieldSchema) {
+    fmSchema <<- addFormField(fmSchema, fieldSchema)
+  }
+
+  keyStop <- function(type, pCol) stop(sprintf("Column '%s' of type %s cannot be a key column", pCol, type))
+
+  x2 <- x
+
+  lapply(providedCols, function(pCol) {
+    y <- x[[pCol]]
+    fieldClass <- class(y)
+    key <- pCol %in% keyColumns
+
+    if ("character" %in% fieldClass) {      # check max length
+      # default to Narrative for longer fields > 255 characters
+      maxLength <- max(nchar(y, allowNA = TRUE, keepNA = FALSE))
+      if (maxLength < 256 || key) {
+        addIt(textFieldSchema(label = pCol, key = key))
+      } else {
+        addIt(multilineFieldSchema(label = pCol))
+      }
+    } else if ("factor" %in% fieldClass) {
+      # default to single select field using factor labels; they must be unique
+      addIt(singleSelectFieldSchema(label = pCol, options = levels(y), key = key))
+    } else if ("integer" %in% fieldClass) {
+      if (key) keyStop("quantity", pCol)
+      addIt(quantityFieldSchema(label = pCol))
+    } else if ("numeric" %in% fieldClass) {
+      if (key) keyStop("quantity", pCol)
+      addIt(quantityFieldSchema(label = pCol))
+    } else if ("logical" %in% fieldClass) {
+      if (logicalAsSingleSelect) {
+        x2[,pCol] <<- if_else(y, logicalText[[1]], logicalText[[2]], missing = NA_character_)
+        addIt(singleSelectFieldSchema(label = pCol, options = c(logicalText[[1]], logicalText[[2]]), key = key))
+      } else {
+        if (key) keyStop("quantity", pCol)
+        x2[,pCol] <<- if_else(y, 1L, 0L, missing = NA_integer_)
+        addIt(quantityFieldSchema(label = pCol))
+      }
+    } else if ("Date" %in% fieldClass) {
+      addIt(dateFieldSchema(label = pCol, key = key))
+    } else if ("POSIXt" %in% fieldClass) {
+      x2[,pCol] <<- as.character(y)
+      addIt(textFieldSchema(label = pCol, key = key))
+    } else {
+      stop(sprintf("Unrecognized column type with class (%s) in column %s", paste(fieldClass, collapse = ", "), pCol))
+    }
+  })
+  list(schema = fmSchema, data = x2)
 }

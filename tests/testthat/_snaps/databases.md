@@ -64,9 +64,11 @@
     Code
       dbResources
     Output
-               id       label  parentId     type visibility
-      1 c10000005 Person form c10000003     FORM    PRIVATE
-      2 c10000006    Children c10000005 SUB_FORM    PRIVATE
+      # A tibble: 2 x 5
+        id        label       parentId  type     visibility
+      * <chr>     <chr>       <chr>     <chr>    <chr>     
+      1 c10000005 Person form c10000003 FORM     PRIVATE   
+      2 c10000006 Children    c10000005 SUB_FORM PRIVATE   
 
 # addDatabaseUser() and deleteDatabaseUser() and getDatabaseUsers() and getDatabaseUser() and getDatabaseUser2() work
 

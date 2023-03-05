@@ -12,6 +12,6 @@ deleteForm(databaseId, formId)
 \item{formId}{The identifier of the form}
 }
 \description{
-Deletes a form given the form identifier and the database identifier of the 
+Deletes a form given the form identifier and the database identifier of the
 database containing that form.
 }

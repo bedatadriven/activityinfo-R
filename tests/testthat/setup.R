@@ -231,7 +231,7 @@ childrenNames <- paste0("child", 1:nChildren)
 childrenDOB <- withr::with_seed(100, as.Date("1990-01-01") + runif(nChildren, min = 1, max = 10000))
 childrenParent <- c(rep("Alice", nChildren / 2), rep("Bob", nChildren / 2))
 parentRecordId <- lapply(childrenParent, function(x) {
-  records[records$NAME == x, ]$`@id`
+  records[records$NAME == x, ]$`X.id`
 })
 
 lapply(1:nChildren, function(x) {

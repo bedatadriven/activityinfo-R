@@ -38,7 +38,7 @@
 #' ))
 #' }
 #' @export
-queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = TRUE, makeNames = FALSE, asUI = TRUE, truncate.strings = truncateStrings, filter) {
+queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FALSE, makeNames = TRUE, asUI = FALSE, truncate.strings = truncateStrings, filter) {
   if (!missing(truncate.strings)) {
     warning("The parameter truncate.strings in queryTable is deprecated. Please switch to from truncate.strings to truncateStrings.", call. = FALSE, noBreaks. = TRUE)
     if (missing(truncateStrings)) {
@@ -48,11 +48,9 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = TR
     }
   }
 
-  formTree <- NULL
   if (inherits(form, "activityInfoFormTree")) {
     # query the root form of a tree
     formId <- form$root
-    formTree <- form
   } else if (inherits(form, "activityInfoFormSchema")) {
     formId <- form$id
   } else if (is.character(form)) {
@@ -64,35 +62,21 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = TR
     stop("Unrecognized form provided to queryTable. Provide an id, form schema or form tree.")
   }
 
-  if(is.null(formTree)) {
-    formTree <- getFormTree(formId)
-  }
-
-  styleVars <- columnVarStyle(form)
-  styleTbl <- styleVars
-  if (styleVars$columnNames[[1]]=="ui") {
-    styleVars$columnNames <- c("code", "label")
-  } else {
-    if (asUI) styleTbl$columnNames <- "ui"
-  }
-
   if (missing(columns)) {
     columns <- list(...)
-    if (length(columns) < 1 && class(form) %in% c("activityInfoFormTree", "activityInfoFormSchema")) {
-      columns <- varNames(form, styleVars)
-      names(columns) <- varNames(form, styleTbl)
-    }
   }
 
   if (length(columns) == 0) {
-    return(parseColumnSet(getResource(sprintf("form/%s/query/columns", formId), task = sprintf("Getting form %s data.", formId)), asTibble))
+    df <- parseColumnSet(getResource(sprintf("form/%s/query/columns", formId), task = sprintf("Getting form %s data.", formId)), asTibble, makeNames)
+    if (makeNames&&asTibble) {
+      names(df) <- make.names(names(df), unique = TRUE)
+    }
+    return(df)
   }
 
   stopifnot(length(columns) > 0)
 
-  if (makeNames) {
-    names(columns) <- make.names(names(columns), unique = TRUE)
-  }
+  if (makeNames) names(columns) <- make.names(names(columns), unique = TRUE)
 
   query <- list(
     rowSources = list(
@@ -113,7 +97,7 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = TR
   }
 
   columnSet <- postResource("query/columns", query, task = sprintf("Getting form %s data for specified columns.", formId))
-  df <- parseColumnSet(columnSet, asTibble)
+  df <- parseColumnSet(columnSet, asTibble, makeNames)
 
   # make sure we have a column for each name
   for (cn in names(columns)) {
@@ -126,24 +110,18 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = TR
   df <- subset(df, subset = TRUE, select = names(columns))
 
   stopifnot(is.data.frame(df))
-
-  attr(df, "tree") <- formTree
-  attr(df, "style") <- columnVarStyle(formTree)
-
-  if (asTibble) {
-    class(df) <- c("tbl_activityInfo", class(df))
-  }
-
   return(df)
 }
 
 na.if.null <- function(x) if (is.null(x)) NA else x
 
-parseColumnSet <- function(columnSet, asTibble = TRUE) {
+parseColumnSet <- function(columnSet, asTibble = TRUE, makeNames = TRUE) {
   if (asTibble) {
     asDf <- dplyr::as_tibble
   } else {
-    asDf <- as.data.frame
+    asDf <- function(x) {
+      as.data.frame(x, stringsAsFactors = FALSE, check.names = makeNames)
+    }
   }
 
   asDf(
@@ -195,8 +173,7 @@ parseColumnSet <- function(columnSet, asTibble = TRUE) {
         stop("Internal error: Column length is inconsistent. Contact support@activityinfo.org")
       }
       cv
-    }),
-    stringsAsFactors = FALSE
+    })
   )
 }
 

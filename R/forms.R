@@ -325,10 +325,7 @@ formSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyC
 
   fmSchema <- formSchema(databaseId, label, folderId)
 
-  addIt <- function(fieldSchema) {
-    fmSchema <<- addFormField(fmSchema, fieldSchema)
-  }
-
+  addIt <- function(fieldSchema) fmSchema <<- addFormField(fmSchema, fieldSchema)
   keyStop <- function(type, pCol) stop(sprintf("Column '%s' of type %s cannot be a key column", pCol, type))
 
   x2 <- x
@@ -338,12 +335,16 @@ formSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyC
     fieldClass <- class(y)
     key <- pCol %in% keyColumns
 
-    if ("character" %in% fieldClass) {      # check max length
-      # default to Narrative for longer fields > 255 characters
+    if ("character" %in% fieldClass) {
       maxLength <- max(nchar(y, allowNA = TRUE, keepNA = FALSE))
-      if (maxLength < 256 || key) {
+      hasNewLine <- any(grepl("(\\r\\n|\\r|\\n)", y))
+      if ((maxLength>1024||hasNewLine)&&key) {
+        stop(sprintf("Key column %s values invalid. Check for linebreaks or values with >1024 characters.", pCol))
+      }
+      if (!hasNewLine&&maxLength<=1024) {
         addIt(textFieldSchema(label = pCol, key = key))
       } else {
+        # default to Narrative for longer fields > 1024 characters and fields with new lines
         addIt(multilineFieldSchema(label = pCol))
       }
     } else if ("factor" %in% fieldClass) {
@@ -367,10 +368,11 @@ formSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyC
     } else if ("Date" %in% fieldClass) {
       addIt(dateFieldSchema(label = pCol, key = key))
     } else if ("POSIXt" %in% fieldClass) {
+      warning(sprintf("POSIXt time+date column %s will be a text form field. Separate date into another column to store as date.", pCol))
       x2[,pCol] <<- as.character(y)
       addIt(textFieldSchema(label = pCol, key = key))
     } else {
-      stop(sprintf("Unrecognized column type with class (%s) in column %s", paste(fieldClass, collapse = ", "), pCol))
+      stop(sprintf("Unrecognized column type with class(es) (%s) in column %s", paste(fieldClass, collapse = ", "), pCol))
     }
   })
   list(schema = fmSchema, data = x2)

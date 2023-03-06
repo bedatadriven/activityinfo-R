@@ -223,7 +223,8 @@ getRecords.default <- getRecords.character
 
 # ---- Functions to get correct column references ----
 
-# naming can be "id", "label", c("code", "label") or c("code", "id")
+# naming can be "id", "label", c("code", "label") or c("code", "id") or "ui"
+#' @export
 columnVarStyle <- function(x) {
   if (!missing(x)) {
     style <- attr(x, "style")
@@ -292,14 +293,14 @@ elementVarName <- function(y, style) {
 }
 
 #' @export
-uiColumns <- function(x, select) {
+prettyColumns <- function(x, select) {
   styleId <- columnVarStyle()
   styleId$columnNames <- "id"
   styleId$allReferenceFields = FALSE
   styleId$referencedKey = TRUE
 
 
-  styleUI <- style
+  styleUI <- styleId
   styleUI$columnNames <- "ui"
   styleId$allReferenceFields = FALSE
   styleId$referencedKey = TRUE
@@ -307,18 +308,42 @@ uiColumns <- function(x, select) {
   columns <- varNames(x, styleId)
   names(columns) <- varNames(x, styleUI)
 
-  if(!missing(select)) {
-    stopifnot("select must be character vector of UI column names." = is.character(select))
+  selectColumns(columns, select)
+}
 
-    columns <- columns[select]
+#' @export
+formStyleColumns <- function(x, select) {
+  styleTbl <- columnVarStyle(x)
 
-    # remove null elements
-    columns[sapply(columns, is.null)] <- NULL
-
-    columns
+  styleVars <- styleTbl
+  if (styleVars$columnNames[[1]]=="ui") {
+    styleVars$columnNames <- "id"
   }
+  
+  columns <- varNames(x, styleVars)
+  names(columns) <- varNames(x, styleTbl)
+  
+  selectColumns(columns, select)
+}
 
+selectColumns <- function(columns, select) {
+  if(!missing(select)) {
+    stopifnot("select must be a character vector of column names." = is.character(select))
+    columns <- columns[select]
+    columns[sapply(columns, is.null)] <- NULL
+  }
   columns
+}
+
+#' @export
+setStyle <- function(x, referencedId = TRUE, referencedKey = TRUE, allReferenceFields = FALSE, columnNames = c("code", "label")) {
+  attr(x, "style") <- list(
+    "referencedId" = referencedId,
+    "referencedKey" = referencedKey,
+    "allReferenceFields" = allReferenceFields,
+    "columnNames" = columnNames
+  )
+  x
 }
 
 #' @export
@@ -375,9 +400,9 @@ varNames.activityInfoFormTree <- function(x, style = columnVarStyle(x)) {
 varNames.activityInfoFormSchema <- function(x, style = columnVarStyle(x)) {
   varNames(getFormTree(x$id), style)
 }
-varNames.activityInfoRemoteRecords <- function(x, style = columnVarStyle(x)) {
-
-}
+# varNames.activityInfoRemoteRecords <- function(x, style = columnVarStyle(x)) {
+# 
+# }
 
 #elementToVarName(style)
 
@@ -445,7 +470,7 @@ src_tbls.src_activityInfoFormTree <- function(x, ...) {
 }
 #' @export
 src_tbls.src_activityInfoDatabaseTree <- function(x, ...) {
-  getDatabaseResources(dbTree)$id
+  getDatabaseResources(x)$id
 }
 
 # ---- Verbs ----

@@ -305,7 +305,7 @@ queryLookupTable <- function(formId, keyFieldIds) {
   names(columns) <- sprintf("k%d", seq_along(keyFieldIds))
   columns[["id"]] <- "_id"
 
-  queryTable(formId, columns, truncate.strings = FALSE)
+  queryTable(formId, columns, truncateStrings = FALSE)
 }
 
 formatImport <- function(data, recordId, parentId, fieldIds, fieldValues) {

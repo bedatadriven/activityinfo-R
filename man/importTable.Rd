@@ -4,7 +4,7 @@
 \alias{importTable}
 \title{Batch imports a data.frame into an ActivityInfo form}
 \usage{
-importTable(formId, data, recordIdColumn, parentIdColumn)
+importTable(formId, data, recordIdColumn, parentIdColumn, stageDirect = TRUE)
 }
 \arguments{
 \item{formId}{The form ID}
@@ -14,6 +14,8 @@ importTable(formId, data, recordIdColumn, parentIdColumn)
 \item{recordIdColumn}{The record ID column}
 
 \item{parentIdColumn}{The parent ID column required when importing a subform}
+
+\item{stageDirect}{Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.}
 }
 \description{
 Batch imports a data.frame into an ActivityInfo form

@@ -4,10 +4,12 @@
 \alias{stageImport}
 \title{Stages data to import to ActivityInfo}
 \usage{
-stageImport(text)
+stageImport(text, direct = TRUE)
 }
 \arguments{
 \item{text}{The text of the file to import.}
+
+\item{direct}{Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.}
 }
 \description{
 Stages data to import to ActivityInfo

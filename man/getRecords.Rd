@@ -4,10 +4,10 @@
 \alias{getRecords}
 \title{Get a table of records}
 \usage{
-getRecords(form)
+getRecords(form, ...)
 }
 \arguments{
-\item{formId}{a form id}
+\item{form}{a form id, form schema or form tree}
 
 \item{recordId}{a record id}
 }

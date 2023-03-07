@@ -38,7 +38,7 @@
 #' ))
 #' }
 #' @export
-queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FALSE, makeNames = TRUE, asUI = FALSE, truncate.strings = truncateStrings, filter) {
+queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FALSE, makeNames = TRUE, asUI = FALSE, truncate.strings = truncateStrings, filter, window) {
   if (!missing(truncate.strings)) {
     warning("The parameter truncate.strings in queryTable is deprecated. Please switch to from truncate.strings to truncateStrings.", call. = FALSE, noBreaks. = TRUE)
     if (missing(truncateStrings)) {
@@ -94,6 +94,11 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
   if (!missing(filter)) {
     stopifnot(is.character(filter))
     query$filter <- filter
+  }
+
+  if (!missing(window)) {
+    stopifnot(is.integer(window)&&length(window)==2&&min(window)>=0)
+    query$window <- window
   }
 
   columnSet <- postResource("query/columns", query, task = sprintf("Getting form %s data for specified columns.", formId))

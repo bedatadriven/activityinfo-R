@@ -189,7 +189,6 @@ recoverRecord <- function(formId, recordId) {
   postResource(path = path, NULL, task = sprintf("Recover record %s from form %s", recordId, formId))
 }
 
-
 # ---- Get records ----
 
 #' Get a table of records
@@ -197,51 +196,51 @@ recoverRecord <- function(formId, recordId) {
 #' @description
 #' This function will create a reference to records on the server. You can use this like a data.frame or to download the table use the collect() function.
 #'
-#' @param formId a form id
+#' @param form a form id, form schema or form tree
 #' @param recordId a record id
 #' @export
-getRecords <- function(form) {
+getRecords <- function(form, ...) {
   UseMethod("getRecords")
 }
 #' @export
-getRecords.character <- function(form) {
-  getRecords.activityInfoFormTree(getFormTree(form))
+getRecords.character <- function(form, ...) {
+  style <- getStyle()
+  getRecords(getFormTree(form))
 }
 #' @export
-getRecords.activityInfoFormSchema <- function(form){
+getRecords.activityInfoFormSchema <- function(form, ...){
   formTree <- getFormTree(form$id)
   attr(formTree, "style") <- attr(form, "style")
-  getRecords.activityInfoFormTree(formTree)
+  getRecords(formTree)
 }
 #' @export
-getRecords.activityInfoFormTree <- function(form) {
+getRecords.activityInfoFormTree <- function(form, ...) {
   src <- src_activityInfo(form)
   tbl(src, form$root)
 }
 
 getRecords.default <- getRecords.character
 
+print.tbl_activityInfoRemoteRecords <- function(x) {
+
+}
+
 # ---- Functions to get correct column references ----
 
 # naming can be "id", "label", c("code", "label") or c("code", "id") or "ui"
 #' @export
-columnVarStyle <- function(x) {
+getStyle <- function(x) {
   if (!missing(x)) {
     style <- attr(x, "style")
     if (!is.null(style)) return(style)
   }
-  getOption("activityInfoColumnVarStyle", default = list(
-    referencedId = TRUE,
-    referencedKey = TRUE,
-    allReferenceFields = FALSE,
-    columnNames = c("code", "label")
-  ))
+  getOption("activityInfogetStyle", default = defaultStyle())
 }
 
 
 #' @export
 dimnames.activityInfoFormTree <- function(x) {
-  style <- columnVarStyle(x)
+  style <- getStyle(x)
 
   list(
     NULL,
@@ -294,7 +293,7 @@ elementVarName <- function(y, style) {
 
 #' @export
 prettyColumns <- function(x, select) {
-  styleId <- columnVarStyle()
+  styleId <- getStyle()
   styleId$columnNames <- "id"
   styleId$allReferenceFields = FALSE
   styleId$referencedKey = TRUE
@@ -312,17 +311,17 @@ prettyColumns <- function(x, select) {
 }
 
 #' @export
-formStyleColumns <- function(x, select) {
-  styleTbl <- columnVarStyle(x)
+styleColumns <- function(x, select) {
+  styleTbl <- getStyle(x)
 
   styleVars <- styleTbl
   if (styleVars$columnNames[[1]]=="ui") {
     styleVars$columnNames <- "id"
   }
-  
+
   columns <- varNames(x, styleVars)
   names(columns) <- varNames(x, styleTbl)
-  
+
   selectColumns(columns, select)
 }
 
@@ -336,25 +335,47 @@ selectColumns <- function(columns, select) {
 }
 
 #' @export
-setStyle <- function(x, referencedId = TRUE, referencedKey = TRUE, allReferenceFields = FALSE, columnNames = c("code", "label")) {
-  attr(x, "style") <- list(
+setStyle <- function(x = NULL,
+    referencedId = TRUE,
+    referencedKey = TRUE,
+    allReferenceFields = FALSE,
+    columnNames = c("code", "label"),
+    recordId = FALSE,
+    lastEditedTime = FALSE) {
+
+  style <- list(
     "referencedId" = referencedId,
     "referencedKey" = referencedKey,
     "allReferenceFields" = allReferenceFields,
-    "columnNames" = columnNames
+    "columnNames" = columnNames,
+    "recordId" = recordId,
+    "lastEditedTime" = lastEditedTime
   )
-  x
+
+  if (!is.null(x)) {
+    attr(x, "style") <- style
+    return(x)
+  } else {
+    return(style)
+  }
 }
 
+defaultStyle <- function() setStyle()
+
 #' @export
-varNames <- function(x, style = columnVarStyle(x)) {
+varNames <- function(x, style = getStyle(x)) {
   UseMethod("varNames")
 }
 #' @export
-varNames.activityInfoFormTree <- function(x, style = columnVarStyle(x)) {
+varNames.activityInfoFormTree <- function(x, style = getStyle(x)) {
   fmSchema <- x$forms[[x$root]]
 
-  unlist(lapply(fmSchema$elements, function(y) {
+  vrNames <- character()
+
+  if (style$recordId) vrNames[length(vrNames)+1] <- "_id"
+  if (style$lastEditedTime) vrNames[length(vrNames)+1] <- "_lastEditTime"
+
+  c(vrNames, unlist(lapply(fmSchema$elements, function(y) {
 
     colName <- NULL
 
@@ -394,14 +415,14 @@ varNames.activityInfoFormTree <- function(x, style = columnVarStyle(x)) {
 
     colName
 
-  }))
+  })))
 }
 #' @export
-varNames.activityInfoFormSchema <- function(x, style = columnVarStyle(x)) {
+varNames.activityInfoFormSchema <- function(x, style = getStyle(x)) {
   varNames(getFormTree(x$id), style)
 }
-# varNames.activityInfoRemoteRecords <- function(x, style = columnVarStyle(x)) {
-# 
+# varNames.activityInfoRemoteRecords <- function(x, style = getStyle(x)) {
+#
 # }
 
 #elementToVarName(style)
@@ -413,17 +434,13 @@ varNames.activityInfoFormSchema <- function(x, style = columnVarStyle(x)) {
 # #' @export
 # dplyr::tbl
 #' @export
-tbl.src_activityInfoFormTree <- function(src, id, ...) {
-  stopifnot(id %in% src_tbls(src))
-
-  rootForm <- src$formTree$forms[[src$formTree$root]]
-
-  vars <- varNames(formTree)
+tbl.src_activityInfo <- function(src, formTree, ...) {
+  stopifnot(formTree$root %in% src_tbls(src))
 
   dplyr::make_tbl(
     c("activityInfoRemoteRecords", "lazy"),
     src = src,
-    step = firstStep(id, vars)
+    step = firstStep(formTree)
   )
 
 }
@@ -431,11 +448,10 @@ tbl.src_activityInfoFormTree <- function(src, id, ...) {
 
 # ---- Lazy steps ----
 
-firstStep <- function(id, vars) {
+firstStep <- function(formTree, vars = varNames(formTree)) {
 
   newStep(parent,
-          vars = names(parent)
-          )
+          vars = vars)
 }
 
 formVars <- function(form) {

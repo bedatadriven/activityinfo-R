@@ -13,7 +13,8 @@ queryTable(
   makeNames = TRUE,
   asUI = FALSE,
   truncate.strings = truncateStrings,
-  filter
+  filter,
+  window
 )
 }
 \arguments{

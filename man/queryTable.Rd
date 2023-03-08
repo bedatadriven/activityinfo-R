@@ -11,10 +11,10 @@ queryTable(
   truncateStrings = TRUE,
   asTibble = FALSE,
   makeNames = TRUE,
-  asUI = FALSE,
   truncate.strings = truncateStrings,
   filter,
-  window
+  window,
+  sort
 )
 }
 \arguments{

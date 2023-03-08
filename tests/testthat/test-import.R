@@ -2,6 +2,7 @@
 
 test_that("importTable() works", {
   database <- addDatabase("Import tests")
+  
   schema <- addForm(schema = formSchema(
     databaseId = database$databaseId,
     label = "Simple form",
@@ -26,4 +27,14 @@ test_that("importTable() works", {
   expect_equal(nrow(imported), 2)
   expect_identical(imported$Name[1], "Bob")
   expect_identical(imported$Name[2], "Alice")
+})
+
+
+test_that("importTable() works with stageDirect = FALSE", {
+  
+})
+
+
+test_that("importTable() works with stageDirect = TRUE", {
+  
 })

@@ -38,7 +38,7 @@
 #' ))
 #' }
 #' @export
-queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FALSE, makeNames = TRUE, asUI = FALSE, truncate.strings = truncateStrings, filter, window) {
+queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FALSE, makeNames = TRUE, truncate.strings = truncateStrings, filter, window, sort) {
   if (!missing(truncate.strings)) {
     warning("The parameter truncate.strings in queryTable is deprecated. Please switch to from truncate.strings to truncateStrings.", call. = FALSE, noBreaks. = TRUE)
     if (missing(truncateStrings)) {
@@ -67,11 +67,19 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
   }
 
   if (length(columns) == 0) {
-    df <- parseColumnSet(getResource(sprintf("form/%s/query/columns", formId), task = sprintf("Getting form %s data.", formId)), asTibble, makeNames)
-    if (makeNames&&asTibble) {
-      names(df) <- make.names(names(df), unique = TRUE)
+    if (missing(window)&&missing(filter)&&missing(sort)) {
+      columnSet <- getResource(sprintf("form/%s/query/columns", formId), task = sprintf("Getting form %s data.", formId))
+      df <- parseColumnSet(columnSet, asTibble, makeNames)
+      if (makeNames&&asTibble) {
+        names(df) <- make.names(names(df), unique = TRUE)
+      }
+      attr(df, "offSet") <- columnSet$offset
+      attr(df, "rows") <- columnSet$rows
+      attr(df, "totalRows") <- columnSet$totalRows
+      return(df)
+    } else {
+      columns = c(list("@id" = "_id", "@lastEditTime" = "_lastEditTime"), prettyColumns(getFormTree(formId)))
     }
-    return(df)
   }
 
   stopifnot(length(columns) > 0)
@@ -96,12 +104,35 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
     query$filter <- filter
   }
 
+  if (!missing(sort)) {
+    stopifnot(is.list(sort))
+    #stopifnot(length(sort)==1)
+    stopifnot(all(names(sort[[1]]) %in% c("dir", "field")))
+    stopifnot(sort[[1]][["dir"]]%in%c("ASC", "DESC"))
+    stopifnot(is.character(sort[[1]][["field"]]))
+    query$sort <- sort
+  }
+  
   if (!missing(window)) {
     stopifnot(is.integer(window)&&length(window)==2&&min(window)>=0)
     query$window <- window
   }
+  
+  jsonPayload <- jsonlite::toJSON(query, auto_unbox = TRUE)
+  
+  #response <- POST(url, body = jsonPayload, encode = "raw", activityInfoAuthentication(), accept_json(), httr::content_type_json())
+  
 
-  columnSet <- postResource("query/columns", query, task = sprintf("Getting form %s data for specified columns.", formId))
+  #columnSet <- postResource("query/columns", query, task = sprintf("Getting form %s data for specified columns.", formId))
+  columnSet <- postResource(
+    path = "query/columns", 
+    body = jsonPayload, 
+    task = sprintf("Getting form %s data for specified columns.", formId), 
+    requireStatus = NULL, 
+    encode = "raw", 
+    httr::content_type_json()
+    )
+  
   df <- parseColumnSet(columnSet, asTibble, makeNames)
 
   # make sure we have a column for each name
@@ -113,7 +144,11 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
 
   # order columns in the same order specified in the query
   df <- subset(df, subset = TRUE, select = names(columns))
-
+  
+  attr(df, "offSet") <- columnSet$offset
+  attr(df, "rows") <- columnSet$rows
+  attr(df, "totalRows") <- columnSet$totalRows
+  
   stopifnot(is.data.frame(df))
   return(df)
 }

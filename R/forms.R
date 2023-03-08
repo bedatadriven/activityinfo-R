@@ -283,7 +283,7 @@ getFormTree <- function(formId) {
     task = sprintf("Getting form %s tree", formId)
   )
 
-  if (length(tree$forms)==0) stop("The form id %s provided an empty form tree. Please check access rights and whether the id is correct.")
+  if (length(tree$forms)==0) stop(sprintf("The form id %s provided an empty form tree. Please check access rights and whether the id is correct.", formId))
 
   # enforce some types to make other operations easier:
   tree$forms <- lapply(tree$forms, function(form) {
@@ -312,28 +312,33 @@ relocateForm <- function(formId, newDatabaseId) {
 }
 
 #' @export
-formSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyColumns = character(), logicalAsSingleSelect = TRUE, logicalText = c("True","False")) {
+formSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False")) {
   stopifnot("A data frame or tibble must be provided to formSchemaFromData()" = is.data.frame(x))
   stopifnot("databaseId must be a singe character string" = is.character(databaseId)&&length(databaseId)==1)
   stopifnot("The label for the new form schema must not be empty" = !missing(label)&&is.character(label)&&length(label)==1&&nchar(label)>0)
   stopifnot("The folderId must be a single character string if defined" = is.character(folderId)&&length(folderId)==1)
   stopifnot("The keyColumns named must be provided as a character vector" = is.character(keyColumns))
-  stopifnot("logicalAsSingelSelect must be TRUE or FALSE" = is.logical(logicalAsSingleSelect))
+  stopifnot("logicalAsSingleSelect must be TRUE or FALSE" = is.logical(logicalAsSingleSelect))
   stopifnot("Logical text values must be length 2" = is.character(logicalText)&&length(logicalText)==2)
 
   providedCols <- names(x)
-
-  fmSchema <- formSchema(databaseId, label, folderId)
+  
+  stopifnot("Some key columns do not exist in the data.frame provided" = keyColumns %in% providedCols)
+  stopifnot("Some required columns do not exist in the data.frame provided" = keyColumns %in% providedCols)
+  
+  fmSchema <- formSchema(databaseId = databaseId, label = label, folderId = folderId)
 
   addIt <- function(fieldSchema) fmSchema <<- addFormField(fmSchema, fieldSchema)
   keyStop <- function(type, pCol) stop(sprintf("Column '%s' of type %s cannot be a key column", pCol, type))
 
   x2 <- x
+  
 
   lapply(providedCols, function(pCol) {
     y <- x[[pCol]]
     fieldClass <- class(y)
     key <- pCol %in% keyColumns
+    required <- pCol %in% requiredColumns
 
     if ("character" %in% fieldClass) {
       maxLength <- max(nchar(y, allowNA = TRUE, keepNA = FALSE))
@@ -342,35 +347,35 @@ formSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyC
         stop(sprintf("Key column %s values invalid. Check for linebreaks or values with >1024 characters.", pCol))
       }
       if (!hasNewLine&&maxLength<=1024) {
-        addIt(textFieldSchema(label = pCol, key = key))
+        addIt(textFieldSchema(label = pCol, key = key, required = required))
       } else {
         # default to Narrative for longer fields > 1024 characters and fields with new lines
         addIt(multilineFieldSchema(label = pCol))
       }
     } else if ("factor" %in% fieldClass) {
       # default to single select field using factor labels; they must be unique
-      addIt(singleSelectFieldSchema(label = pCol, options = levels(y), key = key))
+      addIt(singleSelectFieldSchema(label = pCol, options = levels(y), key = key, required = required))
     } else if ("integer" %in% fieldClass) {
       if (key) keyStop("quantity", pCol)
-      addIt(quantityFieldSchema(label = pCol))
+      addIt(quantityFieldSchema(label = pCol, required = required))
     } else if ("numeric" %in% fieldClass) {
       if (key) keyStop("quantity", pCol)
-      addIt(quantityFieldSchema(label = pCol))
+      addIt(quantityFieldSchema(label = pCol, required = required))
     } else if ("logical" %in% fieldClass) {
       if (logicalAsSingleSelect) {
-        x2[,pCol] <<- if_else(y, logicalText[[1]], logicalText[[2]], missing = NA_character_)
-        addIt(singleSelectFieldSchema(label = pCol, options = c(logicalText[[1]], logicalText[[2]]), key = key))
+        x2[,pCol] <<- ifelse(y, logicalText[[1]], logicalText[[2]])
+        addIt(singleSelectFieldSchema(label = pCol, options = c(logicalText[[1]], logicalText[[2]]), key = key, required = required))
       } else {
         if (key) keyStop("quantity", pCol)
-        x2[,pCol] <<- if_else(y, 1L, 0L, missing = NA_integer_)
-        addIt(quantityFieldSchema(label = pCol))
+        x2[,pCol] <<- ifelse(y, 1L, 0L)
+        addIt(quantityFieldSchema(label = pCol, required = required))
       }
     } else if ("Date" %in% fieldClass) {
-      addIt(dateFieldSchema(label = pCol, key = key))
+      addIt(dateFieldSchema(label = pCol, key = key, required = required))
     } else if ("POSIXt" %in% fieldClass) {
       warning(sprintf("POSIXt time+date column %s will be a text form field. Separate date into another column to store as date.", pCol))
       x2[,pCol] <<- as.character(y)
-      addIt(textFieldSchema(label = pCol, key = key))
+      addIt(textFieldSchema(label = pCol, key = key, required = required))
     } else {
       stop(sprintf("Unrecognized column type with class(es) (%s) in column %s", paste(fieldClass, collapse = ", "), pCol))
     }

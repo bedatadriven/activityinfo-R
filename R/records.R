@@ -302,6 +302,18 @@ tidyselect_data_has_predicates.tbl_activityInfoRemoteRecords <- function(x) {
   FALSE
 }
 
+#' @importFrom dplyr select
+#' @importFrom tidyselect eval_select
+#' @importFrom rlang set_names
+#' @export
+select.tbl_activityInfoRemoteRecords <- function(.data, ...) {
+  loc <- tidyselect::eval_select(expr(c(...)), .data)
+  new_vars <- set_names(colnames(.data)[loc], names(loc))
+  
+  .data$step <- newStep(.data$step, vars = new_vars)
+  .data
+}
+
 #' @export
 names.tbl_activityInfoRemoteRecords <- function(x) {
   colnames(x)

@@ -288,6 +288,9 @@ tbl_vars.tbl_activityInfoRemoteRecords <- function(x) {
   tblNames(x)
 }
 
+# could some remove dependencies
+#' @importFrom rlang rep_named
+#' @importFrom dplyr as_tibble
 #' @importFrom tidyselect tidyselect_data_proxy tidyselect_data_has_predicates
 #' @export
 tidyselect_data_proxy.tbl_activityInfoRemoteRecords <- function(x) {
@@ -596,12 +599,15 @@ addFilter <- function(x, formulaFilter) {
   x
 }
 
+#' @importFrom utils head
 #' @export
 head.tbl_activityInfoRemoteRecords <- function(x, n = 6L, ...) {
   n <- as.integer(n)
   adjustWindow(x, offSet = 0L, limit = n)
 }
 
+
+#' @importFrom utils tail
 #' @export
 tail.tbl_activityInfoRemoteRecords <- function(x, n = 6L, ...) {
   n <- as.integer(n)

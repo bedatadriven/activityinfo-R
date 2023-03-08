@@ -35,6 +35,10 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn, stageDirec
     stop("The data.frame to import does not have any fields to import.")
   }
   
+  factorColumns <- unlist(lapply(data, is.factor))
+  data[factorColumns] <- as.data.frame(lapply(data[factorColumns], as.character))
+  #data <- dplyr::mutate(data, dplyr::across(dplyr::where(is.factor), as.character))
+  
   fieldIds <- sapply(providedCols, USE.NAMES = FALSE, matchColumn, schemaTable)
   fieldValues <- list()
   for(i in 1:length(fieldIds)) {
@@ -130,7 +134,7 @@ prepareImport <- function(field, columnName, column) {
 prepareEnumImport <- function(field, columnName, column) {
   items <- sapply(field$typeParameters$values, function(item) item$id)
   names(items) <- sapply(field$typeParameters$values, function(item) tolower(item$label))
-  
+
   # Replace empty strings with NAs
   column[!nzchar(column)] <- NA_character_
   

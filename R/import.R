@@ -5,11 +5,11 @@
 #' @param data The data.frame to import
 #' @param recordIdColumn The record ID column
 #' @param parentIdColumn The parent ID column required when importing a subform
+#' @param stageDirect Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.
 #'
 #' @importFrom utils head
 #' @export
-importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
-  
+importTable <- function(formId, data, recordIdColumn, parentIdColumn, stageDirect = TRUE) { 
   parentId <- NULL
 
   schema <- activityinfo::getFormSchema(formId)
@@ -56,7 +56,7 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
     recordId <- matchRecordIdsByKey(schema, data, fieldIds, fieldValues)
   }
   lines <- formatImport(data, recordId, parentId, fieldIds, fieldValues)
-  importId <- stageImport(paste(lines, collapse = "\n"))
+  importId <- stageImport(paste(lines, collapse = "\n"), direct = stageDirect)
   
   executeJob("importRecords", descriptor =
                               list(formId = formId,
@@ -350,9 +350,19 @@ formatImport <- function(data, recordId, parentId, fieldIds, fieldValues) {
 #' Stages data to import to ActivityInfo
 #' 
 #' @param text The text of the file to import.
-stageImport <- function(text) {
+#' @param direct Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.
+stageImport <- function(text, direct = TRUE) {
   
-  url <- paste(activityInfoRootUrl(), "resources", "imports", "stage", sep = "/")
+  if(direct && !grepl(activityInfoRootUrl(), pattern = "www\\.activityinfo\\.org||appspot\\.com")) {
+    warning("Disabling direct import staging for self-managed server")
+    direct <- FALSE
+  }
+  
+  if(direct) {
+    url <- paste(activityInfoRootUrl(), "resources", "imports", "stage", "direct", sep = "/") 
+  } else {
+    url <- paste(activityInfoRootUrl(), "resources", "imports", "stage", sep = "/")
+  }
   
   result <- POST(url, activityInfoAuthentication(), accept_json())
   

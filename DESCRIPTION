@@ -7,7 +7,7 @@ Author: Alex Bertram <alex@bedatadriven.com>, Nicholas Dickinson <dickinson@wash
 Maintainer: Alex Bertram <alex@bedatadriven.com>
 Description: An interface to ActivityInfo, an information management system.
 License: GPL-3
-Imports: stats, utils, httr, rjson, jsonlite, stringr, dplyr, pillar, tidyselect, rlang
+Imports: stats, utils, httr, rjson, jsonlite, stringr, dplyr, pillar, tidyselect, rlang, tibble
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 Suggests:

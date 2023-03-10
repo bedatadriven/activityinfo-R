@@ -4,12 +4,12 @@
 \alias{getRecords}
 \title{Get a table of records}
 \usage{
-getRecords(form, ...)
+getRecords(form, style)
 }
 \arguments{
 \item{form}{a form id, form schema or form tree}
 
-\item{recordId}{a record id}
+\item{style}{a column style object that defines how table columns should be created from a form; use columnStyle() to create a new style; default column styles can be set with an option or setDefaultColumnStyle()}
 }
 \description{
 This function will create a reference to records on the server. You can use this like a data.frame or to download the table use the collect() function.

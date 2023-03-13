@@ -106,10 +106,12 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
 
   if (!missing(sort)) {
     stopifnot(is.list(sort))
-    #stopifnot(length(sort)==1)
-    stopifnot(all(names(sort[[1]]) %in% c("dir", "field")))
-    stopifnot(sort[[1]][["dir"]]%in%c("ASC", "DESC"))
-    stopifnot(is.character(sort[[1]][["field"]]))
+    invisible(lapply(sort, function(x) {
+      stopifnot(all(names(x) %in% c("dir", "field")))
+      stopifnot(x[["dir"]]%in%c("ASC", "DESC"))
+      stopifnot(is.character(x[["field"]]))
+      stopifnot(is.character(x[["dir"]]))
+    }))
     query$sort <- sort
   }
   

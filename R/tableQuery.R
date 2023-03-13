@@ -67,7 +67,7 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
   }
 
   if (length(columns) == 0) {
-    if (missing(window)&&missing(filter)&&missing(sort)) {
+    if (missing(window)&&missing(filter)&&(missing(sort)||is.na(sort))) {
       columnSet <- getResource(sprintf("form/%s/query/columns", formId), task = sprintf("Getting form %s data.", formId))
       df <- parseColumnSet(columnSet, asTibble, makeNames)
       if (makeNames&&asTibble) {
@@ -104,14 +104,8 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
     query$filter <- filter
   }
 
-  if (!missing(sort)) {
-    stopifnot(is.list(sort))
-    invisible(lapply(sort, function(x) {
-      stopifnot(all(names(x) %in% c("dir", "field")))
-      stopifnot(x[["dir"]]%in%c("ASC", "DESC"))
-      stopifnot(is.character(x[["field"]]))
-      stopifnot(is.character(x[["dir"]]))
-    }))
+  if (!missing(sort)&&!is.null(sort)) {
+    checkSortList(sort)
     query$sort <- sort
   }
   
@@ -217,6 +211,17 @@ parseColumnSet <- function(columnSet, asTibble = TRUE, makeNames = TRUE) {
       cv
     })
   )
+}
+
+checkSortList <- function(sort) {
+  force(sort)
+  stopifnot(is.list(sort))
+  invisible(lapply(sort, function(x) {
+    stopifnot(all(names(x) %in% c("dir", "field")))
+    stopifnot(x[["dir"]]%in%c("ASC", "DESC"))
+    stopifnot(is.character(x[["field"]]))
+    stopifnot(is.character(x[["dir"]]))
+  }))
 }
 
 legacy <- function(domain, id) {

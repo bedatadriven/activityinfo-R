@@ -543,7 +543,10 @@ elementVarName <- function(y, style) {
         colNameStyle <- "id"
       } else {
         colName <- trimws(y[["label"]])
-        if (!grepl("^[\\p{L}\\p{M}]+$", colName, perl = TRUE)) {
+        
+        if (!grepl(pattern = "^[A-Za-z_][A-Za-z0-9_]*$", colName)) {
+        # check with Alex on non ASCII letters:
+        #if (!grepl("^[\\p{L}\\p{M}]+$", colName, perl = TRUE)) {
           colName <- sprintf("[%s]", colName)
         }
       }
@@ -613,6 +616,21 @@ addFilter <- function(x, formulaFilter) {
 }
 
 #' @export
+addSort <- function(x, sort) {
+  checkSortList(sort)
+  if (!is.null(x$step$sort)) {
+    newSort <- x$step$sort
+    invisible(lapply(sort, function(y) {
+      newSort[[length(newSort)+1]] <<- y
+    }))
+    x$step <- newStep(x$step, sort = newSort)
+  } else {
+    x$step <- newStep(x$step, sort = sort)
+  }
+  x
+}
+
+#' @export
 adjustWindow <- function(x, offSet = 0L, limit) {
   stopifnot(offSet>=0&&is.integer(offSet))
   if(missing(limit)) {
@@ -626,6 +644,8 @@ adjustWindow <- function(x, offSet = 0L, limit) {
   }
   x
 }
+
+
 
 #' @export
 tblColumns <- function(x) {
@@ -650,7 +670,8 @@ tblFieldTypes <- function(x) {
 
 #' @export
 tblSort <- function(x) {
-  
+  stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
+  x$step$sort
 }
 
 #' @export
@@ -674,6 +695,7 @@ tblFilter <- function(x) {
   }
 }
 
+#' @export
 tblWindow <- function(x, limit) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
   window <- x$step$window
@@ -682,6 +704,18 @@ tblWindow <- function(x, limit) {
   }
   window
 }
+
+#' @export
+copySchema <- function(x, databaseId, label, ...) {
+  stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
+  fmSchema <- formSchema(databaseId, label, ...)
+  lapply(x$elements, function(y) {
+    y$id <- cuid()
+    fmSchema <<- addFormField(fmSchema, y)
+  })
+  fmSchema
+}
+
 # ---- Lazy steps ----
 
 firstStep <- function(
@@ -698,18 +732,20 @@ firstStep <- function(
     "vars" = vars, 
     "columns" = columns, 
     "filter" = NULL, 
+    "sort" = NULL,
     "window" = c(0L, as.integer(totalRecords)))
   class(step) <- c("activityInfoStep")
   step
 }
 
-newStep <- function(parent, vars = parent$vars, columns = parent$columns, filter = parent$filter, window = parent$window) {
+newStep <- function(parent, vars = parent$vars, columns = parent$columns, filter = parent$filter, sort = parent$sort, window = parent$window) {
   stopifnot(inherits(parent, "activityInfoStep"))
   step <- list(
     "parent" = parent,
     "vars" = vars, 
     "columns" = columns, 
-    "filter" = filter, 
+    "filter" = filter,
+    "sort" = sort,
     "window" = window)
   class(step) <- c("activityInfoStep")
   step
@@ -819,6 +855,7 @@ collect.tbl_activityInfoRemoteRecords <- function(x, ...) {
     asTibble = TRUE, 
     makeNames = FALSE, 
     filter = tblFilter(x),
+    sort = tblSort(x),
     window = tblWindow(x)
   )
   class(newTbl) <- c("activityInfo_tbl_df", class(newTbl))

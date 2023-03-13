@@ -43,10 +43,19 @@ testthat::test_that("getRecords() works", {
   
   importTable(formId = schemaPackage$schema$id, data = testData)
   
-  records <- getRecords(uploadedForm$id)
+  rcrds <- getRecords(uploadedForm$id, style = )
   
-  records %>% addFilter('[a_logical_column] == "True"')
+  rcrds %>% 
+    addFilter('[a_logical_column] == "True"') %>% 
+    addSort(list(list(dir = "ASC", field = "date_col"))) %>%
+    slice_head(10)
   
-  records %>% head(2)
+  recordIds <- rcrds %>% 
+    addFilter('[a_logical_column] == "True"') %>% 
+    addSort(list(list(dir = "ASC", field = "date_col"))) %>%
+    head(n = 10) %>% 
+    mutate(a10 = as.numeric(`a`) + 10) %>% 
+    pull("_id")
   
+  testthat::expect_equal(length(recordIds), 10)
 })

@@ -48,7 +48,7 @@ testthat::test_that("getRecords() works", {
   rcrds %>% 
     addFilter('[a_logical_column] == "True"') %>% 
     addSort(list(list(dir = "ASC", field = "date_col"))) %>%
-    slice_head(10)
+    slice_head(n = 10)
   
   recordIds <- rcrds %>% 
     addFilter('[a_logical_column] == "True"') %>% 

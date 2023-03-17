@@ -312,7 +312,7 @@ relocateForm <- function(formId, newDatabaseId) {
 }
 
 #' @export
-formSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False")) {
+createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False")) {
   stopifnot("A data frame or tibble must be provided to formSchemaFromData()" = is.data.frame(x))
   stopifnot("databaseId must be a singe character string" = is.character(databaseId)&&length(databaseId)==1)
   stopifnot("The label for the new form schema must not be empty" = !missing(label)&&is.character(label)&&length(label)==1&&nchar(label)>0)

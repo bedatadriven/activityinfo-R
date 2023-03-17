@@ -1,3 +1,5 @@
+library(dplyr)
+
 withr::local_options(list(
   warnPartialMatchDollar = TRUE,
   warnPartialMatchArgs = TRUE,

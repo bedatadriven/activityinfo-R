@@ -6,7 +6,11 @@
 #' @param columns select columns, see Details
 #' @param truncateStrings TRUE if longer strings should be truncated to 128 characters
 #' @param truncate.strings Deprecated: please use truncateStrings. TRUE if longer strings should be truncated to 128 characters
+#' @param asTibble default is FALSE to return a data.frame; TRUE if a tibble should be returned
+#' @param makeNames default is TRUE; FALSE if column names should not be checked and left as-is
 #' @param filter an ActivityInfo formula string that limits the records returned
+#' @param window an integer vector in the format c(offset, limit) for the number of records to return.
+#' @param sort an ActivityInfo sort object that sorts the records returned
 #' @param ... If columns parameter is empty, the additional arguments are used as columns.
 #' @details To select columns, you can use
 #' \itemize{
@@ -67,7 +71,7 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
   }
 
   if (length(columns) == 0) {
-    if (missing(window)&&missing(filter)&&(missing(sort)||is.na(sort))) {
+    if ((missing(window)||is.null(window))&&(missing(filter)||is.null(filter))&&(missing(sort)||is.null(sort))) {
       columnSet <- getResource(sprintf("form/%s/query/columns", formId), task = sprintf("Getting form %s data.", formId))
       df <- parseColumnSet(columnSet, asTibble, makeNames)
       if (makeNames&&asTibble) {
@@ -99,7 +103,7 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
     truncateStrings = truncateStrings
   )
 
-  if (!missing(filter)) {
+  if (!missing(filter)&&!is.null(filter)) {
     stopifnot(is.character(filter))
     query$filter <- filter
   }
@@ -109,7 +113,7 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
     query$sort <- sort
   }
   
-  if (!missing(window)) {
+  if (!missing(window)&&!is.null(window)) {
     stopifnot(is.integer(window)&&length(window)==2&&min(window)>=0)
     query$window <- window
   }

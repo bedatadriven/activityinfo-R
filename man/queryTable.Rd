@@ -27,9 +27,17 @@ form as a character.}
 
 \item{truncateStrings}{TRUE if longer strings should be truncated to 128 characters}
 
+\item{asTibble}{default is FALSE to return a data.frame; TRUE if a tibble should be returned}
+
+\item{makeNames}{default is TRUE; FALSE if column names should not be checked and left as-is}
+
 \item{truncate.strings}{Deprecated: please use truncateStrings. TRUE if longer strings should be truncated to 128 characters}
 
 \item{filter}{an ActivityInfo formula string that limits the records returned}
+
+\item{window}{an integer vector in the format c(offset, limit) for the number of records to return.}
+
+\item{sort}{an ActivityInfo sort object that sorts the records returned}
 }
 \description{
 Queries a form as a flat, two-dimensional table

@@ -2,7 +2,7 @@
 % Please edit documentation in R/formField.R
 \name{multilineFieldSchema}
 \alias{multilineFieldSchema}
-\title{Create a multi-line or narrative form field schema}
+\title{Create a multi-line or narrative form field schema object}
 \usage{
 multilineFieldSchema(
   label,
@@ -39,8 +39,8 @@ multilineFieldSchema(
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }
 \description{
-Multi-Line Text fields can be used to collect long answers to open-ended 
-questions. They could be used for example to collect Comments about a 
+Multi-Line Text fields can be used to collect long answers to open-ended
+questions. They could be used for example to collect Comments about a
 specific Form or an Extended Narrative. It cannot be a key field.
 }
 \seealso{

@@ -15,3 +15,13 @@ getRecordHistory(formId, recordId)
 This calls retrieves a list of all changes to the record, and the users
 who are
 }
+\seealso{
+Other record functions: 
+\code{\link{addRecord}()},
+\code{\link{deleteRecord}()},
+\code{\link{getAttachment}()},
+\code{\link{getRecord}()},
+\code{\link{recoverRecord}()},
+\code{\link{updateRecord}()}
+}
+\concept{record functions}

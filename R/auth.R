@@ -25,9 +25,10 @@ credentials <- environment()
 #' you can use this function to point the R package to your own server. 
 #' 
 #' @examples
+#' \dontrun{
 #' # Connect to a self-managed ActivityInfo server
 #' activityInfoRootUrl("https://activityinfo.example.org")
-#'
+#' }
 #' @export
 activityInfoRootUrl <- local({
   url <- "https://www.activityinfo.org"

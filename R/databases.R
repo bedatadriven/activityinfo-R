@@ -102,6 +102,8 @@ getDatabaseResources <- function(databaseTree) {
 #'
 #' Adds a new database.
 #'
+#' Note that only billing account owners are permitted to add new databases.
+#'
 #' @export
 #' @param label The new database label
 #' @param databaseId The new database identifier; a cuid will be generated if missing
@@ -314,7 +316,10 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
 
 #' deleteDatabaseUser
 #'
-#' Deletes a user from a database
+#' Deletes a user from a database.
+#'
+#' The user will receive a notification that their permission to access
+#' the database has been revoked.
 #'
 #' @param databaseId the id of the database
 #' @param userId the (numeric) id of the user to remove from the database.
@@ -322,6 +327,26 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
 #' @importFrom httr DELETE
 #'
 #' @export
+#' @examples
+#' \dontrun{
+#'
+#' # Get the list of users in the database
+#' databaseId <- "cxy12345gh"
+#' users <- getDatabaseUsers(databaseId)
+#'
+#' # Find the user with the email "bob@example.com"
+#' matching <- sapply(users, function(u) u$email == "bob@example.com")
+#' bob <- users[[which(matching)]]
+#'
+#' # Remove the user from the database
+#' deleteDatabaseUser(databaseId = databaseId, userId = bob$userId)
+#'
+#' # You could also remove all users
+#' for(user in users) {
+#'   deleteDatabaseUser(databaseId = databaseId, userId = user$userId)
+#' }
+#' }
+#'
 deleteDatabaseUser <- function(databaseId, userId) {
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, sep = "/")
 
@@ -343,8 +368,8 @@ deleteDatabaseUser <- function(databaseId, userId) {
 #' @param databaseId the id of the database
 #' @param userId the (numeric) id of the user to update
 #' @param assignment the role assignment, \code{\link[activityinfo]{roleAssignment}}
-#'
-#' @examples
+#' 
+#' @examples 
 #' \dontrun{
 #'
 #' databaseId <- "caxadcasdf"

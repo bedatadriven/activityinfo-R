@@ -1,36 +1,60 @@
 
-#' Updates a single record
-#'
-#' @param formId a form id
-#' @param recordId a record id
-#' @param fieldValues a named list of fields to change
-#' @export
-updateRecord <- function(formId, recordId, fieldValues) {
-  stopifnot(is.character(formId))
-  stopifnot(is.character(recordId))
-  stopifnot(is.list(fieldValues))
-
-  changes <- list(
-    list(
-      formId = formId,
-      recordId = recordId,
-      fields = fieldValues
-    )
-  )
-
-  postResource(
-    path = "update",
-    body = list(changes = changes),
-    task = sprintf("Updating record %s in form %s", recordId, formId)
-  )
-}
-
 #' Adds a new record
+#'
 #'
 #' @param formId the id of the form to which the record should be added
 #' @param parentRecordId the id of this record's parent record, if the form is a subform
-#' @param fieldValues a named list of fields to change
+#' @param fieldValues a named list of fields to change. Fields need to be
 #' @export
+#' @family record functions
+#' @examples
+#' \dontrun{
+#'
+#' # When providing field values, you can use either a field's code, or its
+#' # built-in cuid. In the example below, "participant_dob" is a field code,
+#' # and "cyz123456" is the same field's built-in id.
+#'
+#' addRecord(formId = "cyx123", fieldValues = list(participant_dob = "1980-01-01"))
+#' addRecord(formId = "cyx123", fieldValues = list(cxyz123456 = "1980-01-01"))
+#'
+#' # The value of the field depends on its type.
+#' # Most fields can be specified using an R string or number, For example:
+#' addRecord(formId = "cxy123", fieldValues = list(
+#'    text_field = "Alice Jones",
+#'    multi_line_text = "Line 1\nLine 2",
+#'    date_of_birth = "1980-01-01",
+#'    week_project_start = "2022W1",
+#'    month = "2023-06",
+#'    quantity_field = 42.0))
+#'
+#' # Single- and multiple-select fields will accept either the label of the
+#' # select item, or the item's built-in cuid. For multiple select, you can
+#' # provide a vector of strings.
+#' addRecord(formId = "cxy123", fieldValues = list(
+#'    nationality = c("Palestinian", "Jordanian"),
+#'    registered = "Yes"
+#' ))
+#'
+#' # When providing a value for a reference field, you must provide
+#' # the built-in ID of the related record. For example, if you a have
+#' # a field that references the Afghanistan Province form
+#' # (https://www.activityinfo.org/app#form/E0000001249/table),
+#' # you must provide the record id, not the name of the province.
+#'
+#' addRecord(formId = "cxy123", fieldValues = list(
+#'    name = "Bibi Khan",
+#'    province = "z0000000289"))
+#'
+#' # When providing a value for geographic point fields, provide a named list
+#' # for the point, including the latitude, longitude, an optionally the accuracy
+#' # in meters reported by a geolocation sensor.
+#'
+#' addRecord(formId = "cxy123", fieldValues = list(
+#'    name = "Water point 42",
+#'    location = list(latitude = 52.0735343, longitude = 4.3304164, accuracy = 12)
+#' ))
+#'
+#' }
 addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
   stopifnot(is.character(formId))
   stopifnot(is.character(parentRecordId))
@@ -60,6 +84,87 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
     )
 }
 
+
+#' Updates a single record
+#'
+#' @param formId a form id
+#' @param recordId a record id
+#' @param fieldValues a named list of fields to change
+#' @export
+#' @family record functions
+#' @examples
+#' \dontrun{
+#'
+#' # When updating field values, you can use either a field's code, or its
+#' # built-in cuid. In the example below, "participant_dob" is a field code,
+#' # and "cyz123456" is the same field's built-in id.
+#'
+#' updateRecord(formId = "cyx123", fieldValues = list(participant_dob = "1980-01-01"))
+#' updateRecord(formId = "cyx123", fieldValues = list(cxyz123456 = "1980-01-01"))
+#'
+#' # To set a record to blank, use the NA value.
+#' updateRecord(formId = "cupqmc2l1bvi9ys2",
+#'   recordId = "ckl8h0l1bvj7lfd",
+#'   fieldValues = list(HOH_NAME = NA))
+#'
+#' # The value of the field depends on its type.
+#' # Most fields can be specified using an R string or number, For example:
+#' updateRecord(formId = "cxy123", recordId = "czyz3323", fieldValues = list(
+#'    text_field = "Alice Jones",
+#'    multi_line_text = "Line 1\nLine 2",
+#'    date_of_birth = "1980-01-01",
+#'    week_project_start = "2022W1",
+#'    month = "2023-06",
+#'    quantity_field = 42.0))
+#'
+#' # Single- and multiple-select fields will accept either the label of the
+#' # select item, or the item's built-in cuid. For multiple select, you can
+#' # provide a vector of strings.
+#' updateRecord(formId = "cxy123", recordId = "czyz3323", fieldValues = list(
+#'    nationality = c("Palestinian", "Jordanian"),
+#'    registered = "Yes"
+#' ))
+#'
+#' # When providing a value for a reference field, you must provide
+#' # the built-in ID of the related record. For example, if you a have
+#' # a field that references the Afghanistan Province form
+#' # (https://www.activityinfo.org/app#form/E0000001249/table),
+#' # you must provide the record id, not the name of the province.
+#'
+#' updateRecord(formId = "cxy123", recordId = "czyz3323", fieldValues = list(
+#'    name = "Bibi Khan",
+#'    province = "z0000000289"))
+#'
+#' # When providing a value for geographic point fields, provide a named list
+#' # for the point, including the latitude, longitude, an optionally the accuracy
+#' # in meters reported by a geolocation sensor.
+#'
+#' updateRecord(formId = "cxy123", recordId = "czyz3323", fieldValues = list(
+#'    name = "Water point 42",
+#'    location = list(latitude = 52.0735343, longitude = 4.3304164, accuracy = 12)
+#' ))
+#'
+#' }
+updateRecord <- function(formId, recordId, fieldValues) {
+  stopifnot(is.character(formId))
+  stopifnot(is.character(recordId))
+  stopifnot(is.list(fieldValues))
+
+  changes <- list(
+    list(
+      formId = formId,
+      recordId = recordId,
+      fields = fieldValues
+    )
+  )
+
+  postResource(
+    path = "update",
+    body = list(changes = changes),
+    task = sprintf("Updating record %s in form %s", recordId, formId)
+  )
+}
+
 #' Delete a record
 #'
 #' @description
@@ -70,6 +175,16 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
 #' @param recordId a record id
 #'
 #' @export
+#' @family record functions
+#' @examples
+#' \dontrun{
+#'
+#' # Deletes a record
+#' deleteRecord(formId = "cyx123", recordId = "c23g322j432")
+#'
+#' # Recover (undelete) a record
+#' recoverRecord(formId = "cyx123", recordId = "c23g322j432")
+#' }
 deleteRecord <- function(formId, recordId) {
   stopifnot(is.character(formId))
   stopifnot(is.character(recordId))
@@ -98,6 +213,7 @@ deleteRecord <- function(formId, recordId) {
 #' @param formId a form id
 #' @param recordId a record id
 #' @export
+#' @family record functions
 getRecordHistory <- function(formId, recordId) {
   getResource(
     paste("form", formId, "record", recordId, "history", sep = "/"),
@@ -110,6 +226,41 @@ getRecordHistory <- function(formId, recordId) {
 #' @param formId a form id
 #' @param recordId the record Id
 #' @export
+#'
+#' @family record functions
+#' @examples
+#'
+#' # Retrieve a record from the Afghan District form in the Geodatabase.
+#' # See: https://www.activityinfo.org/app#form/E0000001562/table
+#'
+#' record <- getRecord(formId = "E0000001562", recordId = "z0000455007")
+#'
+#' print(record)
+#' # $recordId
+#' # [1] "z0000455007"
+#' #
+#' # $formId
+#' # [1] "E0000001562"
+#' #
+#' # $lastEditTime
+#' # [1] 1667421104
+#' #
+#' # $fields
+#' # $fields$E00000015620000000005
+#' # $fields$E00000015620000000005$latitude
+#' # [1] 36.78076
+#' #
+#' # $fields$E00000015620000000005$longitude
+#' # [1] 68.8198
+#' #
+#' # $fields$E00000015620000000003
+#' # [1] "AF1701"
+#' #
+#' # $fields$E00000015620000000002
+#' # [1] "E0000001249:z0000000289"
+#' #
+#' # $fields$E00000015620000000001
+#' # [1] "Kunduz"
 #'
 getRecord <- function(formId, recordId) {
   getResource(
@@ -128,6 +279,7 @@ getRecord <- function(formId, recordId) {
 #' @param fieldId the attachment field id
 #' @param blobId the attachment blob id
 #' @export
+#' @family record functions
 #'
 getAttachment <- function(formId, recordId, fieldId, blobId) {
   url <- modify_url(activityInfoRootUrl(), path = sprintf("resources/form/%s/record/%s/field/%s/blob/%s/signature.png",
@@ -181,6 +333,16 @@ reference <- function(formId, recordId) {
 #' @param recordId a record id
 #'
 #' @export
+#' @family record functions
+#' @examples
+#' \dontrun{
+#'
+#' # Deletes a record
+#' deleteRecord(formId = "cyx123", recordId = "c23g322j432")
+#'
+#' # Recover (undelete) a record
+#' recoverRecord(formId = "cyx123", recordId = "c23g322j432")
+#' }
 recoverRecord <- function(formId, recordId) {
   stopifnot(is.character(formId))
   stopifnot(is.character(recordId))
@@ -216,7 +378,7 @@ getRecords.activityInfo_tbl_df <- function(form, style) {
   } else {
     getRecords(x$formTree, style)
   }
-}  
+}
 
 #' @export
 getRecords.character <- function(form, style = defaultColumnStyle()) {
@@ -235,7 +397,7 @@ columnStyle <- function(
     allReferenceFields = FALSE,
     columnNames = c("code", "label"),
     recordId = TRUE,
-    lastEditedTime = TRUE, 
+    lastEditedTime = TRUE,
     style) {
   stopifnot(is.logical(referencedId))
   stopifnot(is.logical(referencedKey))
@@ -263,7 +425,7 @@ columnStyle <- function(
     )
     class(style) <- c("activityInfoColumnStyle", class(style))
   }
-  
+
   style
 }
 
@@ -306,28 +468,28 @@ defaultColumnStyle <- function(style) {
 #' @export
 prettyColumns <- function(x, select, ...) {
   styleUI <- prettyColumnStyle(...)
-  
+
   styleId <- styleUI
   styleId$columnNames <- "id"
-  
+
   columns <- varNames(x, styleId)
   names(columns) <- varNames(x, styleUI)
-  
+
   selectColumns(columns, select)
 }
 
 #' @export
 styledColumns <- function(x, select, style = defaultColumnStyle(), forceId = FALSE) {
   stopifnot("activityInfoColumnStyle" %in% class(style))
-  
+
   styleVars <- style
   if (styleVars$columnNames[[1]]=="pretty"||forceId) {
     styleVars$columnNames <- "id"
   }
-  
+
   columns <- varNames(x, styleVars)
   names(columns) <- varNames(x, style)
-  
+
   selectColumns(columns, select)
 }
 
@@ -397,7 +559,7 @@ dimnames.activityInfoFormSchema <- dimnames.activityInfoFormTree
 dimnames.activityInfoRemoteRecords <- dimnames.activityInfoFormSchema
 
 
-# ---- Tidy select and tbl_vars extensions ---- 
+# ---- Tidy select and tbl_vars extensions ----
 
 #' @importFrom dplyr tbl_vars
 #' @export
@@ -436,11 +598,11 @@ varNames.activityInfoFormTree <- function(x, style = defaultColumnStyle(), addNa
   vrNames <- c(vrNames, unlist(lapply(fmSchema$elements, function(y) {
     elementVars(element = y, formTree = x, style = style, namedElement = FALSE)
   })))
-  
+
   if(addNames) {
     names(vrNames) <- vrNames
   }
-  
+
   vrNames
 }
 
@@ -461,25 +623,25 @@ varNames.tbl_activityInfoRemoteRecords <- function(x, addNames = TRUE) {
 #' @export
 namedElementVarList <- function(formTree, style = defaultColumnStyle()) {
   fmSchema <- formTree$forms[[formTree$root]]
-  
+
   unlist(lapply(fmSchema$elements, function(x) {
     elementVars(element = x, formTree = formTree, style = style, namedElement = TRUE)
   }), recursive = FALSE)
 }
 
 elementVars <- function(element, formTree, style = defaultColumnStyle(), namedElement = FALSE) {
-  
+
   elementList <- list()
-  
+
   if (inherits(element,"activityInfoReferenceFieldSchema")) {
-    
+
     refFieldName <- elementVarName(element, style)
-    
+
     if (style$referencedId) {
       elementList <- c(elementList, list(element))
       names(elementList) <- refFieldName
     }
-    
+
     if (style$referencedKey||style$allReferenceFields){
       refId <- element$typeParameters$range[[1]]$formId
       refFormSchema <- formTree$forms[[refId]]
@@ -494,9 +656,9 @@ elementVars <- function(element, formTree, style = defaultColumnStyle(), namedEl
           }
         }
       })
-      
+
       refFormSchemaElements <- refFormSchemaElements[lengths(refFormSchemaElements)!=0]
-      
+
       names(refFormSchemaElements) <- unlist(lapply(refFormSchemaElements, function(z) {
         if (style$columnNames[[1]] == "pretty") {
           paste0(refFieldName, " ", elementVarName(z, style))
@@ -504,15 +666,15 @@ elementVars <- function(element, formTree, style = defaultColumnStyle(), namedEl
           paste0(refFieldName, ".", elementVarName(z, style))
         }
       }))
-      
+
       elementList <- c(elementList, refFormSchemaElements)
     }
-    
+
   } else {
     elementList <- c(elementList, list(element))
     names(elementList) <- elementVarName(element, style)
   }
-  
+
   if (namedElement) {
     return(elementList)
   } else {
@@ -522,11 +684,11 @@ elementVars <- function(element, formTree, style = defaultColumnStyle(), namedEl
 
 elementVarName <- function(y, style) {
   stopifnot(style$columnNames %in% c("pretty", "label", "code", "id"))
-  
+
   colNameStyle <- style$columnNames[[1]]
-  
+
   colName = NULL
-  
+
   if(colNameStyle == "code") {
     colName <- y[["code"]]
     if(is.null(colName)) {
@@ -537,7 +699,7 @@ elementVarName <- function(y, style) {
       }
     }
   }
-  
+
   if (colNameStyle == "pretty") {
     colName <- trimws(y[["label"]])
   } else {
@@ -547,7 +709,7 @@ elementVarName <- function(y, style) {
         colNameStyle <- "id"
       } else {
         colName <- trimws(y[["label"]])
-        
+
         if (!grepl(pattern = "^[A-Za-z_][A-Za-z0-9_]*$", colName)) {
         # check with Alex on non ASCII letters:
         #if (!grepl("^[\\p{L}\\p{M}]+$", colName, perl = TRUE)) {
@@ -555,16 +717,16 @@ elementVarName <- function(y, style) {
         }
       }
     }
-    
+
     if (colNameStyle == "id") {
       colName <- y[["id"]]
     }
   }
-  
+
   if(is.null(colName)) {
     stop("No column name found. Check with package maintainer.")
   }
-  
+
   colName
 }
 
@@ -581,9 +743,9 @@ tbl.src_activityInfo <- function(src, formTree, style = defaultColumnStyle(),...
   step = firstStep(formTree, style, totalRecords)
   idStyle <- style
   idStyle$columnNames <- "id"
-  
+
   elements = namedElementVarList(formTree = formTree, style = idStyle)
-  
+
   dplyr::make_tbl(
     c("activityInfoRemoteRecords", "lazy"),
     "src" = src,
@@ -613,9 +775,9 @@ getTotalRecords <- function(formTree) {
 addFilter <- function(x, formulaFilter) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
   stopifnot("ActivityInfo formula filter must be a character vector" = is.character(formulaFilter))
-  
+
   x$step <- newStep(x$step, filter = formulaFilter)
-  
+
   x
 }
 
@@ -638,7 +800,7 @@ addSelect <- function(.data, new_vars) {
   new_columns <- .data$step$columns[new_vars]
   names(new_columns) <- names(new_vars)
   new_vars[names(new_vars)] <- names(new_vars)
-  
+
   newStep(.data$step, vars = new_vars, columns = new_columns)
 }
 
@@ -650,7 +812,7 @@ adjustWindow <- function(x, offSet = 0L, limit) {
   } else {
     oldWindow <- x$step$window
   }
-  
+
   if(missing(limit)) {
     window <- c(oldWindow[1] + offSet, oldWindow[2])
     x$step <- newStep(x$step, window = window)
@@ -697,7 +859,7 @@ tblFilter <- function(x) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
   step <- x$step
   combinedFilter <- character()
-  
+
   repeat{
     combinedFilter <- c(step$filter, combinedFilter)
     if(!exists("parent", where = x)){
@@ -730,36 +892,36 @@ tblWindow <- function(x, limit) {
 copySchema <- function(x, databaseId, label, ...) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
   fmSchema <- formSchema(databaseId, label, ...)
-  
+
   elem <- x$elements[x$step$columns]
   elem[sapply(elem, is.null)] <- NULL
-  
+
   lapply(elem, function(y) {
     y$id <- cuid()
     fmSchema <<- addFormField(fmSchema, y)
   })
-  
+
   if (length(fmSchema$elements)==0) warning(sprintf("No form schema columns available. An empty schema will be provided for form with id %s.", fmSchema$id))
-  
+
   fmSchema
 }
 
 # ---- Lazy steps ----
 
 firstStep <- function(
-    formTree, 
-    style, 
-    totalRecords = 256, 
-    vars = varNames(formTree, style = style, addNames = TRUE), 
+    formTree,
+    style,
+    totalRecords = 256,
+    vars = varNames(formTree, style = style, addNames = TRUE),
     columns = styledColumns(
-      formTree, 
-      style = style, 
+      formTree,
+      style = style,
       forceId = TRUE)
     ) {
   step <- list(
-    "vars" = vars, 
-    "columns" = columns, 
-    "filter" = NULL, 
+    "vars" = vars,
+    "columns" = columns,
+    "filter" = NULL,
     "sort" = NULL,
     "window" = NULL,
     "requiredVars" = NULL)
@@ -771,8 +933,8 @@ newStep <- function(parent, vars = parent$vars, columns = parent$columns, filter
   stopifnot(inherits(parent, "activityInfoStep"))
   step <- list(
     "parent" = parent,
-    "vars" = vars, 
-    "columns" = columns, 
+    "vars" = vars,
+    "columns" = columns,
     "filter" = filter,
     "sort" = sort,
     "window" = window,
@@ -791,10 +953,10 @@ tblLabel <- function(x) {
 #' @export
 tbl_format_header.tbl_activityInfoRemoteRecords <- function(x, setup, ...) {
   # The setup object may know the total number of rows
-  
+
   window <- tblWindow(x)
   columns <- tblColumns(x)
-  
+
   named_header <- list(
     "Form (id)" = sprintf("%s (%s)", tblLabel(x), x$formTree$root),
     "Total form records" = x$totalRecords,
@@ -803,14 +965,14 @@ tbl_format_header.tbl_activityInfoRemoteRecords <- function(x, setup, ...) {
     "Table sort" = tblSort(x),
     "Table Window" = if (is.null(window)) "No offset or limit" else sprintf("offSet: %d; Limit: %d", window[1], window[2])
   )
-  
+
   # Adapted from pillar
   header <- paste0(
     align(paste0(names(named_header), ":")),
     " ",
     named_header
   )
-  
+
   style_subtle(paste0("# ", header))
 }
 
@@ -827,7 +989,7 @@ tbl_sum.activityInfo_tbl_df <- function(x, ...) {
 }
 
 # select.tbl_activityInfoRemoteRecords <- function(x) {
-#   
+#
 # }
 
 # ---- Source ----
@@ -888,17 +1050,17 @@ mutate.tbl_activityInfoRemoteRecords <- function(.data, ...) {
 #' @importFrom dplyr filter
 filter.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   if (!is.null(tblSort(.data))&&!is.null(tblWindow())) {
-    # should collect if window and arrange have already been applied  
+    # should collect if window and arrange have already been applied
     warn_collect("filter")
     .data <- collect(.data)
     filter(.data, ...)
   } else {
     exprs <- rlang::enquos(...)
-    
+
     result <- lapply(exprs, function(x) {
       toActivityInfoFormula(.data, !!x)
     })
-    
+
     addFilter(.data, paste(as.character(result, collapse = "&&")))
   }
 }
@@ -907,10 +1069,10 @@ filter.tbl_activityInfoRemoteRecords <- function(.data, ...) {
 #' @importFrom dplyr collect
 collect.tbl_activityInfoRemoteRecords <- function(x, ...) {
   newTbl <- queryTable(
-    x$formTree, 
-    columns = tblColumns(x), 
-    asTibble = TRUE, 
-    makeNames = FALSE, 
+    x$formTree,
+    columns = tblColumns(x),
+    asTibble = TRUE,
+    makeNames = FALSE,
     filter = tblFilter(x),
     sort = tblSort(x),
     window = tblWindow(x)
@@ -928,11 +1090,11 @@ collect.tbl_activityInfoRemoteRecords <- function(x, ...) {
 #' @export
 select.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   if (!is.null(tblFilter(.data))||!is.null(tblSort(.data))) warning("Using select() after a filter or sort step. Be careful not to remove a required variable from your selection.")
-  
+
   loc <- tidyselect::eval_select(rlang::expr(c(...)), .data)
-  
+
   new_vars <- set_names(colnames(.data)[loc], names(loc))
-  
+
   .data$step <- addSelect(.data, new_vars)
   .data
 }
@@ -957,13 +1119,13 @@ rename.tbl_activityInfoRemoteRecords <- function(.data, ...) {
 #' @export
 rename_with.tbl_lazy <- function(.data, .fn, .cols = everything(), ...) {
   if (!is.null(tblSort(.data))) warning("Using rename_with() after a sort step. Be careful not to rename a required variable from your selection.")
-  
+
   .fn <- rlang::as_function(.fn)
   cols <- tidyselect::eval_select(rlang::enquo(.cols), .data)
-  
+
   new_vars <- set_names(colnames(.data))
   names(new_vars)[cols] <- .fn(new_vars[cols], ...)
-  
+
   .data$step <- addSelect(.data, new_vars)
   .data
 }
@@ -1046,7 +1208,7 @@ head.tbl_activityInfoRemoteRecords <- function(x, n = 6L, ...) {
 tail.tbl_activityInfoRemoteRecords <- function(x, n = 6L, ...) {
   n <- as.integer(n)
   adjustWindow(x, offSet = max(0L, x$step$window[2] - n), limit = n)
-  
+
 }
 
 # ---- Base ----

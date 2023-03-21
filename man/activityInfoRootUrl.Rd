@@ -13,11 +13,12 @@ activityInfoRootUrl(newUrl)
 Get or set the root url for the ActivityInfo server
 }
 \details{
-If you are using the [ActivityInfo Self-Managed Server](https://www.activityinfo.org/support/docs/self-managed/index.html),
+If you are using the \href{https://www.activityinfo.org/support/docs/self-managed/index.html}{ActivityInfo Self-Managed Server},
 you can use this function to point the R package to your own server.
 }
 \examples{
+\dontrun{
 # Connect to a self-managed ActivityInfo server
 activityInfoRootUrl("https://activityinfo.example.org")
-
+}
 }

@@ -1,6 +1,6 @@
-#' Create a simple form field schema
+#' Create a simple form field schema object
 #' 
-#' This is the function to create a basic offline form field schema. It is 
+#' This is the function to create a basic form field schema object. It is 
 #' recommended to use the specific functions for each schema type such as 
 #' textFieldSchema() or serialNumberFieldSchema().
 #'
@@ -221,7 +221,7 @@ barcodeFieldSchema <- function(label, description = NULL, code = NULL, id = cuid
   schema
 }
 
-#' Create a serial number form field schema
+#' Create a serial number form field schema object
 #' 
 #' Only one serial number field is possible in a form. The Prefix Formula is 
 #' available for Serial Number fields and can be used to customise how the 
@@ -252,7 +252,7 @@ serialNumberFieldSchema <- function(label, description = NULL, digits = 5, prefi
   schema
 }
 
-#' Create a quantity form field schema
+#' Create a quantity form field schema object
 #' 
 #' A Quantity field allow users to enter a numerical value. You can define the 
 #' units and the aggregation function.
@@ -285,7 +285,7 @@ quantityFieldSchema <- function(label, description = NULL, units = "", aggregati
   schema
 }
 
-#' Create a multi-line or narrative form field schema
+#' Create a multi-line or narrative form field schema object
 #' 
 #' Multi-Line Text fields can be used to collect long answers to open-ended 
 #' questions. They could be used for example to collect Comments about a 
@@ -306,7 +306,7 @@ multilineFieldSchema <- function(label, description = NULL, code = NULL, id = cu
   schema
 }
 
-#' Create a date form field schema
+#' Create a date form field schema object
 #' 
 #' The Date format in ActivityInfo is YYYY-MM-DD so no matter the way the Date 
 #' is typed by a user it will always appear in this format.
@@ -326,7 +326,7 @@ dateFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(),
   schema
 }
 
-#' Create a week form field schema
+#' Create a week form field schema object
 #' 
 #' The Week format in ActivityInfo is YYYY-WW. Users can directly type using 
 #' this format or use the calendar to select a week. Please note that the Week 
@@ -347,7 +347,7 @@ weekFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(),
   schema
 }
 
-#' Create a month form field schema
+#' Create a month form field schema object
 #' 
 #' The Month format in ActivityInfo is YYYY-MM.
 #' 
@@ -386,7 +386,7 @@ selectFieldSchema <- function(cardinality, label, description = NULL, options = 
   schema
 }
 
-#' Create a Single Select form field schema
+#' Create a single-select form field schema object
 #' 
 #' There is an options parameter for the list of single select items. Single 
 #' Selection fields can be used to ask from users to select one out of two or 
@@ -725,14 +725,14 @@ isFormFieldSchema <- function(schema) {
 
 #' Delete a form field
 #' 
-#' Deletes a form field in an offline form schema or else downloads the form 
-#' schema and deletes form field. Note that the either the upload argument 
-#' must be TRUE for the field to be automatically deleted online. Otherwise, use 
-#' updateFormSchema() to upload the changes after they are completed.
+#' Deletes a form field from an existing form schema object.
+#' 
+#' This function can also be used to immediately delete a field from a 
+#' form schema on the ActivityInfo server by setting upload to TRUE.
 #' 
 #' @rdname deleteFormField
-#' @param formId The identifier of the form online (provide either a formId or formSchema)
-#' @param formSchema The offline schema of the form (provide either a formId or formSchema)
+#' @param formId The id of the form online (provide either a formId or formSchema)
+#' @param formSchema The form schema object (provide either a formId or formSchema)
 #' @param id The id of the form field (provide either an id, code, or label)
 #' @param code The code of the form field (provide either an id, code, or label)
 #' @param label The label of the form schema (provide either an id, code, or label)
@@ -742,6 +742,34 @@ isFormFieldSchema <- function(schema) {
 #' @return The form field schema after the deletion. This will be the form field schema from the server if changes are uploaded.
 #'
 #' @export
+#' @examples 
+#' #' Define a few field schema objects
+#' nameField <- textFieldSchema(label = "Your name", required = TRUE)
+#' dobField <- dateFieldSchema(label = "When were you born?", code = "dob")
+#' 
+#' 
+#' # Create a new form schema object and add the fields. We are not sending
+#' # anything to the server yet.
+#' survey <- formSchema(databaseId = "cxy123", label = "Household Survey") |>
+#'    addFormField(nameField) |>
+#'    addFormField(dobField)
+#'    
+#' # Remove the name field
+#' survey <- deleteFormField(survey, label = "Your name")
+#' 
+#' # Remove the date of birth field, but use the code to identify the field
+#' survey <- deleteFormField(survey, code = "dob")    
+#' 
+#' \dontrun{
+#' # Retrieve a form schema from the server by id and delete a field from it.
+#' # Nothing is changed on the server yet.
+#' updatedSurvey <- deleteFormField(formId = "cxyz123", code = "maize_yield")
+#'    
+#' # Retrieve a form schema from the server by id and delete a field from it
+#' # AND then send the updated schema to the server. 
+#' deleteFormField(formId = "cxyz123", code = "maize_yield", upload = TRUE)    
+#' }
+#' @seealso [activityinfo::formSchema], [activityinfo::formFieldSchema], [activityinfo::addForm]
 deleteFormField <- function(...) {
   UseMethod("deleteFormField")
 }
@@ -813,7 +841,7 @@ deleteFormField.default <- deleteFormField.character
 
 #' Add a new form field
 #' 
-#' Adds a new form field to an offline form schema or else downloads the form 
+#' Adds a new form field to a form schema object or retrieves the form 
 #' schema and adds the new form field. Note that the either the upload argument 
 #' must be TRUE for the field to be added automatically online or the user will 
 #' also need to use updateFormSchema() to upload the changes after they are 
@@ -821,7 +849,7 @@ deleteFormField.default <- deleteFormField.character
 #' 
 #' @rdname addFormField
 #' @param formId The identifier of the form online
-#' @param formSchema The offline schema of the form
+#' @param formSchema The form schema object
 #' @param schema The form field schema to be added to the form
 #' @param upload Default is FALSE. If TRUE the modified form schema will be uploaded.
 #' @param ... ignored
@@ -829,6 +857,28 @@ deleteFormField.default <- deleteFormField.character
 #' @return The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
 #'
 #' @export
+#' @examples 
+#' # Define a few field schema objects
+#' nameField <- textFieldSchema(label = "Your name", required = TRUE)
+#' dobField <- dateFieldSchema(label = "When were you born?", code = "dob")
+#' 
+#' 
+#' # Create a new form schema object and add the fields. We are not sending
+#' # anything to the server yet.
+#' survey <- formSchema(databaseId = "cxy123", label = "Household Survey") |>
+#'    addFormField(nameField) |>
+#'    addFormField(dobField)
+#' 
+#' \dontrun{
+#' # Retrieve a form schema from the server by id and add a field to it.
+#' # Nothing is changed on the server yet.
+#' updatedSurvey <- addFormField(formId = "cxyz123", nameField)
+#'    
+#' # Retrieve a form schema from the server by id and add a field to it
+#' # AND then send the updated schema to the server. 
+#' addFormField(formId = "cxyz123", nameField, upload = TRUE)    
+#' }
+#' @seealso [activityinfo::formSchema], [activityinfo::formFieldSchema], [activityinfo::addForm]
 addFormField <- function(...) {
   UseMethod("addFormField")
 }

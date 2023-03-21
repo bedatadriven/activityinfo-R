@@ -24,15 +24,40 @@ addFormField(...)
 
 \item{upload}{Default is FALSE. If TRUE the modified form schema will be uploaded.}
 
-\item{formSchema}{The offline schema of the form}
+\item{formSchema}{The form schema object}
 }
 \value{
 The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
 }
 \description{
-Adds a new form field to an offline form schema or else downloads the form 
-schema and adds the new form field. Note that the either the upload argument 
-must be TRUE for the field to be added automatically online or the user will 
-also need to use updateFormSchema() to upload the changes after they are 
+Adds a new form field to a form schema object or retrieves the form
+schema and adds the new form field. Note that the either the upload argument
+must be TRUE for the field to be added automatically online or the user will
+also need to use updateFormSchema() to upload the changes after they are
 completed.
+}
+\examples{
+# Define a few field schema objects
+nameField <- textFieldSchema(label = "Your name", required = TRUE)
+dobField <- dateFieldSchema(label = "When were you born?", code = "dob")
+
+
+# Create a new form schema object and add the fields. We are not sending
+# anything to the server yet.
+survey <- formSchema(databaseId = "cxy123", label = "Household Survey") |>
+   addFormField(nameField) |>
+   addFormField(dobField)
+
+\dontrun{
+# Retrieve a form schema from the server by id and add a field to it.
+# Nothing is changed on the server yet.
+updatedSurvey <- addFormField(formId = "cxyz123", nameField)
+   
+# Retrieve a form schema from the server by id and add a field to it
+# AND then send the updated schema to the server. 
+addFormField(formId = "cxyz123", nameField, upload = TRUE)    
+}
+}
+\seealso{
+\link{formSchema}, \link{formFieldSchema}, \link{addForm}
 }

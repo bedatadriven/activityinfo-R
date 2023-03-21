@@ -11,5 +11,5 @@ getDatabases(asDf = FALSE)
 }
 \description{
 Retrieves a list of databases the authenticated user owns, or has been shared
- with
+with
 }

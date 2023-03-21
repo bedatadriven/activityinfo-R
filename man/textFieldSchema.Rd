@@ -42,7 +42,7 @@ textFieldSchema(
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }
 \description{
-You can define the format of the text that the users should type in a Text 
-field using an Input Mask. 
+You can define the format of the text that the users should type in a Text
+field using an Input Mask.
 See: https://www.activityinfo.org/support/docs/m/93526/l/1143998.html
 }

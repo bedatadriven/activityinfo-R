@@ -2,7 +2,7 @@
 % Please edit documentation in R/formField.R
 \name{formFieldSchema}
 \alias{formFieldSchema}
-\title{Create a simple form field schema}
+\title{Create a simple form field schema object}
 \usage{
 formFieldSchema(
   type,
@@ -48,8 +48,8 @@ formFieldSchema(
 \item{typeParameters}{The type parameters object specific to the type given.}
 }
 \description{
-This is the function to create a basic offline form field schema. It is 
-recommended to use the specific functions for each schema type such as 
+This is the function to create a basic form field schema object. It is
+recommended to use the specific functions for each schema type such as
 textFieldSchema() or serialNumberFieldSchema().
 }
 \seealso{

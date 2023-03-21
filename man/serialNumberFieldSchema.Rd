@@ -2,7 +2,7 @@
 % Please edit documentation in R/formField.R
 \name{serialNumberFieldSchema}
 \alias{serialNumberFieldSchema}
-\title{Create a serial number form field schema}
+\title{Create a serial number form field schema object}
 \usage{
 serialNumberFieldSchema(
   label,
@@ -27,7 +27,7 @@ serialNumberFieldSchema(
 
 \item{digits}{The number of digits in the serial number}
 
-\item{prefixFormula}{A formula as a character string defining the prefix for 
+\item{prefixFormula}{A formula as a character string defining the prefix for
 the serial number}
 
 \item{code}{The code name of the form field}
@@ -49,9 +49,9 @@ the serial number}
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }
 \description{
-Only one serial number field is possible in a form. The Prefix Formula is 
-available for Serial Number fields and can be used to customise how the 
-Serial Number will appear. In Subforms, the Prefix Formula can also derive 
+Only one serial number field is possible in a form. The Prefix Formula is
+available for Serial Number fields and can be used to customise how the
+Serial Number will appear. In Subforms, the Prefix Formula can also derive
 from the Parent Form.
 }
 \seealso{

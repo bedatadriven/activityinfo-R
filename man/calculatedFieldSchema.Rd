@@ -39,7 +39,7 @@ calculatedFieldSchema(
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }
 \description{
-A calculated field can be used to define a formula that presents calculation 
+A calculated field can be used to define a formula that presents calculation
 results in the form.
 }
 \details{

@@ -15,3 +15,23 @@ recoverRecord(formId, recordId)
 This call recovers a single deleted record for the given \code{formId} and
 \code{recordId}.
 }
+\examples{
+\dontrun{
+
+# Deletes a record
+deleteRecord(formId = "cyx123", recordId = "c23g322j432")
+
+# Recover (undelete) a record
+recoverRecord(formId = "cyx123", recordId = "c23g322j432")
+}
+}
+\seealso{
+Other record functions: 
+\code{\link{addRecord}()},
+\code{\link{deleteRecord}()},
+\code{\link{getAttachment}()},
+\code{\link{getRecordHistory}()},
+\code{\link{getRecord}()},
+\code{\link{updateRecord}()}
+}
+\concept{record functions}

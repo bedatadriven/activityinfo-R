@@ -11,17 +11,17 @@ activityInfoToken(token)
 \item{token}{The personal token used to authenticate with to ActivityInfo.org}
 }
 \description{
-Configures the current session to use a personal token for authentication to 
+Configures the current session to use a personal token for authentication to
 the ActivityInfo Server.
 }
 \details{
-Users can generate a personal API token from the [Profile Settings](https://www.activityinfo.org/support/docs/m/84880/l/1333305.html)
+Users can generate a personal API token from the \href{https://www.activityinfo.org/support/docs/m/84880/l/1333305.html}{Profile Settings}
 page of ActivityInfo's user interface. This token is used instead of a password
 when connecting to the ActivityInfo API.
 
-When run interactively, you will be prompted to store the token locally on 
+When run interactively, you will be prompted to store the token locally on
 your device. This avoids the need to provide the token each time you run
-a script. The token is stored in plaintext, however, so you should only 
+a script. The token is stored in plaintext, however, so you should only
 agree to store your token when your device is properly secured with a screenlock
 and not shared with others.
 }

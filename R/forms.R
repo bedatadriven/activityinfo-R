@@ -17,7 +17,8 @@ changeName <- function(x, from, to) {
   x
 }
 
-#' Queries the schema of a form
+#' Queries the schema of a form or extracts the schema from the remote records 
+#' table
 #'
 #' The result has a class "formSchema" and can be transformed to
 #' data.frame using `as.data.frame()`
@@ -31,6 +32,7 @@ changeName <- function(x, from, to) {
 #' }
 #' @return A list with class \sQuote{formSchema}.
 #' @export
+#' 
 getFormSchema <- function(formId) {
   stopifnot(is.character(formId))
   schema <- getResource(

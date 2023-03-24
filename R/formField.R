@@ -862,3 +862,30 @@ addFormField.formSchema <- function(formSchema, schema, upload = FALSE, ...) {
 #' @export
 #' @rdname addFormField
 addFormField.default <- addFormField.character
+
+#' Migrate and convert with a user function the content of one form field to 
+#' another
+#' 
+#' With this function, the data from one form field (column) can be moved to 
+#' another form field and converted with a user-supplied function. 
+#'  
+#' @rdname migrateFormField
+#' @param formId The identifier of the form online
+#' @param formSchema The offline schema of the form
+#' @param schema The form field schema to be added to the form
+#' @param upload Default is FALSE. If TRUE the modified form schema will be uploaded.
+#' @param ... ignored
+#' 
+#' @return The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
+#'
+#' @export
+migrateFormField <- function(...) {
+  UseMethod("migrateFormField")
+}
+
+
+#' @export
+#' @rdname migrateFormField
+migrateFormField.formSchema <- function(formSchema, fn) {
+  
+}

@@ -17,7 +17,8 @@ toActivityInfoFormula <- function(.data, expr) {
       if(grepl(x = idVar, pattern = "^[A-Za-z_][A-Za-z0-9_]*$")) {
         return(idVar)
       } else {
-        return(sprintf("[%s]", idVar))
+        #return(sprintf("[%s]", idVar))
+        return(sprintf("%s", idVar))
       }
     } else {
       expr2 <- deparse(rlang::eval_tidy(exprQuo))

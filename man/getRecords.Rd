@@ -2,12 +2,12 @@
 % Please edit documentation in R/records.R
 \name{getRecords}
 \alias{getRecords}
-\title{Get a table of records}
+\title{Get a lazy table of records}
 \usage{
 getRecords(form, style)
 }
 \arguments{
-\item{form}{a form id, form schema or form tree}
+\item{form}{a form id, form schema, form tree, or activity info data frame}
 
 \item{style}{a column style object that defines how table columns should be created from a form; use columnStyle() to create a new style; default column styles can be set with an option or setDefaultColumnStyle()}
 }

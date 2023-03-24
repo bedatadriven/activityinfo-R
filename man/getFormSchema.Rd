@@ -2,7 +2,8 @@
 % Please edit documentation in R/forms.R
 \name{getFormSchema}
 \alias{getFormSchema}
-\title{Queries the schema of a form}
+\title{Queries the schema of a form or extracts the schema from the remote records 
+table}
 \usage{
 getFormSchema(formId)
 }

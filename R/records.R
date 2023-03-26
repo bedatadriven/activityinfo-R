@@ -1272,7 +1272,7 @@ rename_with.tbl_lazy <- function(.data, .fn, .cols = everything(), ...) {
 
 #' @importFrom dplyr slice_head
 #' @export
-slice_head.tbl_activityInfoRemoteRecords <- function(.data, n, prop) {
+slice_head.tbl_activityInfoRemoteRecords <- function(.data, ..., n, prop) {
   if (missing(n)) {
     if (missing(prop)) stop("slice_head() must either be provide the number of rows n or prop.")
     stopifnot(prop>=0&&prop<=1)
@@ -1283,7 +1283,7 @@ slice_head.tbl_activityInfoRemoteRecords <- function(.data, n, prop) {
 
 #' @importFrom dplyr slice_tail
 #' @export
-slice_tail.tbl_activityInfoRemoteRecords <- function(.data, n, prop) {
+slice_tail.tbl_activityInfoRemoteRecords <- function(.data, ..., n, prop) {
   if (missing(n)) {
     if (missing(prop)) stop("slice_tail() must either be provide the number of rows n or prop.")
     stopifnot(prop>=0&&prop<=1)

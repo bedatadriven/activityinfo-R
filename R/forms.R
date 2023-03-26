@@ -124,9 +124,10 @@ as.data.frame.formSchema <- function(x, row.names = NULL, optional = FALSE, ...)
   )
 }
 
+#' @importFrom dplyr as_tibble
 #' @export
-as_tibble.formSchema <- function(x) {
-  as_tibble(as.data.frame(x))
+as_tibble.formSchema <- function(x, ..., .rows, .name_repair, rownames) {
+  as_tibble(as.data.frame(x), .rows, .name_repair, rownames)
 }
 
 #' Delete a form

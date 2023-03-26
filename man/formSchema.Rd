@@ -2,7 +2,7 @@
 % Please edit documentation in R/forms.R
 \name{formSchema}
 \alias{formSchema}
-\title{Create a blank form schema offline}
+\title{Create a form schema object}
 \usage{
 formSchema(
   databaseId,
@@ -24,5 +24,18 @@ formSchema(
 \item{folderId}{The identifier of the folder containing the form}
 }
 \description{
-Generates a new form schema offline which can be used to build a new form
+Generates a new form schema object which can be used to add a new form
+to ActivityInfo.
+}
+\examples{
+survey <- formSchema(
+   databaseId = "cyx12345gh",
+   label = "ActivityInfo form generated from R",
+   elements = list(
+     textFieldSchema(label = "What is your name?", code = "name", required = TRUE),
+     dateFieldSchema(label = "When were you born?", code = "dob")))
+\dontrun{
+addForm(survey)
+}
+
 }

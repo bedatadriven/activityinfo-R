@@ -2,7 +2,7 @@
 % Please edit documentation in R/formField.R
 \name{dateFieldSchema}
 \alias{dateFieldSchema}
-\title{Create a date form field schema}
+\title{Create a date form field schema object}
 \usage{
 dateFieldSchema(
   label,
@@ -42,7 +42,7 @@ dateFieldSchema(
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }
 \description{
-The Date format in ActivityInfo is YYYY-MM-DD so no matter the way the Date 
+The Date format in ActivityInfo is YYYY-MM-DD so no matter the way the Date
 is typed by a user it will always appear in this format.
 }
 \seealso{

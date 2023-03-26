@@ -2,7 +2,7 @@
 % Please edit documentation in R/formField.R
 \name{singleSelectFieldSchema}
 \alias{singleSelectFieldSchema}
-\title{Create a Single Select form field schema}
+\title{Create a single-select form field schema object}
 \usage{
 singleSelectFieldSchema(
   label,
@@ -45,11 +45,11 @@ singleSelectFieldSchema(
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }
 \description{
-There is an options parameter for the list of single select items. Single 
-Selection fields can be used to ask from users to select one out of two or 
-more options as an answer. This can be a "Yes" or "No" question for example 
-or any other type of question that can be answered with one option. Single 
-Selection fields can be used in Prefix Formulas to customize Serial Numbers 
+There is an options parameter for the list of single select items. Single
+Selection fields can be used to ask from users to select one out of two or
+more options as an answer. This can be a "Yes" or "No" question for example
+or any other type of question that can be answered with one option. Single
+Selection fields can be used in Prefix Formulas to customize Serial Numbers
 too.
 }
 \seealso{

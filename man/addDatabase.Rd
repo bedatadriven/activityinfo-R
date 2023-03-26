@@ -14,6 +14,9 @@ addDatabase(label, databaseId = cuid())
 \description{
 Adds a new database.
 }
+\details{
+Note that only billing account owners are permitted to add new databases.
+}
 \examples{
 \dontrun{
 newDb <- addDatabase("Programme information system")

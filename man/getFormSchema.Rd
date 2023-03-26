@@ -2,8 +2,9 @@
 % Please edit documentation in R/forms.R
 \name{getFormSchema}
 \alias{getFormSchema}
-\title{Queries the schema of a form or extracts the schema from the remote records 
-table}
+
+\title{Gets the schema of a form}
+
 \usage{
 getFormSchema(formId)
 }
@@ -15,7 +16,7 @@ A list with class \sQuote{formSchema}.
 }
 \description{
 The result has a class "formSchema" and can be transformed to
-data.frame using `as.data.frame()`
+data.frame using \code{as.data.frame()}
 }
 \examples{
 \dontrun{

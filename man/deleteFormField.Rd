@@ -15,7 +15,7 @@ deleteFormField(...)
 \arguments{
 \item{...}{ignored}
 
-\item{formId}{The identifier of the form online (provide either a formId or formSchema)}
+\item{formId}{The id of the form online (provide either a formId or formSchema)}
 
 \item{id}{The id of the form field (provide either an id, code, or label)}
 
@@ -25,14 +25,48 @@ deleteFormField(...)
 
 \item{upload}{Default is FALSE. If TRUE the modified form schema will be uploaded.}
 
-\item{formSchema}{The offline schema of the form (provide either a formId or formSchema)}
+\item{formSchema}{The form schema object (provide either a formId or formSchema)}
 }
 \value{
 The form field schema after the deletion. This will be the form field schema from the server if changes are uploaded.
 }
 \description{
-Deletes a form field in an offline form schema or else downloads the form 
-schema and deletes form field. Note that the upload argument 
-must be TRUE for the field to be automatically deleted online. Otherwise, use 
-updateFormSchema() to upload the changes after they are completed.
+
+Deletes a form field from an existing form schema object.
+}
+\details{
+This function can also be used to immediately delete a field from a
+form schema on the ActivityInfo server by setting upload to TRUE.
+}
+\examples{
+#' Define a few field schema objects
+nameField <- textFieldSchema(label = "Your name", required = TRUE)
+dobField <- dateFieldSchema(label = "When were you born?", code = "dob")
+
+
+# Create a new form schema object and add the fields. We are not sending
+# anything to the server yet.
+survey <- formSchema(databaseId = "cxy123", label = "Household Survey") |>
+   addFormField(nameField) |>
+   addFormField(dobField)
+   
+# Remove the name field
+survey <- deleteFormField(survey, label = "Your name")
+
+# Remove the date of birth field, but use the code to identify the field
+survey <- deleteFormField(survey, code = "dob")    
+
+\dontrun{
+# Retrieve a form schema from the server by id and delete a field from it.
+# Nothing is changed on the server yet.
+updatedSurvey <- deleteFormField(formId = "cxyz123", code = "maize_yield")
+   
+# Retrieve a form schema from the server by id and delete a field from it
+# AND then send the updated schema to the server. 
+deleteFormField(formId = "cxyz123", code = "maize_yield", upload = TRUE)    
+}
+}
+\seealso{
+\link{formSchema}, \link{formFieldSchema}, \link{addForm}
+
 }

@@ -17,8 +17,7 @@ changeName <- function(x, from, to) {
   x
 }
 
-#' Queries the schema of a form or extracts the schema from the remote records 
-#' table
+#' Gets the schema of a form
 #'
 #' The result has a class "formSchema" and can be transformed to
 #' data.frame using `as.data.frame()`
@@ -132,11 +131,11 @@ as_tibble.formSchema <- function(x, ..., .rows, .name_repair, rownames) {
 
 #' Delete a form
 #'
-#' Deletes a form given the form identifier and the database identifier of the
+#' Deletes a form given the form id and the database id of the
 #' database containing that form.
 #'
-#' @param databaseId The identifier of the database containing the form
-#' @param formId The identifier of the form
+#' @param databaseId The id of the database containing the form
+#' @param formId The id of the form
 #'
 #' @export
 deleteForm <- function(databaseId, formId) {
@@ -168,6 +167,16 @@ deleteForm <- function(databaseId, formId) {
 #' @param folderId the id of the folder to which this form should be added
 #' @param ... ignored
 #' @export
+#' @examples
+#' \dontrun{
+#' addForm(formSchema(
+#'   databaseId = myDatabaseId,
+#'   label = "ActivityInfo form generated from R",
+#'   elements = list(
+#'     textFieldSchema(label = "What is your name?", code = "name", required = TRUE),
+#'     dateFieldSchema(label = "When were you born?", code = "dob"))))
+#' }
+#' @seealso [activityinfo::formSchema], [activityinfo::formFieldSchema], \code{vignette("add-and-manipulate-forms", package = "activityinfo")}
 addForm <- function(...) {
   UseMethod("addForm")
 }
@@ -216,9 +225,10 @@ addForm.character <- function(databaseId, schema, folderId = databaseId, ...) {
 #' @rdname addForm
 addForm.default <- addForm.character
 
-#' Create a blank form schema offline
+#' Create a form schema object
 #'
-#' Generates a new form schema offline which can be used to build a new form
+#' Generates a new form schema object which can be used to add a new form
+#' to ActivityInfo.
 #'
 #' @param databaseId The identifier of the database containing the form
 #' @param label The label of the form
@@ -226,6 +236,17 @@ addForm.default <- addForm.character
 #' @param elements The elements/form fields of the form
 #' @param folderId The identifier of the folder containing the form
 #' @export
+#' @examples
+#' survey <- formSchema(
+#'    databaseId = "cyx12345gh",
+#'    label = "ActivityInfo form generated from R",
+#'    elements = list(
+#'      textFieldSchema(label = "What is your name?", code = "name", required = TRUE),
+#'      dateFieldSchema(label = "When were you born?", code = "dob")))
+#' \dontrun{
+#' addForm(survey)
+#' }
+#'
 formSchema <- function(databaseId, label, id = cuid(), elements = list(), folderId = databaseId) {
   stopifnot(is.character(label))
   stopifnot("The label must have one or more characters." = nchar(label)>0)
@@ -339,17 +360,17 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId
   stopifnot("Logical text values must be length 2" = is.character(logicalText)&&length(logicalText)==2)
 
   providedCols <- names(x)
-  
+
   stopifnot("Some key columns do not exist in the data.frame provided" = keyColumns %in% providedCols)
   stopifnot("Some required columns do not exist in the data.frame provided" = keyColumns %in% providedCols)
-  
+
   fmSchema <- formSchema(databaseId = databaseId, label = label, folderId = folderId)
 
   addIt <- function(fieldSchema) fmSchema <<- addFormField(fmSchema, fieldSchema)
   keyStop <- function(type, pCol) stop(sprintf("Column '%s' of type %s cannot be a key column", pCol, type))
 
   x2 <- x
-  
+
 
   lapply(providedCols, function(pCol) {
     y <- x[[pCol]]

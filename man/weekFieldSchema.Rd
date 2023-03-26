@@ -2,7 +2,7 @@
 % Please edit documentation in R/formField.R
 \name{weekFieldSchema}
 \alias{weekFieldSchema}
-\title{Create a week form field schema}
+\title{Create a week form field schema object}
 \usage{
 weekFieldSchema(
   label,
@@ -42,8 +42,8 @@ weekFieldSchema(
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }
 \description{
-The Week format in ActivityInfo is YYYY-WW. Users can directly type using 
-this format or use the calendar to select a week. Please note that the Week 
+The Week format in ActivityInfo is YYYY-WW. Users can directly type using
+this format or use the calendar to select a week. Please note that the Week
 field uses the EPI week convention.
 }
 \seealso{

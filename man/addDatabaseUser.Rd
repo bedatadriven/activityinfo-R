@@ -42,12 +42,12 @@ activate their account.
 If there is an ActivityInfo account with the given email address, an email is sent
 notifying the user of their new role.
 
-In ActivityInfo, permissions are managed through _roles_. Roles include a set of
+In ActivityInfo, permissions are managed through \emph{roles}. Roles include a set of
 permissions. When a user is assigned a role, they inherit those permissions from the
 role.
 
-Some roles are _parameterized_. For example, the "Reporting Partner" role included
-in many database templates has a `partner` parameter that is used to filter which
+Some roles are \emph{parameterized}. For example, the "Reporting Partner" role included
+in many database templates has a \code{partner} parameter that is used to filter which
 records are visible to the user. The value of this parameter is the record id of the
 user's partner in the related Partner form.
 }

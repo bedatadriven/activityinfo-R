@@ -7,11 +7,11 @@
 deleteForm(databaseId, formId)
 }
 \arguments{
-\item{databaseId}{The identifier of the database containing the form}
+\item{databaseId}{The id of the database containing the form}
 
-\item{formId}{The identifier of the form}
+\item{formId}{The id of the form}
 }
 \description{
-Deletes a form given the form identifier and the database identifier of the
+Deletes a form given the form id and the database id of the
 database containing that form.
 }

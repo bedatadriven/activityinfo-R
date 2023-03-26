@@ -51,9 +51,11 @@ accuracy.
 }
 \details{
 The user interface as the required geo-location accuracy options:
-* No minimum accuracy
-* Medium accuracy (25 m); default
-* High accuracy (10 m)"
+\itemize{
+\item No minimum accuracy
+\item Medium accuracy (25 m); default
+\item High accuracy (10 m)"
+}
 
 This field cannot be a key field.
 }

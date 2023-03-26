@@ -45,8 +45,8 @@ multipleSelectFieldSchema(
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }
 \description{
-There is an options parameter for the list of multiple select items. Multiple 
-Selection fields can be used to ask from users to select any number of 
+There is an options parameter for the list of multiple select items. Multiple
+Selection fields can be used to ask from users to select any number of
 options as an answer.
 }
 \seealso{

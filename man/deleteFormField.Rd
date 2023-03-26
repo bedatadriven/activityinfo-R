@@ -32,7 +32,7 @@ The form field schema after the deletion. This will be the form field schema fro
 }
 \description{
 Deletes a form field in an offline form schema or else downloads the form 
-schema and deletes form field. Note that the either the upload argument 
+schema and deletes form field. Note that the upload argument 
 must be TRUE for the field to be automatically deleted online. Otherwise, use 
 updateFormSchema() to upload the changes after they are completed.
 }

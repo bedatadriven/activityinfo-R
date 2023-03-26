@@ -224,7 +224,10 @@ getRecords.character <- function(form, style = defaultColumnStyle()) {
   getRecords(form = fmTree, style = style)
 }
 #' @export
-getRecords.activityInfoFormSchema <- getRecords.character
+getRecords.activityInfoFormSchema <- function(form, style = defaultColumnStyle()) {
+  getRecords(form = form$id, style)
+}
+
 getRecords.default <- getRecords.character
 
 # ---- Column styles ----
@@ -423,6 +426,8 @@ prettyColumns <- function(x, select, ...) {
 #' @param x the form id, form schema, form tree, or remote records object.
 #' @param select a character vector of column names to select.
 #' @param style a column style object.
+#' @param forceId require the underlying expression for each column to be based 
+#' on form field ids and not the code or label
 #' @export
 styledColumns <- function(x, select, style = defaultColumnStyle(), forceId = FALSE) {
   stopifnot("activityInfoColumnStyle" %in% class(style))
@@ -499,9 +504,9 @@ dim.tbl_activityInfoRemoteRecords <- function(x) {
 #  colnames(x)
 # }
 
-#' @export
-as.list.tbl_activityInfoRemoteRecords <- function(x) {
-  return(as.list(unclass(rcrds)))
+#' @exportS3Method as.list tbl_activityInfoRemoteRecords
+as.list.tbl_activityInfoRemoteRecords <- function(x, ...) {
+  return(as.list(unclass(x), ...))
 }
 
 #' @export
@@ -556,7 +561,7 @@ varNames <- function(x, style, addNames) {
   UseMethod("varNames")
 }
 
-#' @export
+#' @exportS3Method varNames activityInfoFormTree
 varNames.activityInfoFormTree <- function(x, style = defaultColumnStyle(), addNames = FALSE) {
   fmSchema <- x$forms[[x$root]]
 
@@ -597,13 +602,13 @@ varNames.activityInfoFormTree <- function(x, style = defaultColumnStyle(), addNa
   vrNames
 }
 
-#' @export
+#' @exportS3Method varNames activityInfoFormSchema
 varNames.activityInfoFormSchema <- function(x, style = defaultColumnStyle(), addNames = FALSE) {
   varNames(getFormTree(x$id), style, addNames)
 }
 
-#' @export
-varNames.tbl_activityInfoRemoteRecords <- function(x, addNames = TRUE) {
+#' @exportS3Method varNames tbl_activityInfoRemoteRecords
+varNames.tbl_activityInfoRemoteRecords <- function(x, style = NULL, addNames = TRUE) {
   y <- x$step$vars
   if (!addNames) {
     unname(y)
@@ -611,15 +616,15 @@ varNames.tbl_activityInfoRemoteRecords <- function(x, addNames = TRUE) {
   y
 }
 
-#' @export
+#' @exportS3Method varNames character
 varNames.character <- function(x, style = defaultColumnStyle(), addNames = FALSE) {
   varNames(getFormTree(x), style, addNames)
 }
 
-#' @export
-varNames.activityInfo_tbl_df <- function(x, addNames = TRUE) {
+#' @exportS3Method varNames activityInfo_tbl_df
+varNames.activityInfo_tbl_df <- function(x, style = NULL, addNames = TRUE) {
   warning("Getting the variable names from the collected remote records object. This can deviate from the data.frame columns if they have changed.")
-  varNames(attr(x, "remoteRecords"), addNames)
+  varNames(attr(x, "remoteRecords"), style = NULL, addNames)
 }
 
 
@@ -630,7 +635,7 @@ varNames.activityInfo_tbl_df <- function(x, addNames = TRUE) {
 #' This helper function provides form field schemas in a named list. This can be 
 #' useful for examining and manipulating form fields. See also copySchema().
 #'
-#' @param x the form tree object.
+#' @param formTree the form tree object.
 #' @param style a column style object.
 #' 
 #' @export
@@ -793,8 +798,8 @@ elementVarName <- function(y, style) {
 
 # ---- Lazy remote table ----
 
-
-#' @export
+#' @importFrom dplyr tbl
+#' @exportS3Method tbl src_activityInfo
 tbl.src_activityInfo <- function(src, formTree, style = defaultColumnStyle(),...) {
   stopifnot(formTree$root %in% dplyr::src_tbls(src))
 
@@ -916,6 +921,13 @@ adjustWindow <- function(x, offSet = 0L, limit) {
 }
 
 
+#' Get the columns of a remote records object
+#'
+#' @description
+#' This provides the columns of the remote records object created with getRecords()
+#'
+#' @param x the remote records object fetched with getRecords().
+#' 
 #' @export
 tblColumns <- function(x) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
@@ -937,12 +949,26 @@ tblFieldTypes <- function(x) {
   types[types!="NULL"]
 }
 
+#' Get the sort ActivityInfo API object of a remote records object
+#'
+#' @description
+#' This provides the sort object used in queryTable() of the remote records object created with getRecords()
+#'
+#' @param x the remote records object fetched with getRecords().
+#' 
 #' @export
 tblSort <- function(x) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
   x$step$sort
 }
 
+#' Get the filter object of a remote records object
+#'
+#' @description
+#' This provides the columns used in queryTable()  of the remote records object created with getRecords()
+#'
+#' @param x the remote records object fetched with getRecords().
+#' 
 #' @export
 tblFilter <- function(x) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
@@ -964,6 +990,14 @@ tblFilter <- function(x) {
   }
 }
 
+#' Get the window object of a remote records object
+#'
+#' @description
+#' This provides the window used in queryTable()of the remote records object created with getRecords()
+#'
+#' @param x the remote records object fetched with getRecords().
+#' @param limit an additional limit that can be used to specify the maximum number of records to query.
+#' 
 #' @export
 tblWindow <- function(x, limit) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
@@ -989,7 +1023,7 @@ tblWindow <- function(x, limit) {
 #' @param x the remote records object fetched with getRecords().
 #' @param databaseId the id of the database where the form should reside.
 #' @param label the label of the form
-#' 
+#' @param ... parameters to pass on to formSchema()
 #' @export
 copySchema <- function(x, databaseId, label, ...) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
@@ -1106,14 +1140,13 @@ src_activityInfo.databaseTree <- function(x) {
   dplyr::src(subclass = c("activityInfoDatabaseTree", "activityInfo"), databaseTree = x, url <- activityInfoRootUrl())
 }
 
-# #' @export
-# dplyr::src_tbls
-
-#' @export
+#' @importFrom dplyr src_tbls
+#' @exportS3Method src_tbls src_activityInfoFormTree
 src_tbls.src_activityInfoFormTree <- function(x, ...) {
   names(x$formTree$forms)
 }
-#' @export
+
+#' @exportS3Method src_tbls src_activityInfoDatabaseTree
 src_tbls.src_activityInfoDatabaseTree <- function(x, ...) {
   getDatabaseResources(x)$id
 }
@@ -1148,10 +1181,10 @@ mutate.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   mutate(.data, ...)
 }
 
-#' @export
+
+#' @exportS3Method filter tbl_activityInfoRemoteRecords
 #' @importFrom dplyr filter
 filter.tbl_activityInfoRemoteRecords <- function(.data, ...) {
-  browser()
   if (!is.null(tblSort(.data))&&!is.null(tblWindow(.data))) {
     # should collect if window and arrange have already been applied  
     warn_collect("filter")
@@ -1167,6 +1200,9 @@ filter.tbl_activityInfoRemoteRecords <- function(.data, ...) {
     addFilter(.data, paste(as.character(result, collapse = "&&")))
   }
 }
+
+#' @export
+dplyr::filter
 
 #' @export
 #' @importFrom dplyr collect
@@ -1288,15 +1324,17 @@ arrange.tbl_activityInfoRemoteRecords <- function(.data, ...) {
 
 #### Automatic dplyr verb collection ####
 
+#' @importFrom utils lsf.str
 additionalDplyrVerbs <- function() {
   result <- lapply(
-    paste0("dplyr::`",lsf.str("package:dplyr"),"`"), 
+    paste0("dplyr::`",utils::lsf.str("package:dplyr"),"`"), 
     function(x) {
       fn <- eval(parse(text = x))
       fn_name <- substr(x, 9, nchar(x)-1)
-      if (!is.null(formals(fn))&&names(formals(fn))[[1]]==".data"&&!(fn_name %in% paste0(lsf.str("package:activityinfo")))) {
+      if (!is.null(formals(fn))&&names(formals(fn))[[1]]==".data"&&!(fn_name %in% paste0(utils::lsf.str("package:activityinfo")))) {
         fn_text <- sprintf(
-          "#' @export\n#' @importFrom dplyr %s\n%s.tbl_activityInfoRemoteRecords <- function(.data, ...) {\n  warn_collect(\"%s\")\n  .data <- collect(.data)\n  %s(.data, ...)\n}", 
+          "#' @importFrom dplyr %s\n#' @exportS3Method %s tbl_activityInfoRemoteRecords\n%s.tbl_activityInfoRemoteRecords <- function(.data, ...) {\n  warn_collect(\"%s\")\n  .data <- collect(.data)\n  %s(.data, ...)\n}", 
+          fn_name,
           fn_name, 
           fn_name, 
           fn_name, 
@@ -1310,8 +1348,9 @@ additionalDplyrVerbs <- function() {
   paste(result[lengths(result)>0], collapse = "\n\n")
 }
 
-#' @export
+
 #' @importFrom dplyr add_row
+#' @exportS3Method add_row tbl_activityInfoRemoteRecords
 add_row.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   warn_collect("add_row")
   .data <- collect(.data)
@@ -1342,8 +1381,8 @@ distinct_.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   distinct_(.data, ...)
 }
 
-#' @export
 #' @importFrom dplyr distinct_prepare
+#' @exportS3Method distinct_prepare tbl_activityInfoRemoteRecords
 distinct_prepare.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   warn_collect("distinct_prepare")
   .data <- collect(.data)
@@ -1382,8 +1421,8 @@ group_by_.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   group_by_(.data, ...)
 }
 
-#' @export
 #' @importFrom dplyr group_by_prepare
+#' @exportS3Method group_by_prepare tbl_activityInfoRemoteRecords
 group_by_prepare.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   warn_collect("group_by_prepare")
   .data <- collect(.data)
@@ -1430,16 +1469,16 @@ group_modify.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   group_modify(.data, ...)
 }
 
-#' @export
 #' @importFrom dplyr group_rows
+#' @exportS3Method group_rows tbl_activityInfoRemoteRecords
 group_rows.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   warn_collect("group_rows")
   .data <- collect(.data)
   group_rows(.data, ...)
 }
 
-#' @export
 #' @importFrom dplyr group_walk
+#' @exportS3Method group_walk tbl_activityInfoRemoteRecords
 group_walk.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   warn_collect("group_walk")
   .data <- collect(.data)
@@ -1592,8 +1631,9 @@ transmute_.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   transmute_(.data, ...)
 }
 
-#' @export
+
 #' @importFrom dplyr with_groups
+#' @exportS3Method with_groups tbl_activityInfoRemoteRecords
 with_groups.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   warn_collect("with_groups")
   .data <- collect(.data)

@@ -726,7 +726,7 @@ isFormFieldSchema <- function(schema) {
 #' Delete a form field
 #' 
 #' Deletes a form field in an offline form schema or else downloads the form 
-#' schema and deletes form field. Note that the either the upload argument 
+#' schema and deletes form field. Note that the upload argument 
 #' must be TRUE for the field to be automatically deleted online. Otherwise, use 
 #' updateFormSchema() to upload the changes after they are completed.
 #' 
@@ -863,29 +863,40 @@ addFormField.formSchema <- function(formSchema, schema, upload = FALSE, ...) {
 #' @rdname addFormField
 addFormField.default <- addFormField.character
 
-#' Migrate and convert with a user function the content of one form field to 
-#' another
+#' Migrate and convert the data of one form field into another
 #' 
 #' With this function, the data from one form field (column) can be moved to 
 #' another form field and converted with a user-supplied function. 
 #'  
-#' @rdname migrateFormField
-#' @param formId The identifier of the form online
-#' @param formSchema The offline schema of the form
-#' @param schema The form field schema to be added to the form
-#' @param upload Default is FALSE. If TRUE the modified form schema will be uploaded.
-#' @param ... ignored
+#' @rdname migrateFieldData
+#' @param .data remote records object of the form online
+#' @param from the source form field from which to get the data
+#' @param to the destination form field which will receive the converted data
+#' @param fn the user-supplied conversion function; default is to do nothing
+#' @param idColumn the id column. The default is `_id`
 #' 
 #' @return The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
 #'
+#' @importFrom rlang enquo
 #' @export
-migrateFormField <- function(...) {
-  UseMethod("migrateFormField")
-}
-
-
-#' @export
-#' @rdname migrateFormField
-migrateFormField.formSchema <- function(formSchema, fn) {
+migrateFieldData <- function(.data, from, to, fn = function(x) x, idColumn = as.name("_id")) {
+  stopifnot("It is required to first use getRecords() to select the fields for migration."= "tbl_activityInfoRemoteRecords" %in% class(.data))
   
+  id <- NULL
+  
+  from <- dplyr::enquo(from)
+  to <- dplyr::enquo(to)
+  idColumn <- dplyr::enquo(idColumn)
+  
+  remoteDf <- .data |> select(id = !!idColumn, from = !!from, to = !!to) 
+  df <- remoteDf |> 
+    select(id, from) |> 
+    collect() |> 
+    mutate(to = fn(from)) |>
+    select(id, to)
+  
+  cols <- tblColumns(remoteDf |> select(id, to))
+  names(df) <- cols
+  
+  importTable(formId = .data$formTree$root, data = df, recordIdColumn = "_id")
 }

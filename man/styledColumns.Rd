@@ -12,6 +12,9 @@ styledColumns(x, select, style = defaultColumnStyle(), forceId = FALSE)
 \item{select}{a character vector of column names to select.}
 
 \item{style}{a column style object.}
+
+\item{forceId}{require the underlying expression for each column to be based 
+on form field ids and not the code or label}
 }
 \description{
 This function is primarily used for queryTable(). The default column style is 

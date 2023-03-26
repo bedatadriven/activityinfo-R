@@ -13,6 +13,8 @@ copySchema(x, databaseId, label, ...)
 \item{databaseId}{the id of the database where the form should reside.}
 
 \item{label}{the label of the form}
+
+\item{...}{parameters to pass on to formSchema()}
 }
 \description{
 This function is useful for creating new forms based on existing forms and 

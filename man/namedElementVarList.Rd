@@ -8,9 +8,9 @@ to select and name each form field}
 namedElementVarList(formTree, style = defaultColumnStyle())
 }
 \arguments{
-\item{style}{a column style object.}
+\item{formTree}{the form tree object.}
 
-\item{x}{the form tree object.}
+\item{style}{a column style object.}
 }
 \description{
 This helper function provides form field schemas in a named list. This can be 

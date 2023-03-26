@@ -14,7 +14,7 @@ adjustWindow(x, offSet = 0L, limit)
 \item{limit}{an integer. Optional.}
 }
 \description{
-This adds a single sorted column to an ActivityInfo remote records object. 
-Usually one would use the dplyr::slice_head() or dplyr::slice_tail() verbs 
+This adds a single sorted column to an ActivityInfo remote records object.
+Usually one would use the dplyr::slice_head() or dplyr::slice_tail() verbs
 instead.
 }

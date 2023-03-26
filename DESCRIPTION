@@ -1,13 +1,13 @@
 Package: activityinfo
 Type: Package
 Title: Query and update datasets from ActivityInfo.org
-Version: 4.32
+Version: 4.32.9999
 Date: 2023-02-20
-Author: Alex Bertram <alex@bedatadriven.com>, Nicholas Dickinson <dickinson@washnote.com>
+Author: Alex Bertram <alex@bedatadriven.com>, Nicolas Dickinson <dickinson@washnote.com>
 Maintainer: Alex Bertram <alex@bedatadriven.com>
 Description: An interface to ActivityInfo, an information management system.
 License: GPL-3
-Imports: stats, utils, httr, rjson, jsonlite, stringr
+Imports: stats, utils, httr, rjson, jsonlite, stringr, dplyr, pillar, rlang, tibble, tidyselect
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)

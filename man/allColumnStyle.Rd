@@ -13,8 +13,10 @@ allColumnStyle(columnNames = c("code", "label"))
 This function is primarily used in getRecords().
 
 The column names options are:
-* "pretty": Using the labelling logic of the web user interface as much as possible, for example "Focus Country Name"
-* "label" : Using the form field labels in the style of activity info formulas, for example "[Focus Country].[Name]"
-* "code" : Using form field codes as defined by the user, for example "country.name". As codes are optional, the fallback columnName option can be specified as a vector, for example c("code", "label") or c("code", "id).
-* "id" : Using the form field unique id used by ActivityInfo, for example "c12c92vi5olfmn7khb4.c13cmf6la3lfmn7khb5"
+\itemize{
+\item "pretty": Using the labelling logic of the web user interface as much as possible, for example "Focus Country Name"
+\item "label" : Using the form field labels in the style of activity info formulas, for example "[Focus Country].[Name]"
+\item "code" : Using form field codes as defined by the user, for example "country.name". As codes are optional, the fallback columnName option can be specified as a vector, for example c("code", "label") or c("code", "id).
+\item "id" : Using the form field unique id used by ActivityInfo, for example "c12c92vi5olfmn7khb4.c13cmf6la3lfmn7khb5"
+}
 }

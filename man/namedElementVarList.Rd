@@ -2,7 +2,7 @@
 % Please edit documentation in R/records.R
 \name{namedElementVarList}
 \alias{namedElementVarList}
-\title{Get form field schemas from a form tree in a named list using a column style 
+\title{Get form field schemas from a form tree in a named list using a column style
 to select and name each form field}
 \usage{
 namedElementVarList(formTree, style = defaultColumnStyle())
@@ -13,6 +13,6 @@ namedElementVarList(formTree, style = defaultColumnStyle())
 \item{style}{a column style object.}
 }
 \description{
-This helper function provides form field schemas in a named list. This can be 
+This helper function provides form field schemas in a named list. This can be
 useful for examining and manipulating form fields. See also copySchema().
 }

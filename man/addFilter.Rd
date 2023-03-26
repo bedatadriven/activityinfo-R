@@ -12,8 +12,8 @@ addFilter(x, formulaFilter)
 \item{formulaFilter}{a character string with the formula.}
 }
 \description{
-This adds a filter to an ActivityInfo remote records object. Usually one 
-would use the dplyr::filter() verb instead. The dplyr::filter() verb attempts 
-to translate R expressions into ActivityInfo style filters. But if this is 
+This adds a filter to an ActivityInfo remote records object. Usually one
+would use the dplyr::filter() verb instead. The dplyr::filter() verb attempts
+to translate R expressions into ActivityInfo style filters. But if this is
 not successful, it can be useful to add this filter formula using addFilter()
 }

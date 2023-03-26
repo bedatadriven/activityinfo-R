@@ -1,8 +1,4 @@
-
-
 #' Batch imports a data.frame into an ActivityInfo form
-#' 
-#' 
 #' 
 #' @param formId The form ID
 #' @param data The data.frame to import
@@ -12,7 +8,7 @@
 #'
 #' @importFrom utils head
 #' @export
-importTable <- function(formId, data, recordIdColumn, parentIdColumn, stageDirect = TRUE) { 
+importRecords <- function(formId, data, recordIdColumn, parentIdColumn, stageDirect = TRUE) { 
   parentId <- NULL
 
   schema <- activityinfo::getFormSchema(formId)
@@ -65,6 +61,16 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn, stageDirec
                               list(formId = formId,
                                    importId = importId))
   
+}
+
+#' Deprecated function to batch import a data.frame into an ActivityInfo form; use importRecords()
+#'
+#' @param ... parameters of importRecords()
+#'
+#' @export
+importTable <- function(...) {
+  warning("importTable() is deprecated. Use importRecords() instead.")
+  importRecords(...)
 }
 
 recordIdFromData <- function(data, recordIdColumn) {

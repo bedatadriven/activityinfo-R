@@ -2,7 +2,7 @@
 % Please edit documentation in R/records.R
 \name{prettyColumnStyle}
 \alias{prettyColumnStyle}
-\title{A form table style with columns in the pretty style used by the web interface 
+\title{A form table style with columns in the pretty style used by the web interface
 including record metadata}
 \usage{
 prettyColumnStyle(
@@ -13,18 +13,18 @@ prettyColumnStyle(
 )
 }
 \arguments{
-\item{recordId}{include the record if of each record in the form table; 
+\item{recordId}{include the record if of each record in the form table;
 default is TRUE to make it easier to join data in R}
 
 \item{lastEditedTime}{the time the record was last edited; default is TRUE}
 
-\item{referencedId}{include the record id for values in referenced fields; 
+\item{referencedId}{include the record id for values in referenced fields;
 default is TRUE to make it easier to join data in R.}
 
-\item{allReferenceFields}{include all the fields in referenced records; the 
+\item{allReferenceFields}{include all the fields in referenced records; the
 default is FALSE}
 }
 \description{
-This function is primarily used in getRecords(). See minimalColumnStyle() for a style 
+This function is primarily used in getRecords(). See minimalColumnStyle() for a style
 exclusively shows the same columns as in the web interface
 }

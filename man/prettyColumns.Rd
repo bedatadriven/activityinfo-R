@@ -2,7 +2,7 @@
 % Please edit documentation in R/records.R
 \name{prettyColumns}
 \alias{prettyColumns}
-\title{Create the column selection object in the pretty style used by the web 
+\title{Create the column selection object in the pretty style used by the web
 interface including record metadata for queryTable()}
 \usage{
 prettyColumns(x, select, ...)

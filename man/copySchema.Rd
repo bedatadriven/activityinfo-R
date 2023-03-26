@@ -2,7 +2,7 @@
 % Please edit documentation in R/records.R
 \name{copySchema}
 \alias{copySchema}
-\title{Create a new form schema copied from each form field represented in a remote 
+\title{Create a new form schema copied from each form field represented in a remote
 records object}
 \usage{
 copySchema(x, databaseId, label, ...)
@@ -17,8 +17,8 @@ copySchema(x, databaseId, label, ...)
 \item{...}{parameters to pass on to formSchema()}
 }
 \description{
-This function is useful for creating new forms based on existing forms and 
-may be used to copy only the fields in a single form or any combination of 
-fields in a form tree that can be fetched with getRecords(). Note some form 
+This function is useful for creating new forms based on existing forms and
+may be used to copy only the fields in a single form or any combination of
+fields in a form tree that can be fetched with getRecords(). Note some form
 elements such as section headers will not be represented.
 }

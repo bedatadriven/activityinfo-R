@@ -1,4 +1,4 @@
-# Creating a form schema with formSchemaFromData() from data works with factor columns using importTable()
+# Creating a form schema with formSchemaFromData() from data works with factor columns using importRecords()
 
     Code
       larlar2

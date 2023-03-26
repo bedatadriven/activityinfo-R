@@ -7,8 +7,8 @@
 defaultColumnStyle(style)
 }
 \arguments{
-\item{style}{the style object to set as the default style for column created 
-with a helper function such as idColumnStyle(), prettyColumnStyle(), 
+\item{style}{the style object to set as the default style for column created
+with a helper function such as idColumnStyle(), prettyColumnStyle(),
 minimalColumnStyle() or allColumnStyle().}
 }
 \description{
@@ -18,6 +18,6 @@ defaultColumnStyle(minimalColumnStyle())
 defaultColumnStyle(allColumnStyle())
 defaultColumnStyle(prettyColumnStyle(allReferenceFields = TRUE))
 
-Use defaultColumnStyle() without an argument to get the current default style 
+Use defaultColumnStyle() without an argument to get the current default style
 object.
 }

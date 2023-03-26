@@ -1,3 +1,12 @@
+## [4.33]
+- getRecords() added to represent remote records on the server with helper functions to set column name styles, e.g. prettyColumnStyle(), minimalColumnStyle()
+- Eager fetching of remote records and conversion to data.frame when required for dplyr verbs. filter(), arrange(), slice_head, and slice_tail() can be used on remote records before downloading and converting to a data.frame.
+- Support for all dplyr verbs and tidy selection of columns of remote records, including 
+- migrateFieldData() added to migrate data from a field to another and supply a conversion function
+- createFormSchemaFromData() added to automatically guess a form field schema from a data.frame
+- copySchema() added to copy a schema from a remote records object (getRecords()) based on selected columns, including those from reference tables.
+- Deprecation of importTable() in favour of importRecords()
+
 ## [4.32]
 - Helper functions to create ActivityInfo form and field schemas (#32)
 - Improve documentation and examples in package website (#35)

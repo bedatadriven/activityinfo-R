@@ -17,7 +17,7 @@ createFormSchemaFromData(
 )
 }
 \arguments{
-\item{x}{the data.frame or tibble for which to create form fields and a form 
+\item{x}{the data.frame or tibble for which to create form fields and a form
 schema}
 
 \item{databaseId}{the id of the database to which the form should belong.}

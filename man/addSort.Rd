@@ -12,6 +12,6 @@ addSort(x, sort)
 \item{sort}{the sort object in the following format: list(list(dir = "ASC", field = "[Name]")) or list(list(dir = "DESC", field = "[Name]"))}
 }
 \description{
-This adds a single sorted column to an ActivityInfo remote records object. 
+This adds a single sorted column to an ActivityInfo remote records object.
 Usually one would use the dplyr::arrange() verb instead.
 }

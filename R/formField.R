@@ -949,5 +949,5 @@ migrateFieldData <- function(.data, from, to, fn = function(x) x, idColumn = as.
   cols <- tblColumns(remoteDf |> select(id, to))
   names(df) <- cols
   
-  importTable(formId = .data$formTree$root, data = df, recordIdColumn = "_id")
+  importRecords(formId = .data$formTree$root, data = df, recordIdColumn = "_id")
 }

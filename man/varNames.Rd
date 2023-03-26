@@ -11,11 +11,11 @@ varNames(x, style, addNames)
 
 \item{style}{a column style object.}
 
-\item{addNames}{if TRUE will name the vector. Used internally to create 
-column selection objects for queryTable(). Typically a helper function such 
+\item{addNames}{if TRUE will name the vector. Used internally to create
+column selection objects for queryTable(). Typically a helper function such
 as prettyColumns() should be used to create columns.}
 }
 \description{
-This function provides the list of variable names in the 
+This function provides the list of variable names in the
 defaultColumnStyle() but it is possible to override with another style.
 }

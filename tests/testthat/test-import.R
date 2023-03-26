@@ -1,6 +1,6 @@
 
 
-test_that("importTable() works", {
+test_that("importRecords() works", {
   database <- addDatabase("Import tests")
   
   schema <- addForm(schema = formSchema(
@@ -20,21 +20,28 @@ test_that("importTable() works", {
     Sex = c("Male", "Female"),
     Month = c("2022-01", "2022-02"))
   
-  importTable(schema$id, data = df)
+  importRecords(schema$id, data = df)
   
   imported <- queryTable(schema$id)
   
   expect_equal(nrow(imported), 2)
   expect_identical(imported$Name[1], "Bob")
   expect_identical(imported$Name[2], "Alice")
-})
-
-
-test_that("importTable() works with stageDirect = FALSE", {
+  
+  testthat::test_that("importTable() is deprecated.", {
+    testthat::expect_warning({
+      importTable(schema$id, data = df)
+    })
+  })
   
 })
 
 
-test_that("importTable() works with stageDirect = TRUE", {
+test_that("importRecords() works with stageDirect = FALSE", {
+  
+})
+
+
+test_that("importRecords() works with stageDirect = TRUE", {
   
 })

@@ -2,21 +2,13 @@
 % Please edit documentation in R/import.R
 \name{importTable}
 \alias{importTable}
-\title{Batch imports a data.frame into an ActivityInfo form}
+\title{Deprecated function to batch import a data.frame into an ActivityInfo form; use importRecords()}
 \usage{
-importTable(formId, data, recordIdColumn, parentIdColumn, stageDirect = TRUE)
+importTable(...)
 }
 \arguments{
-\item{formId}{The form ID}
-
-\item{data}{The data.frame to import}
-
-\item{recordIdColumn}{The record ID column}
-
-\item{parentIdColumn}{The parent ID column required when importing a subform}
-
-\item{stageDirect}{Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.}
+\item{...}{parameters of importRecords()}
 }
 \description{
-Batch imports a data.frame into an ActivityInfo form
+Deprecated function to batch import a data.frame into an ActivityInfo form; use importRecords()
 }

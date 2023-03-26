@@ -2,9 +2,7 @@
 % Please edit documentation in R/forms.R
 \name{getFormSchema}
 \alias{getFormSchema}
-
 \title{Gets the schema of a form}
-
 \usage{
 getFormSchema(formId)
 }

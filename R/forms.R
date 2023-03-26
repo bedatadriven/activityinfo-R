@@ -421,7 +421,7 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId
   
   if(upload) {
     addForm(fmSchema)
-    importTable(formId = fmSchema$id, data = x2)
+    importRecords(formId = fmSchema$id, data = x2)
   }
   
   list(schema = fmSchema, data = x2)

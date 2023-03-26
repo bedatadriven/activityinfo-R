@@ -38,7 +38,7 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
   countrySchemaPackage <- createFormSchemaFromData(countryData, database$databaseId, label = "Country (from Form)", keyColumns = c("Name"), requiredColumns = c("Code", "Name"))
   uploadedCountryForm <- addForm(countrySchemaPackage$schema)
   countryFormId <- countrySchemaPackage$schema$id
-  importTable(formId = countryFormId, data = countryData)
+  importRecords(formId = countryFormId, data = countryData)
     
   countries <- getRecords(countryFormId)
   countryRecordIds <- countries %>% select(id = `_id`) %>% collect() %>% pull(id)
@@ -58,7 +58,7 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
     districtData <- mutate(districtData, "Country (from Field)" = sample(countryRecordIds, size = 10, replace = TRUE))
   })
   
-  importTable(formId = districtFormId, data = districtData)
+  importRecords(formId = districtFormId, data = districtData)
   
   districts <- getRecords(districtFormId)
   districtRecordIds <- districts %>% select(id = `_id`) %>% collect() %>% pull(id)
@@ -77,7 +77,7 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
     caseData <- mutate(caseData, "District (from Field)" = sample(districtRecordIds, size = 20, replace = TRUE))
   })
   
-  importTable(formId = caseFormId, caseData)
+  importRecords(formId = caseFormId, caseData)
 
   cases <- getRecords(caseFormId, style = prettyColumnStyle(allReferenceFields = TRUE))
   
@@ -91,7 +91,7 @@ testthat::test_that("getRecords() works", {
   schemaPackage <- createFormSchemaFromData(testData, database$databaseId, label = "getRecords() test form", keyColumns = "Identifier number", requiredColumns = "Identifier number")
   schemaView <- as.data.frame(schemaPackage$schema)
   uploadedForm <- addForm(schemaPackage$schema)
-  importTable(formId = schemaPackage$schema$id, data = testData)
+  importRecords(formId = schemaPackage$schema$id, data = testData)
   
   rcrds <- getRecords(uploadedForm$id, style = prettyColumnStyle())
   
@@ -184,7 +184,7 @@ testthat::test_that("getRecords() works", {
     testthat::test_that("It is possible to copy a form and upload the data to the new form", {
       copiedForm <- rcrds %>% copySchema(label = "New reference table", databaseId = database$databaseId)
       addForm(copiedForm)
-      importTable(formId = copiedForm$id, data = testData)
+      importRecords(formId = copiedForm$id, data = testData)
     })
     
   })  
@@ -230,7 +230,7 @@ testthat::test_that("getRecords() works", {
     
     names(newRef1Values) <- c("personId", person$columns[["Ref 1"]])
     
-    importTable(formId = personFormId, data = newRef1Values, recordIdColumn = "personId")
+    importRecords(formId = personFormId, data = newRef1Values, recordIdColumn = "personId")
     
     personMinimalRef <- getRecords(personFormId, minimalColumnStyle())
     personMinimalRefDf <- as.data.frame(personMinimalRef)

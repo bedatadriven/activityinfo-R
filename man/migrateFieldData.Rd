@@ -21,12 +21,12 @@ migrateFieldData(
 
 \item{fn}{the user-supplied conversion function; default is to do nothing}
 
-\item{idColumn}{the id column. The default is `_id`}
+\item{idColumn}{the id column. The default is \verb{_id}}
 }
 \value{
 The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
 }
 \description{
-With this function, the data from one form field (column) can be moved to 
+With this function, the data from one form field (column) can be moved to
 another form field and converted with a user-supplied function.
 }

@@ -31,12 +31,12 @@ deleteFormField(...)
 The form field schema after the deletion. This will be the form field schema from the server if changes are uploaded.
 }
 \description{
-
 Deletes a form field from an existing form schema object.
 }
 \details{
 This function can also be used to immediately delete a field from a
-form schema on the ActivityInfo server by setting upload to TRUE.
+form schema on the ActivityInfo server by setting upload to TRUE. Otherwise,
+use updateFormSchema() to upload the changes after they are completed.
 }
 \examples{
 #' Define a few field schema objects
@@ -68,5 +68,4 @@ deleteFormField(formId = "cxyz123", code = "maize_yield", upload = TRUE)
 }
 \seealso{
 \link{formSchema}, \link{formFieldSchema}, \link{addForm}
-
 }

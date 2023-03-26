@@ -85,7 +85,7 @@ testthat::test_that("relocateForm() works", {
   testthat::expect_equal(move2$code, "RELOCATED")
 })
 
-testthat::test_that("Creating a form schema with formSchemaFromData() from data works with factor columns using importTable()", {
+testthat::test_that("Creating a form schema with formSchemaFromData() from data works with factor columns using importRecords()", {
   larlar <- data.frame(a = 1:5, b = factor(paste0(1:5, "_stuff")), a_logical_column = 1:5==4, date_col = (seq(as.Date("2021-07-06"),as.Date("2021-07-10"),by = 1)))
   
   larlarschm <- createFormSchemaFromData(
@@ -96,7 +96,7 @@ testthat::test_that("Creating a form schema with formSchemaFromData() from data 
   
   upform_res1 <- addForm(larlarschm$schema)
   
-  importTable(formId = larlarschm$schema$id, data = larlar)
+  importRecords(formId = larlarschm$schema$id, data = larlar)
   
   larlar2 <- queryTable(form = larlarschm$schema$id, makeNames = FALSE)
   

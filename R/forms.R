@@ -31,6 +31,7 @@ changeName <- function(x, from, to) {
 #' }
 #' @return A list with class \sQuote{formSchema}.
 #' @export
+#' 
 getFormSchema <- function(formId) {
   stopifnot(is.character(formId))
   schema <- getResource(
@@ -122,9 +123,10 @@ as.data.frame.formSchema <- function(x, row.names = NULL, optional = FALSE, ...)
   )
 }
 
+#' @importFrom dplyr as_tibble
 #' @export
-as_tibble.formSchema <- function(x) {
-  as_tibble(as.data.frame(x))
+as_tibble.formSchema <- function(x, ..., .rows, .name_repair, rownames) {
+  as_tibble(as.data.frame(x), .rows, .name_repair, rownames)
 }
 
 #' Delete a form
@@ -333,8 +335,22 @@ relocateForm <- function(formId, newDatabaseId) {
   )
 }
 
+#' Creates a form schema from a data set by guessing the field types required
+#'
+#' This function helps to create new form schemas for existing datasets.
+#'
+#' @param x the data.frame or tibble for which to create form fields and a form 
+#' schema
+#' @param databaseId the id of the database to which the form should belong.
+#' @param label the label of the new form
+#' @param folderId the id of the folder where the form should reside; defaults to the database id
+#' @param keyColumns a character vector of the column names of the form fields that should be form keys
+#' @param requiredColumns a character vector of the column names of the form fields that should be required
+#' @param logicalAsSingleSelect by default TRUE and converts logical columns in the data frame to a single select form field; if FALSE then it will convert TRUE to 1 and FALSE to 0
+#' @param logicalText the single select replacement values for c(TRUE, FALSE); default is c("True","False")
+#' @param upload immediately upload the new form
 #' @export
-createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False")) {
+createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False"), upload = FALSE) {
   stopifnot("A data frame or tibble must be provided to formSchemaFromData()" = is.data.frame(x))
   stopifnot("databaseId must be a singe character string" = is.character(databaseId)&&length(databaseId)==1)
   stopifnot("The label for the new form schema must not be empty" = !missing(label)&&is.character(label)&&length(label)==1&&nchar(label)>0)
@@ -402,5 +418,13 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId
       stop(sprintf("Unrecognized column type with class(es) (%s) in column %s", paste(fieldClass, collapse = ", "), pCol))
     }
   })
+  
+  if(upload) {
+    addForm(fmSchema)
+    importTable(formId = fmSchema$id, data = x2)
+  }
+  
   list(schema = fmSchema, data = x2)
 }
+
+

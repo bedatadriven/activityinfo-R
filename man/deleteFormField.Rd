@@ -31,6 +31,7 @@ deleteFormField(...)
 The form field schema after the deletion. This will be the form field schema from the server if changes are uploaded.
 }
 \description{
+
 Deletes a form field from an existing form schema object.
 }
 \details{
@@ -67,4 +68,5 @@ deleteFormField(formId = "cxyz123", code = "maize_yield", upload = TRUE)
 }
 \seealso{
 \link{formSchema}, \link{formFieldSchema}, \link{addForm}
+
 }

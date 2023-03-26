@@ -116,6 +116,7 @@ setupBlankDatabase <- function(label) {
 }
 
 ##### Setup code #####
+
 preprodRootUrl <- Sys.getenv("PREPROD_ROOT_URL")
 
 if (preprodRootUrl == "") stop("PREPROD_ROOT_URL environment variable is not set.")
@@ -174,7 +175,8 @@ addForm(database$databaseId,
                 code = "NAME",
                 label = "Respondent name",
                 description = "Ask the respondent their name",
-                key = TRUE),
+                key = TRUE,
+                required = TRUE),
               subformFieldSchema(
                 code = "CHILDREN",
                 label = "Children",

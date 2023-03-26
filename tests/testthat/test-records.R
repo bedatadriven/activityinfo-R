@@ -32,24 +32,79 @@ testthat::test_that("recoverRecord() works", {
 })
 
 
+testthat::test_that("getRecords() pretty field names are correct with deep reference fields in form trees", {
+  # Create a country table
+  countryData <- tibble("Code" = paste0(letters[1:2], letters[1:2], letters[1:2]), "Name" = paste0("Country ", 1:2))
+  countrySchemaPackage <- createFormSchemaFromData(countryData, database$databaseId, label = "Country (from Form)", keyColumns = c("Name"), requiredColumns = c("Code", "Name"))
+  uploadedCountryForm <- addForm(countrySchemaPackage$schema)
+  countryFormId <- countrySchemaPackage$schema$id
+  importTable(formId = countryFormId, data = countryData)
+    
+  countries <- getRecords(countryFormId)
+  countryRecordIds <- countries %>% select(id = `_id`) %>% collect() %>% pull(id)
+  
+  # Create a district table with a country key field
+  districtData <- tibble(Code = paste0("D", 1:10), "Name" = paste0("District ", 1:10))
+  districtSchemaPackage <- createFormSchemaFromData(districtData, database$databaseId, label = "District (from form)", keyColumns = c("Name"), requiredColumns = c("Code", "Name"))
+  districtSchema <- districtSchemaPackage$schema %>% 
+    addFormField(
+      referenceFieldSchema(label = "Country (from Field)", referencedFormId = countryFormId, key = TRUE)
+    )
+  uploadedDistrictForm <- addForm(districtSchema)
+  districtFormId <- districtSchema$id
+  
+  # adding some countries to the district table
+  withr::with_seed(seed = 100, {
+    districtData <- mutate(districtData, "Country (from Field)" = sample(countryRecordIds, size = 10, replace = TRUE))
+  })
+  
+  importTable(formId = districtFormId, data = districtData)
+  
+  districts <- getRecords(districtFormId)
+  districtRecordIds <- districts %>% select(id = `_id`) %>% collect() %>% pull(id)
+  
+  # Create a case table that references districts
+  caseData <- tibble("Case number"  = as.character(1:20), "A single select column" = rep(factor(paste0(1:5, "_stuff")), 4))
+  caseSchemaPackage <- createFormSchemaFromData(caseData, database$databaseId, label = "Cases for testing pretty field names", keyColumns = c("Case number"), requiredColumns = c("Case number", "A single select column"))
+  caseSchema <- caseSchemaPackage$schema %>% 
+    addFormField(
+      referenceFieldSchema(label = "District (from Field)", referencedFormId = districtFormId, key = TRUE)
+    )
+  uploadedCaseForm <- addForm(caseSchema)
+  caseFormId <- caseSchema$id
+  
+  withr::with_seed(seed = 100, {
+    caseData <- mutate(caseData, "District (from Field)" = sample(districtRecordIds, size = 20, replace = TRUE))
+  })
+  
+  importTable(formId = caseFormId, caseData)
+
+  cases <- getRecords(caseFormId, style = prettyColumnStyle(allReferenceFields = TRUE))
+  
+  caseDf <- getRecords(caseFormId, style = minimalColumnStyle()) %>% slice_head(n = 10) %>% collect() %>% as.data.frame()
+  
+  testthat::expect_snapshot(caseDf)
+})
+
 testthat::test_that("getRecords() works", {
   testData <- tibble(`Identifier number` = as.character(1:500), "A single select column" = rep(factor(paste0(1:5, "_stuff")), 100), "A logical column" = ((1:500)%%7==(1:500)%%3), "A date column" = rep(seq(as.Date("2021-07-06"),as.Date("2021-07-25"),by = 1),25))
-  
   schemaPackage <- createFormSchemaFromData(testData, database$databaseId, label = "getRecords() test form", keyColumns = "Identifier number", requiredColumns = "Identifier number")
-  
   schemaView <- as.data.frame(schemaPackage$schema)
-  
   uploadedForm <- addForm(schemaPackage$schema)
-  
   importTable(formId = schemaPackage$schema$id, data = testData)
   
   rcrds <- getRecords(uploadedForm$id, style = prettyColumnStyle())
   
+  rcrdsMin <- getRecords(uploadedForm$id, style = minimalColumnStyle())
+  
+  rcrdsMinDf <- rcrdsMin %>% collect %>% as.data.frame()
+  
+  testthat::expect_snapshot(rcrdsMinDf)
+  
   dfA <- rcrds %>% 
     addFilter('[A logical column] == "True"') %>% 
     addSort(list(list(dir = "ASC", field = "_id"))) %>%
-    slice_head(n = 10) %>% collect()
-  
+    adjustWindow(offSet = 0L, limit = 10L) %>% collect()
   dfB <- rcrds %>% 
     filter(`A logical column` == "True") %>% 
     addSort(list(list(dir = "ASC", field = "_id"))) %>%
@@ -60,20 +115,27 @@ testthat::test_that("getRecords() works", {
   
   testthat::expect_identical(dfA,dfB)
   
-  testthat::expect_warning({
-    dfC <- rcrds %>% 
+  dfC <- rcrds %>% 
       filter(`A logical column` == "True") %>% 
       arrange(`_id`) %>%
       slice_head(n = 10) %>% collect()
-  })
-
+  
   attr(dfC, "remoteRecords") <- NULL
   
   attr(dfB, "rows") <- NULL
   attr(dfC, "rows") <- NULL
   
   testthat::expect_identical(dfB,dfC)
-    
+  
+  testthat::test_that("The data is collected when more than one column is sorted in arrange().", {
+    testthat::expect_warning({
+      rcrds %>% 
+        filter(`A logical column` == "True") %>% 
+        arrange(`_id`, `A logical column`) %>%
+        slice_head(n = 10) %>% collect()
+    })
+  })
+
   # removing columns required for a filter will result in an error
   # expect warning using select after filter or sort
   testthat::expect_error({
@@ -88,6 +150,7 @@ testthat::test_that("getRecords() works", {
     })
   })
   
+  # filters will work even if the column is renamed in a lazy remote records object
   testthat::expect_no_warning({
     rcrds %>% 
       select(id = `_id`, date = `A date column`, logical = `A logical column`) %>%
@@ -107,25 +170,105 @@ testthat::test_that("getRecords() works", {
         collect()
     })
   })
+
+  testthat::test_that("Copying of schemas with copySchema()", {
+    newSchema <- rcrds %>% select(id = `Identifier number`) %>% copySchema(databaseId = "dbid", label = "new form")
+    
+    expectActivityInfoSnapshot(newSchema)
+    
+    # no form schema elements to provide - expect warning
+    testthat::expect_warning({
+      rcrds %>% select(starts_with("_")) %>% copySchema(databaseId = "dbid", label = "new form")
+    })
+    
+    testthat::test_that("It is possible to copy a form and upload the data to the new form", {
+      copiedForm <- rcrds %>% copySchema(label = "New reference table", databaseId = database$databaseId)
+      addForm(copiedForm)
+      importTable(formId = copiedForm$id, data = testData)
+    })
+    
+  })  
   
-  rcrds %>% select(id = `Identifier number`) %>% copySchema(databaseId = "dbid", label = "new form")
-  
-  # no form schema elements to provide - expect warning
-  testthat::expect_warning({
-    rcrds %>% select(starts_with("_")) %>% copySchema(databaseId = "dbid", label = "new form")
+  testthat::test_that("head() works", {
+    recordIds <- rcrds %>% 
+      select(id = `_id`, date = `A date column`, logical = `A logical column`) %>%
+      filter(logical == "True") %>% 
+      addSort(list(list(dir = "DESC", field = "date"))) %>% 
+      head(10) %>% 
+      collect() %>%
+      pull("id")
+    
+    testthat::expect_equal(length(recordIds), 10)
   })
   
-  # Ok to rename columns after only a filter step
-  recordIds <- rcrds %>% 
-    select(id = `_id`, date = `A date column`, logical = `A logical column`) %>%
-    filter(logical == "True") %>% rename(logical2 = logical) %>% 
-    addSort(list(list(dir = "DESC", field = "date"))) %>% 
-    head(10) %>% 
-    collect() %>%
-    pull("id")
+  testthat::test_that("rename_with() verb works", {
+    renameWith <- rcrds %>% rename_with(function(x) {paste0(x," haha")}, starts_with("_")) %>% collect()
+    
+    testthat::expect_true(c("_id haha") %in% colnames(renameWith))
+  })
 
-  testthat::expect_equal(length(recordIds), 10)
+  testthat::test_that("Reference field with shallow reference table should provide field based names", {
+    getFormSchema(personFormId) %>%
+      addFormField(
+        referenceFieldSchema(label = "Ref 1", referencedFormId = uploadedForm$id),
+        upload = TRUE
+      )
+    
+    person <- getRecords(personFormId, prettyColumnStyle(allReferenceFields = TRUE))
+    personIds <- person %>% select(id = `_id`) %>% collect() %>% pull(id)
+    
+    newRef1Values <- tibble(personId = personIds, values = c(NA, "107"))
+    
+    newRef1Values <- newRef1Values %>% 
+      left_join(
+        rcrds %>% 
+          select(refId = `_id`, values = `Identifier number`) %>% 
+          collect(),
+        by = "values"
+      ) %>% 
+      select(-values)
+    
+    names(newRef1Values) <- c("personId", person$columns[["Ref 1"]])
+    
+    importTable(formId = personFormId, data = newRef1Values, recordIdColumn = "personId")
+    
+    personMinimalRef <- getRecords(personFormId, minimalColumnStyle())
+    personMinimalRefDf <- as.data.frame(personMinimalRef)
+    
+    testthat::expect_true("Ref 1 Identifier number" %in% colnames(personMinimalRef))
+    testthat::expect_snapshot(personMinimalRefDf)
+  })
   
-  rcrds %>% rename_with(function(x) {paste0(x," haha")}, starts_with("_")) %>% collect()
+  getFormSchema(personFormId) %>%
+    addFormField(
+      referenceFieldSchema(label = "Ref 2", referencedFormId = uploadedForm$id),
+      upload = TRUE
+    )
   
+  # with three reference fields (one the same) - it should give the label of the reference field
+  getFormSchema(personFormId) %>%
+    addFormField(
+      referenceFieldSchema(label = "Ref 3", referencedFormId = uploadedForm$id),
+      upload = TRUE
+    )
+  person <- getRecords(personFormId, prettyColumnStyle(allReferenceFields = TRUE))
+  personMinRef <- getRecords(personFormId, minimalColumnStyle())
+  
+  testthat::test_that("filter on reference field works", {
+    filteredRow <- personMinRef %>% 
+      select(starts_with("Ref"), `Respondent name`) %>% 
+      filter(`Ref 1 Identifier number` == "107")
+
+    filteredRowDf <- as.data.frame(filteredRow)
+    
+    testthat::expect_snapshot(filteredRowDf)
+    
+    testthat::expect_equal(
+      object = filteredRow  %>% 
+        collect() %>% 
+        nrow(), 
+      expected = 1)
+  })
+
+          
 })

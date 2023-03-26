@@ -728,7 +728,8 @@ isFormFieldSchema <- function(schema) {
 #' Deletes a form field from an existing form schema object.
 #' 
 #' This function can also be used to immediately delete a field from a 
-#' form schema on the ActivityInfo server by setting upload to TRUE.
+#' form schema on the ActivityInfo server by setting upload to TRUE. Otherwise,  
+#' use updateFormSchema() to upload the changes after they are completed.
 #' 
 #' @rdname deleteFormField
 #' @param formId The id of the form online (provide either a formId or formSchema)
@@ -912,3 +913,41 @@ addFormField.formSchema <- function(formSchema, schema, upload = FALSE, ...) {
 #' @export
 #' @rdname addFormField
 addFormField.default <- addFormField.character
+
+#' Migrate and convert the data of one form field into another
+#' 
+#' With this function, the data from one form field (column) can be moved to 
+#' another form field and converted with a user-supplied function. 
+#'  
+#' @rdname migrateFieldData
+#' @param .data remote records object of the form online
+#' @param from the source form field from which to get the data
+#' @param to the destination form field which will receive the converted data
+#' @param fn the user-supplied conversion function; default is to do nothing
+#' @param idColumn the id column. The default is `_id`
+#' 
+#' @return The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
+#'
+#' @importFrom rlang enquo
+#' @export
+migrateFieldData <- function(.data, from, to, fn = function(x) x, idColumn = as.name("_id")) {
+  stopifnot("It is required to first use getRecords() to select the fields for migration."= "tbl_activityInfoRemoteRecords" %in% class(.data))
+  
+  id <- NULL
+  
+  from <- dplyr::enquo(from)
+  to <- dplyr::enquo(to)
+  idColumn <- dplyr::enquo(idColumn)
+  
+  remoteDf <- .data |> select(id = !!idColumn, from = !!from, to = !!to) 
+  df <- remoteDf |> 
+    select(id, from) |> 
+    collect() |> 
+    mutate(to = fn(from)) |>
+    select(id, to)
+  
+  cols <- tblColumns(remoteDf |> select(id, to))
+  names(df) <- cols
+  
+  importTable(formId = .data$formTree$root, data = df, recordIdColumn = "_id")
+}

@@ -12,7 +12,7 @@ testField <- function(fieldSchema) {
   fmSchm2 <- getFormSchema(formId = fmSchm$id)
   
   deleteForm(databaseId = databaseId, formId = fmSchm2$id)
-
+  
   identicalForm(fmSchm, fmSchm2)
 }
 
@@ -165,3 +165,52 @@ test_that("Form with many fields can be created and uploaded and downloaded and 
   
   identicalForm(fmSchm, fmSchm2)
 })
+
+testthat::test_that("migrateFieldData() works", {
+  df <- data.frame(a = 1:10, b = as.character(1:10), c = factor(1:10))
+  newForm <- createFormSchemaFromData(df, database$databaseId, label = "Migrate field test", upload = TRUE)
+  
+  newSchema <- newForm$schema %>% 
+    addFormField(
+      dateFieldSchema(label = "newA")
+    ) %>%
+    addFormField(
+      quantityFieldSchema(label = "newB")
+    ) %>% 
+    addFormField(
+      singleSelectFieldSchema(label = "newC", options = as.list(letters[1:10]))
+    )
+  
+  updateFormSchema(schema = newSchema)
+  
+  records <- getRecords(newSchema, prettyColumnStyle())
+  
+  migrateFieldData(
+    records, 
+    from = a, 
+    to = newA, 
+    function(x) {
+      sprintf("2023-03-%02d", x)
+    })
+  
+  migrateFieldData(
+    records, 
+    from = b, 
+    to = newB, 
+    function(x) {
+      as.numeric(x)
+    })
+  
+  migrateFieldData(
+    records, 
+    from = c, 
+    to = newC, 
+    function(x) {
+      letters[as.numeric(x)]
+    })
+  
+  recordsMinimal <- getRecords(newSchema, minimalColumnStyle()) %>% collect() %>% as.data.frame()
+  
+  testthat::expect_snapshot(recordsMinimal)
+})
+

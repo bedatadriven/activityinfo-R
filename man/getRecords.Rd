@@ -2,15 +2,39 @@
 % Please edit documentation in R/records.R
 \name{getRecords}
 \alias{getRecords}
-\title{Get a lazy table of records}
+\title{Get a form's records as a table}
 \usage{
 getRecords(form, style)
 }
 \arguments{
 \item{form}{a form id, form schema, form tree, or activity info data frame}
 
-\item{style}{a column style object that defines how table columns should be created from a form; use columnStyle() to create a new style; default column styles can be set with an option or setDefaultColumnStyle()}
+\item{style}{a column style object that defines how table columns should be created from a form; use \link{columnStyle} to create a new style; default column styles can be set with an option or \link{setDefaultColumnStyle}}
 }
 \description{
-This function will create a reference to records on the server. You can use this like a data.frame or to download the table use the collect() function.
+This function will create a reference to records on the server. For large forms,
+this does not immediately transfer all records; you can use the \link[dplyr:filter]{dplyr::filter}
+and \link[dplyr:slice]{dplyr::slice} functions to narrow the the selection of records.
+}
+\examples{
+\dontrun{
+
+# Retrieve all the records from the Simple 3W template's project form:
+# https://www.activityinfo.org/app#form/ceam1x8kq6ikcujg/table
+
+records <- getRecords("ceam1x8kq6ikcujg")
+
+# Now, filter by only projects with a status "Under implementation"
+# By default, the columns will be labelled with the field's code defined
+# in ActivityInfo if one is defined:
+records <- getRecords("ceam1x8kq6ikcujg") |>
+   filter(START_MONTH == "2018-01")
+
+# If you prefer to work with the longer field labels, then you can change
+# the column style:
+records <- getRecords("ceam1x8kq6ikcujg", style = prettyColumnStyle()) |>
+   filter(`Project start month` == "2018-01")
+
+}
+
 }

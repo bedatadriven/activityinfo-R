@@ -75,7 +75,7 @@ getDatabaseTree <- function(databaseId) {
 #' Creates a data.frame of database resources, types, parentIds and ids.
 #' This can be used to access a list of folders, forms, and sub-forms.
 #'
-#' @param databaseTree Database tree
+#' @param database Database tree or a database id
 #'
 #' @examples
 #' \dontrun{
@@ -87,7 +87,14 @@ getDatabaseTree <- function(databaseId) {
 #' }
 #'
 #' @export
-getDatabaseResources <- function(databaseTree) {
+getDatabaseResources <- function(database) {
+  if(is.character(database)) {
+    databaseTree <- getDatabaseTree(database)  
+  } else if(is.list(database)) {
+    databaseTree <- database
+  } else {
+    stop("The `database` argument must be a database id or a databaseTree")
+  }
   dplyr::tibble(
     id = unlist(lapply(databaseTree$resources, function(x) {x$id})),
     label = unlist(lapply(databaseTree$resources, function(x) {x$label})),

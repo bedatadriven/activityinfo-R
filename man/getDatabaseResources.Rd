@@ -4,10 +4,10 @@
 \alias{getDatabaseResources}
 \title{getDatabaseResources}
 \usage{
-getDatabaseResources(databaseTree)
+getDatabaseResources(database)
 }
 \arguments{
-\item{databaseTree}{Database tree}
+\item{database}{Database tree or a database id}
 }
 \description{
 Creates a data.frame of database resources, types, parentIds and ids.

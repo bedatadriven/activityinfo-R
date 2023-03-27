@@ -37,17 +37,17 @@ default is TRUE to make it easier to join data in R}
 This function is used to modify existing styles and create new styles. Most
 of the time other helper functions will be more immediately useful:
 \itemize{
-\item minimalColumnStyle() : retain only the columns exactly as in the web interface
-\item prettyColumnStyle() : use the web interface style but include record metadata
-\item allColumnStyle() : use all columns with a default to using the activityInfo formula style to label columns
+\item \link{minimalColumnStyle} : retain only the columns exactly as in the web interface
+\item \link{prettyColumnStyle} : use the web interface style but include record metadata
+\item \link{allColumnStyle} : use all columns with a default to using the activityInfo formula style to label columns
 }
 
-A style can be set as a default style using defaultColumnStyle().
+A style can be set as a default style using \link{defaultColumnStyle}.
 
 The column names options are:
 \itemize{
-\item "pretty": Using the labelling logic of the web user interface as much as possible, for example "Focus Country Name"
-\item "label" : Using the form field labels in the style of activity info formulas, for example "[Focus Country].[Name]"
+\item "pretty": Using the labeling logic of the web user interface as much as possible, for example "Focus Country Name"
+\item "label" : Using the form field labels in the style of ActivityInfo formulas, for example "[Focus Country].[Name]"
 \item "code" : Using form field codes as defined by the user, for example "country.name". As codes are optional, the fallback columnName option can be specified as a vector, for example c("code", "label") or c("code", "id).
 \item "id" : Using the form field unique id used by ActivityInfo, for example "c12c92vi5olfmn7khb4.c13cmf6la3lfmn7khb5"
 }

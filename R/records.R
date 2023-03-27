@@ -353,17 +353,44 @@ recoverRecord <- function(formId, recordId) {
 
 # ---- Get records ----
 
-#' Get a lazy table of records
+#' Get a form's records as a table
 #'
 #' @description
-#' This function will create a reference to records on the server. You can use this like a data.frame or to download the table use the collect() function.
+#' This function will create a reference to records on the server. For large forms, 
+#' this does not immediately transfer all records; you can use the [dplyr::filter]
+#' and [dplyr::slice] functions to narrow the the selection of records.
+#' 
 #'
 #' @param form a form id, form schema, form tree, or activity info data frame
-#' @param style a column style object that defines how table columns should be created from a form; use columnStyle() to create a new style; default column styles can be set with an option or setDefaultColumnStyle()
+#' @param style a column style object that defines how table columns should be created from a form; use [activityinfo::columnStyle] to create a new style; default column styles can be set with an option or [activityinfo::setDefaultColumnStyle]
 #' @export
+#' 
+#' @examples 
+#' \dontrun{
+#' 
+#' # Retrieve all the records from the Simple 3W template's project form:
+#' # https://www.activityinfo.org/app#form/ceam1x8kq6ikcujg/table
+#' 
+#' records <- getRecords("ceam1x8kq6ikcujg")
+#' 
+#' # Now, filter by only projects with a status "Under implementation"
+#' # By default, the columns will be labelled with the field's code defined
+#' # in ActivityInfo if one is defined:
+#' records <- getRecords("ceam1x8kq6ikcujg") |>
+#'    filter(START_MONTH == "2018-01")
+#' 
+#' # If you prefer to work with the longer field labels, then you can change
+#' # the column style:
+#' records <- getRecords("ceam1x8kq6ikcujg", style = prettyColumnStyle()) |>
+#'    filter(`Project start month` == "2018-01")
+#' 
+#' }
+#' 
 getRecords <- function(form, style) {
   UseMethod("getRecords")
 }
+
+
 #' @export
 getRecords.activityInfoFormTree <- function(form, style = defaultColumnStyle()) {
   src <- src_activityInfo(form)
@@ -399,15 +426,15 @@ getRecords.default <- getRecords.character
 #' @description
 #' This function is used to modify existing styles and create new styles. Most 
 #' of the time other helper functions will be more immediately useful:
-#' * minimalColumnStyle() : retain only the columns exactly as in the web interface
-#' * prettyColumnStyle() : use the web interface style but include record metadata
-#' * allColumnStyle() : use all columns with a default to using the activityInfo formula style to label columns
+#' * [activityinfo::minimalColumnStyle] : retain only the columns exactly as in the web interface
+#' * [activityinfo::prettyColumnStyle] : use the web interface style but include record metadata
+#' * [activityinfo::allColumnStyle] : use all columns with a default to using the activityInfo formula style to label columns
 #'
-#' A style can be set as a default style using defaultColumnStyle().
+#' A style can be set as a default style using [activityinfo::defaultColumnStyle].
 #' 
 #' The column names options are:
-#' * "pretty": Using the labelling logic of the web user interface as much as possible, for example "Focus Country Name"
-#' * "label" : Using the form field labels in the style of activity info formulas, for example "\[Focus Country\].\[Name\]"
+#' * "pretty": Using the labeling logic of the web user interface as much as possible, for example "Focus Country Name"
+#' * "label" : Using the form field labels in the style of ActivityInfo formulas, for example "\[Focus Country\].\[Name\]"
 #' * "code" : Using form field codes as defined by the user, for example "country.name". As codes are optional, the fallback columnName option can be specified as a vector, for example c("code", "label") or c("code", "id).
 #' * "id" : Using the form field unique id used by ActivityInfo, for example "c12c92vi5olfmn7khb4.c13cmf6la3lfmn7khb5"
 #'
@@ -1014,6 +1041,8 @@ addFilter <- function(x, formulaFilter) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
   stopifnot("ActivityInfo formula filter must be a character vector" = is.character(formulaFilter))
 
+  message(sprintf("Adding filter: %s", formulaFilter))
+  
   x$step <- newStep(x$step, filter = formulaFilter)
 
   x
@@ -1327,6 +1356,12 @@ group_by.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   warn_collect("group_by")
   .data <- collect(.data)
   group_by(.data, ...)
+}
+
+#' @export
+#' @importFrom dplyr group_vars
+group_vars.tbl_activityInfoRemoteRecords <- function(.data, ...) {
+  character(0)
 }
 
 #' @export

@@ -10,7 +10,7 @@ allColumnStyle(columnNames = c("code", "label"))
 \item{columnNames}{Can be "pretty", "label", "id", c("code", "id), or c("code", "label")}
 }
 \description{
-This function is primarily used in getRecords().
+This function is primarily used in \link{getRecords}.
 
 The column names options are:
 \itemize{

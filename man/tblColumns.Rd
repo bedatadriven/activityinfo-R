@@ -7,8 +7,8 @@
 tblColumns(x)
 }
 \arguments{
-\item{x}{the remote records object fetched with getRecords().}
+\item{x}{the remote records object fetched with \link{getRecords}.}
 }
 \description{
-This provides the columns of the remote records object created with getRecords()
+This provides the columns of the remote records object created with \link{getRecords}
 }

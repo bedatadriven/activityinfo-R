@@ -9,12 +9,20 @@ getRecords(form, style)
 \arguments{
 \item{form}{a form id, form schema, form tree, or activity info data frame}
 
-\item{style}{a column style object that defines how table columns should be created from a form; use \link{columnStyle} to create a new style; default column styles can be set with an option or \link{setDefaultColumnStyle}}
+\item{style}{a column style object that defines how table columns should be created from a form; use \link{columnStyle} to create a new style; default column styles can be set with an option or \link{defaultColumnStyle}}
 }
 \description{
 This function will create a reference to records on the server. For large forms,
-this does not immediately transfer all records; you can use the \link[dplyr:filter]{dplyr::filter}
-and \link[dplyr:slice]{dplyr::slice} functions to narrow the the selection of records.
+this does not immediately transfer all records; you can use the \link[dplyr:filter]{dplyr::filter},
+\link[dplyr:arrange]{dplyr::arrange}, \link[dplyr:slice]{dplyr::slice_head}, \link[dplyr:slice]{dplyr::slice_tail}, and/or \link{adjustWindow}
+functions to narrow the the selection of records.
+
+To prevent downloading the records before making a selection use the verbs in
+this order.
+\enumerate{
+\item \link[dplyr:arrange]{dplyr::arrange} (limited to a single column) and/or \link[dplyr:filter]{dplyr::filter} in any combination
+\item \link[dplyr:slice]{dplyr::slice_head} or \link{adjustWindow} in any combination
+}
 }
 \examples{
 \dontrun{

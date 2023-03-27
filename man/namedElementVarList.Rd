@@ -14,5 +14,5 @@ namedElementVarList(formTree, style = defaultColumnStyle())
 }
 \description{
 This helper function provides form field schemas in a named list. This can be
-useful for examining and manipulating form fields. See also copySchema().
+useful for examining and manipulating form fields. See also \link{copySchema}.
 }

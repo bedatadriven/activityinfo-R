@@ -357,12 +357,17 @@ recoverRecord <- function(formId, recordId) {
 #'
 #' @description
 #' This function will create a reference to records on the server. For large forms, 
-#' this does not immediately transfer all records; you can use the [dplyr::filter]
-#' and [dplyr::slice] functions to narrow the the selection of records.
+#' this does not immediately transfer all records; you can use the [dplyr::filter],
+#' [dplyr::arrange], [dplyr::slice_head], [dplyr::slice_tail], and/or [activityinfo::adjustWindow] 
+#' functions to narrow the the selection of records. 
 #' 
+#' To prevent downloading the records before making a selection use the verbs in 
+#' this order.
+#' 1. [dplyr::arrange] (limited to a single column) and/or [dplyr::filter] in any combination
+#' 2. [dplyr::slice_head] or [activityinfo::adjustWindow] in any combination
 #'
 #' @param form a form id, form schema, form tree, or activity info data frame
-#' @param style a column style object that defines how table columns should be created from a form; use [activityinfo::columnStyle] to create a new style; default column styles can be set with an option or [activityinfo::setDefaultColumnStyle]
+#' @param style a column style object that defines how table columns should be created from a form; use [activityinfo::columnStyle] to create a new style; default column styles can be set with an option or [activityinfo::defaultColumnStyle]
 #' @export
 #' 
 #' @examples 
@@ -493,7 +498,7 @@ columnStyle <- function(
 #' including record metadata
 #'
 #' @description
-#' This function is primarily used in getRecords(). See minimalColumnStyle() for a style 
+#' This function is primarily used in [activityinfo::getRecords]. See [activityinfo::minimalColumnStyle] for a style 
 #' exclusively shows the same columns as in the web interface
 #'
 #' @param recordId include the record if of each record in the form table; 
@@ -516,7 +521,7 @@ prettyColumnStyle <- function(recordId = TRUE, lastEditedTime = TRUE, referenced
 #' A form table style including all columns with configurable label names
 #'
 #' @description
-#' This function is primarily used in getRecords().
+#' This function is primarily used in [activityinfo::getRecords].
 #' 
 #' The column names options are:
 #' * "pretty": Using the labelling logic of the web user interface as much as possible, for example "Focus Country Name"
@@ -539,7 +544,7 @@ allColumnStyle <- function(columnNames = c("code", "label")) {
 #' A form table style including all columns with ids as column names
 #'
 #' @description
-#' This function is primarily used in getRecords().
+#' This function is primarily used in [activityinfo::getRecords].
 #' 
 #' @export
 idColumnStyle <- function() {
@@ -569,8 +574,8 @@ minimalColumnStyle <- function() {
 #' object.
 #' 
 #' @param style the style object to set as the default style for column created 
-#' with a helper function such as idColumnStyle(), prettyColumnStyle(), 
-#' minimalColumnStyle() or allColumnStyle().
+#' with a helper function such as [activityinfo::idColumnStyle], [activityinfo::prettyColumnStyle], 
+#' [activityinfo::minimalColumnStyle] or [activityinfo::allColumnStyle].
 #' 
 #' @export
 defaultColumnStyle <- function(style) {
@@ -588,11 +593,11 @@ defaultColumnStyle <- function(style) {
 #' interface including record metadata for queryTable()
 #'
 #' @description
-#' This function is primarily used for queryTable().
+#' This function is primarily used for [activityinfo::queryTable].
 #'
 #' @param x the form id, form schema, form tree, or remote records object.
 #' @param select a character vector of column names to select.
-#' @param ... parameters passed on to prettyColumnStyle()
+#' @param ... parameters passed on to [activityinfo::prettyColumnStyle]
 #' @export
 prettyColumns <- function(x, select, ...) {
   styleUI <- prettyColumnStyle(...)
@@ -609,7 +614,7 @@ prettyColumns <- function(x, select, ...) {
 #' Create the column selection object for queryTable() using styles
 #'
 #' @description
-#' This function is primarily used for queryTable(). The default column style is 
+#' This function is primarily used for [activityinfo::queryTable]. The default column style is 
 #' used or can be overridden using the style parameter. 
 #'
 #' @param x the form id, form schema, form tree, or remote records object.
@@ -740,13 +745,13 @@ tidyselect_data_has_predicates.tbl_activityInfoRemoteRecords <- function(x) {
 #'
 #' @description
 #' This function provides the list of variable names in the 
-#' defaultColumnStyle() but it is possible to override with another style.
+#' [activityinfo::defaultColumnStyle] but it is possible to override with another style.
 #'
 #' @param x the form id, form schema, form tree, or remote records object.
 #' @param style a column style object.
 #' @param addNames if TRUE will name the vector. Used internally to create 
-#' column selection objects for queryTable(). Typically a helper function such 
-#' as prettyColumns() should be used to create columns.
+#' column selection objects for [activityinfo::queryTable]. Typically a helper function such 
+#' as [activityinfo::prettyColumns] should be used to create columns.
 #' 
 #' @export
 varNames <- function(x, style, addNames) {
@@ -825,7 +830,7 @@ varNames.activityInfo_tbl_df <- function(x, style = NULL, addNames = TRUE) {
 #'
 #' @description
 #' This helper function provides form field schemas in a named list. This can be 
-#' useful for examining and manipulating form fields. See also copySchema().
+#' useful for examining and manipulating form fields. See also [activityinfo::copySchema].
 #'
 #' @param formTree the form tree object.
 #' @param style a column style object.
@@ -1058,11 +1063,12 @@ getTotalRecords <- function(formTree) {
 #'
 #' @description
 #' This adds a filter to an ActivityInfo remote records object. Usually one 
-#' would use the dplyr::filter() verb instead. The dplyr::filter() verb attempts 
-#' to translate R expressions into ActivityInfo style filters. But if this is 
-#' not successful, it can be useful to add this filter formula using addFilter()
+#' would use the [dplyr::filter] verb instead. The [dplyr::filter] verb attempts 
+#' to translate R expressions into ActivityInfo style filters. 
+#' 
+#' But if [dplyr::filter] is not successful, it can be useful to add this filter formula using addFilter()
 #'
-#' @param x the remote records object fetched with getRecords().
+#' @param x the remote records object fetched with [activityinfo::getRecords].
 #' @param formulaFilter a character string with the formula.
 #' 
 #' @export
@@ -1081,9 +1087,9 @@ addFilter <- function(x, formulaFilter) {
 #'
 #' @description
 #' This adds a single sorted column to an ActivityInfo remote records object. 
-#' Usually one would use the dplyr::arrange() verb instead.
+#' Usually one would use the [dplyr::arrange] verb instead.
 #'
-#' @param x the remote records object fetched with getRecords().
+#' @param x the remote records object fetched with [activityinfo::getRecords].
 #' @param sort the sort object in the following format: list(list(dir = "ASC", field = "\[Name\]")) or list(list(dir = "DESC", field = "\[Name\]"))
 #' 
 #' @export
@@ -1114,10 +1120,10 @@ addSelect <- function(.data, new_vars) {
 #'
 #' @description
 #' This adds a single sorted column to an ActivityInfo remote records object. 
-#' Usually one would use the dplyr::slice_head() or dplyr::slice_tail() verbs 
+#' Usually one would use the [dplyr::slice_head] or [dplyr::slice_tail] verbs 
 #' instead.
 #'
-#' @param x the remote records object fetched with getRecords().
+#' @param x the remote records object fetched with [activityinfo::getRecords].
 #' @param offSet an integer. Default is 0L for no offset.
 #' @param limit an integer. Optional.
 #' 
@@ -1146,9 +1152,9 @@ adjustWindow <- function(x, offSet = 0L, limit) {
 #' Get the columns of a remote records object
 #'
 #' @description
-#' This provides the columns of the remote records object created with getRecords()
+#' This provides the columns of the remote records object created with [activityinfo::getRecords]
 #'
-#' @param x the remote records object fetched with getRecords().
+#' @param x the remote records object fetched with [activityinfo::getRecords].
 #' 
 #' @export
 tblColumns <- function(x) {
@@ -1174,9 +1180,9 @@ tblFieldTypes <- function(x) {
 #' Get the sort ActivityInfo API object of a remote records object
 #'
 #' @description
-#' This provides the sort object used in queryTable() of the remote records object created with getRecords()
+#' This provides the sort object used in [activityinfo::queryTable] of the remote records object created with [activityinfo::getRecords]
 #'
-#' @param x the remote records object fetched with getRecords().
+#' @param x the remote records object fetched with [activityinfo::getRecords].
 #' 
 #' @export
 tblSort <- function(x) {
@@ -1187,9 +1193,9 @@ tblSort <- function(x) {
 #' Get the filter object of a remote records object
 #'
 #' @description
-#' This provides the columns used in queryTable()  of the remote records object created with getRecords()
+#' This provides the columns used in [activityinfo::queryTable] of the remote records object created with [activityinfo::getRecords]
 #'
-#' @param x the remote records object fetched with getRecords().
+#' @param x the remote records object fetched with [activityinfo::getRecords].
 #' 
 #' @export
 tblFilter <- function(x) {
@@ -1215,9 +1221,9 @@ tblFilter <- function(x) {
 #' Get the window object of a remote records object
 #'
 #' @description
-#' This provides the window used in queryTable()of the remote records object created with getRecords()
+#' This provides the window used in [activityinfo::queryTable] of the remote records object created with [activityinfo::getRecords]
 #'
-#' @param x the remote records object fetched with getRecords().
+#' @param x the remote records object fetched with [activityinfo::getRecords].
 #' @param limit an additional limit that can be used to specify the maximum number of records to query.
 #' 
 #' @export
@@ -1387,7 +1393,7 @@ group_by.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   group_by(.data, ...)
 }
 
-#' @export
+#' @exportS3Method group_vars tbl_activityInfoRemoteRecords
 #' @importFrom dplyr group_vars
 group_vars.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   character(0)
@@ -1414,20 +1420,25 @@ mutate.tbl_activityInfoRemoteRecords <- function(.data, ...) {
 #' @importFrom dplyr filter
 filter.tbl_activityInfoRemoteRecords <- function(.data, ...) {
 
-  if (!is.null(tblSort(.data))&&!is.null(tblWindow(.data))) {
-    # should collect if window and arrange have already been applied  
-
-    warn_collect("filter")
+  if (!is.null(tblWindow(.data))) {
+    # should collect if window has already been applied  
+    warn_collect("filter", "Collecting data for dplyr::filter() as dplyr::slice_*() window functions have already been applied.")
     .data <- collect(.data)
     filter(.data, ...)
   } else {
     exprs <- rlang::enquos(...)
 
-    result <- lapply(exprs, function(x) {
-      toActivityInfoFormula(.data, !!x)
-    })
-
-    addFilter(.data, paste(as.character(result, collapse = "&&")))
+    tryCatch({
+      result <- lapply(exprs, function(x) {
+        toActivityInfoFormula(.data, !!x)
+        })
+      addFilter(.data, paste(as.character(result, collapse = "&&")))
+      },
+      error = function(e) {
+        warn_collect("filter", "Error while converting r expression to an ActivityInfo formula so collecting data for dplyr::filter().")
+        .data <- collect(.data)
+        filter(.data, ...)
+      })
   }
 }
 
@@ -1471,7 +1482,7 @@ select.tbl_activityInfoRemoteRecords <- function(.data, ...) {
 #' @importFrom dplyr rename
 #' @export
 rename.tbl_activityInfoRemoteRecords <- function(.data, ...) {
-  if (!is.null(tblSort(.data))) warning("Using rename() after a sort step. Be careful not to rename a required variable from your selection.")
+  if (!is.null(tblSort(.data))) warning("Using rename() after a sort/dplyr::arrange() step. Be careful not to rename a required variable from your selection or collect() the data first.")
 
   loc <- tidyselect::eval_select(rlang::expr(c(...)), .data)
 
@@ -1487,7 +1498,7 @@ rename.tbl_activityInfoRemoteRecords <- function(.data, ...) {
 #' @inheritParams dplyr::rename_with
 #' @export
 rename_with.tbl_lazy <- function(.data, .fn, .cols = everything(), ...) {
-  if (!is.null(tblSort(.data))) warning("Using rename_with() after a sort step. Be careful not to rename a required variable from your selection.")
+  if (!is.null(tblSort(.data))) warning("Using rename_with() after a sort/dplyr::arrange() step. Be careful not to rename a required variable from your selection or collect() the data first.")
 
   .fn <- rlang::as_function(.fn)
   cols <- tidyselect::eval_select(rlang::enquo(.cols), .data)
@@ -1526,8 +1537,15 @@ slice_tail.tbl_activityInfoRemoteRecords <- function(.data, ..., n, prop) {
 #' @importFrom dplyr arrange
 arrange.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   exprs <- rlang::enquos(...)
-  if (length(exprs)>1) {
-    warn_collect("arrange")
+  if (!is.null(tblWindow(.data))) {
+    # should collect if window has already been applied
+    warn_collect("arrange", "Collecting data for dplyr::arrange() as dplyr::slice_head/tail() window functions have already been applied.")
+    .data <- collect(.data)
+    filter(.data, ...)
+  }
+  if (length(exprs)>1||!is.null(tblSort(.data))) {
+    # should collect if sorting more than one column
+    warn_collect("arrange", "Collecting data for dplyr::arrange() to sort more than one column.")
     .data <- collect(.data)
     arrange(.data, ...)
   } else {

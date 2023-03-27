@@ -7,5 +7,5 @@
 idColumnStyle()
 }
 \description{
-This function is primarily used in getRecords().
+This function is primarily used in \link{getRecords}.
 }

@@ -7,13 +7,14 @@
 addFilter(x, formulaFilter)
 }
 \arguments{
-\item{x}{the remote records object fetched with getRecords().}
+\item{x}{the remote records object fetched with \link{getRecords}.}
 
 \item{formulaFilter}{a character string with the formula.}
 }
 \description{
 This adds a filter to an ActivityInfo remote records object. Usually one
-would use the dplyr::filter() verb instead. The dplyr::filter() verb attempts
-to translate R expressions into ActivityInfo style filters. But if this is
-not successful, it can be useful to add this filter formula using addFilter()
+would use the \link[dplyr:filter]{dplyr::filter} verb instead. The \link[dplyr:filter]{dplyr::filter} verb attempts
+to translate R expressions into ActivityInfo style filters.
+
+But if \link[dplyr:filter]{dplyr::filter} is not successful, it can be useful to add this filter formula using addFilter()
 }

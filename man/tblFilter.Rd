@@ -7,8 +7,8 @@
 tblFilter(x)
 }
 \arguments{
-\item{x}{the remote records object fetched with getRecords().}
+\item{x}{the remote records object fetched with \link{getRecords}.}
 }
 \description{
-This provides the columns used in queryTable()  of the remote records object created with getRecords()
+This provides the columns used in \link{queryTable} of the remote records object created with \link{getRecords}
 }

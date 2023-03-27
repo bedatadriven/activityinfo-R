@@ -41,7 +41,7 @@ toActivityInfoFormula <- function(.data, expr) {
     } else if(fn == "grepl") {
       # Translate a call to grepl to AI's REGEXMATCH()
       call <- match.call(definition = grepl, expr2)
-      return(sprintf("REGEXMATCH(%s, %s)", toActivityInfoFormula(.data, call$x), toActivityInfoFormula(.data, call$pattern)))
+      return(sprintf("REGEXMATCH(%s, %s)", toActivityInfoFormula(.data, !!call$x), toActivityInfoFormula(.data, !!call$pattern)))
     } else {
       return(deparse(rlang::eval_tidy(exprQuo, data = columns)))
     }

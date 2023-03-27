@@ -7,10 +7,10 @@
 tblWindow(x, limit)
 }
 \arguments{
-\item{x}{the remote records object fetched with getRecords().}
+\item{x}{the remote records object fetched with \link{getRecords}.}
 
 \item{limit}{an additional limit that can be used to specify the maximum number of records to query.}
 }
 \description{
-This provides the window used in queryTable()of the remote records object created with getRecords()
+This provides the window used in \link{queryTable} of the remote records object created with \link{getRecords}
 }

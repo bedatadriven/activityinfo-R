@@ -25,6 +25,6 @@ default is TRUE to make it easier to join data in R.}
 default is FALSE}
 }
 \description{
-This function is primarily used in getRecords(). See minimalColumnStyle() for a style
+This function is primarily used in \link{getRecords}. See \link{minimalColumnStyle} for a style
 exclusively shows the same columns as in the web interface
 }

@@ -12,8 +12,8 @@ prettyColumns(x, select, ...)
 
 \item{select}{a character vector of column names to select.}
 
-\item{...}{parameters passed on to prettyColumnStyle()}
+\item{...}{parameters passed on to \link{prettyColumnStyle}}
 }
 \description{
-This function is primarily used for queryTable().
+This function is primarily used for \link{queryTable}.
 }

@@ -8,8 +8,8 @@ defaultColumnStyle(style)
 }
 \arguments{
 \item{style}{the style object to set as the default style for column created
-with a helper function such as idColumnStyle(), prettyColumnStyle(),
-minimalColumnStyle() or allColumnStyle().}
+with a helper function such as \link{idColumnStyle}, \link{prettyColumnStyle},
+\link{minimalColumnStyle} or \link{allColumnStyle}.}
 }
 \description{
 For example to set a column style, the following are possible:

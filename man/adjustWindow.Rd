@@ -7,7 +7,7 @@
 adjustWindow(x, offSet = 0L, limit)
 }
 \arguments{
-\item{x}{the remote records object fetched with getRecords().}
+\item{x}{the remote records object fetched with \link{getRecords}.}
 
 \item{offSet}{an integer. Default is 0L for no offset.}
 
@@ -15,6 +15,6 @@ adjustWindow(x, offSet = 0L, limit)
 }
 \description{
 This adds a single sorted column to an ActivityInfo remote records object.
-Usually one would use the dplyr::slice_head() or dplyr::slice_tail() verbs
+Usually one would use the \link[dplyr:slice]{dplyr::slice_head} or \link[dplyr:slice]{dplyr::slice_tail} verbs
 instead.
 }

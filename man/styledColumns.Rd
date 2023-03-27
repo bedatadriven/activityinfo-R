@@ -17,6 +17,6 @@ styledColumns(x, select, style = defaultColumnStyle(), forceId = FALSE)
 on form field ids and not the code or label}
 }
 \description{
-This function is primarily used for queryTable(). The default column style is
+This function is primarily used for \link{queryTable}. The default column style is
 used or can be overridden using the style parameter.
 }

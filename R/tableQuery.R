@@ -59,9 +59,6 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
     formId <- form$id
   } else if (is.character(form)) {
     formId <- form
-  } else if (is.numeric(form)) {
-    # accept an activityId
-    formId <- site.form.id(form)
   } else {
     stop("Unrecognized form provided to queryTable. Provide an id, form schema or form tree.")
   }
@@ -234,8 +231,3 @@ legacy <- function(domain, id) {
 
   sprintf("%s%010d", domain, id)
 }
-
-#' Returns the id of the form containing the sites
-#' associated with a 'classic' activity
-#' @param activityId The activity ID
-site.form.id <- function(activityId) legacy("a", activityId)

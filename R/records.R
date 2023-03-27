@@ -683,6 +683,9 @@ view.tbl_activityInfoRemoteRecords <- function(x, title, ..., n) {
   tibble::view(x, title, ..., n)
 }
 
+#' @export
+tibble::view
+
 # ---- Tidy select and tbl_vars extensions ----
 
 #' @importFrom dplyr tbl_vars
@@ -810,13 +813,17 @@ namedElementVarList <- function(formTree, style = defaultColumnStyle()) {
   }), recursive = FALSE)
 }
 
-elementVars <- function(element, formTree, style = defaultColumnStyle(), namedElement = FALSE, includeFirst = TRUE, useFormLabel, formLabel) {
+elementVars <- function(element, formTree, style = defaultColumnStyle(), namedElement = FALSE, includeFirst = TRUE, useParentLabel, parentLabel) {
   
   refOfRef <- FALSE
   elementList <- list()
   
-  useFormLabel <- (!missing(useFormLabel)&&useFormLabel&&style$columnNames[[1]] == "pretty")
-  if (useFormLabel) stopifnot(!missing(formLabel)&&is.character(formLabel)&&length(formLabel)==1)
+  useParentLabel <- (!missing(useParentLabel)&&useParentLabel)
+  if (useParentLabel) {
+    stopifnot(!missing(parentLabel)&&is.character(parentLabel)&&length(parentLabel)==1)
+  } else {
+    parentLabel <- ""
+  }
   
   isRefId <- inherits(element,"activityInfoReferenceFieldSchema")
   
@@ -827,8 +834,12 @@ elementVars <- function(element, formTree, style = defaultColumnStyle(), namedEl
     elementList <- c(elementList, list(element))
     names(elementList) <- elementVarName(element, style)
     
-    if (useFormLabel&&formLabel!=fieldName) {
-      names(elementList) <- paste0(formLabel, " ", fieldName)
+    if (useParentLabel&&parentLabel!=fieldName) {
+      if (style$columnNames[[1]] == "pretty") {
+        names(elementList) <- paste0(parentLabel, " ", fieldName)
+      } else {
+        names(elementList) <- paste0(parentLabel, ".", fieldName)
+      }
     } else {
       names(elementList) <- fieldName
     }
@@ -844,13 +855,13 @@ elementVars <- function(element, formTree, style = defaultColumnStyle(), namedEl
       refFormSchema <- formTree$forms[[refId]]
       
       # collect all the referenced form fields
-      refFormSchemaElements <- lapply(refFormSchema$elements, function(z) {
-        if (z$key) {
-            if (inherits(z,"activityInfoReferenceFieldSchema")) refOfRef <<- TRUE
-            z
+      refFormSchemaElements <- lapply(refFormSchema$elements, function(x) {
+        if (x$key) {
+            if (inherits(x,"activityInfoReferenceFieldSchema")) refOfRef <<- TRUE
+            x
         } else {
           if (style$allReferenceFields) {
-            z
+            x
           } else {
             NULL
           }
@@ -864,14 +875,32 @@ elementVars <- function(element, formTree, style = defaultColumnStyle(), namedEl
         nestedFormSchemaElements <- list()
         nestedFormSchemaElements <- lapply(refFormSchemaElements, function(z) {
           if (inherits(z,"activityInfoReferenceFieldSchema")) {
-            result <- elementVars(element = z, formTree = formTree, style = style, namedElement = TRUE, includeFirst = TRUE, useFormLabel = (style$columnNames[[1]] == "pretty"), formLabel = refFormSchema$label)
+            if (style$columnNames[[1]]=="pretty") {
+              refParentLabel <- refFormSchema$label
+            } else {
+              if (parentLabel!="") {
+                refParentLabel <- paste0(parentLabel, ".", elementVarName(z, style))
+              } else {
+                refParentLabel <- elementVarName(z, style)
+              }
+            }
+            result <- elementVars(element = z, formTree = formTree, style = style, namedElement = TRUE, includeFirst = TRUE, useParentLabel = TRUE, parentLabel = refParentLabel)
             if (length(result)==0) {
               NULL
             } else {
               result
             }
           } else {
-            elementVars(element = z, formTree = formTree, style = style, namedElement = TRUE, includeFirst = TRUE, useFormLabel = (style$columnNames[[1]] == "pretty"), formLabel = refFormSchema$label)
+            if (style$columnNames[[1]]=="pretty") {
+              refParentLabel <- refFormSchema$label
+            } else {
+              if (parentLabel!="") {
+                refParentLabel <- paste0(parentLabel, ".", elementVarName(z, style))
+              } else {
+                refParentLabel <- elementVarName(z, style)
+              }
+            }
+            elementVars(element = z, formTree = formTree, style = style, namedElement = TRUE, includeFirst = TRUE, useParentLabel = TRUE, parentLabel = refParentLabel)
           }
         })
         nestedFormSchemaElements <- nestedFormSchemaElements[lengths(nestedFormSchemaElements)!=0]
@@ -880,25 +909,25 @@ elementVars <- function(element, formTree, style = defaultColumnStyle(), namedEl
       } else {
         
         names(refFormSchemaElements) <- unlist(lapply(refFormSchemaElements, function(z) {
-          if (style$columnNames[[1]] == "pretty") {
-            if (refOfRef||useFormLabel) {
-              prefix <-  refFormSchema$label
-            } else {
-              prefix <- fieldName
-            }
-            suffix <- elementVarName(z, style)
-            if (suffix==prefix) {
-              elementVarName(z, style)
-            } else {
-              paste0(prefix, " ", elementVarName(z, style))
-            }
+          if (refOfRef||useParentLabel) {
+            prefix <-  refFormSchema$label
           } else {
-            paste0(fieldName, ".", elementVarName(z, style))
+            prefix <- fieldName
+          }
+          suffix <- elementVarName(z, style)
+          if (suffix==prefix) {
+            elementVarName(z, style)
+          } else {
+            if (style$columnNames[[1]] == "pretty") {
+              paste0(prefix, " ", elementVarName(z, style))
+            } else {
+              paste0(fieldName, ".", elementVarName(z, style))
+            }
           }
         }))
       }
       
-      elementList <- c(elementList, rev(refFormSchemaElements))
+      elementList <- c(elementList, refFormSchemaElements)
     }
 
   }

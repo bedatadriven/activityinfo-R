@@ -1,30 +1,30 @@
-# getRecords() pretty field names are correct with deep reference fields in form trees
+# No errors are thrown when filtering on a variable that is found up the tree
 
     Code
       caseDf
     Output
-         Case number A single select column Country (from Form) Name
-      1            1                1_stuff                Country 1
-      2            2                2_stuff                Country 2
-      3            3                3_stuff                Country 1
-      4            4                4_stuff                Country 2
-      5            5                5_stuff                Country 2
-      6            6                1_stuff                Country 1
-      7            7                2_stuff                Country 2
-      8            8                3_stuff                Country 1
-      9            9                4_stuff                Country 1
-      10          10                5_stuff                Country 2
-         District (from form) Name
-      1                District 10
-      2                 District 7
-      3                 District 6
-      4                 District 3
-      5                 District 9
-      6                District 10
-      7                 District 7
-      8                 District 6
-      9                 District 6
-      10                District 4
+         Case number A single select column District (from form) Name
+      1            1                1_stuff               District 10
+      2            2                2_stuff                District 7
+      3            3                3_stuff                District 6
+      4            4                4_stuff                District 3
+      5            5                5_stuff                District 9
+      6            6                1_stuff               District 10
+      7            7                2_stuff                District 7
+      8            8                3_stuff                District 6
+      9            9                4_stuff                District 6
+      10          10                5_stuff                District 4
+         Country (from Form) Name
+      1                 Country 1
+      2                 Country 2
+      3                 Country 1
+      4                 Country 2
+      5                 Country 2
+      6                 Country 1
+      7                 Country 2
+      8                 Country 1
+      9                 Country 1
+      10                Country 2
 
 # getRecords() works
 

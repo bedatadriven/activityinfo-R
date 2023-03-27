@@ -3,6 +3,7 @@
 \docType{import}
 \name{reexports}
 \alias{reexports}
+\alias{view}
 \alias{filter}
 \title{Objects exported from other packages}
 \keyword{internal}
@@ -12,5 +13,7 @@ below to see their documentation.
 
 \describe{
   \item{dplyr}{\code{\link[dplyr]{filter}}}
+
+  \item{tibble}{\code{\link[tibble]{view}}}
 }}
 

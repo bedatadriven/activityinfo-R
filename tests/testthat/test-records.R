@@ -83,6 +83,12 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
   
   caseDf <- getRecords(caseFormId, style = minimalColumnStyle()) %>% slice_head(n = 10) %>% collect() %>% as.data.frame()
   
+  testthat::test_that("No errors are thrown when filtering on a variable that is found up the tree", {
+    testthat::expect_no_error({
+      getRecords(caseFormId) %>% filter(Name == "District 10")
+    })
+  }) 
+  
   testthat::expect_snapshot(caseDf)
 })
 

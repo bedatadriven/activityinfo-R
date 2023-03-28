@@ -1,7 +1,8 @@
 #' Convert an expression using columns in a remote records into an ActivityInfo style formula
 #'
 #' @description
-#' This function attempts to convert an R expression using the columns of the getRecords() object into an ActivityInfo formula (as a string) using the form field ids for use in queryTable() or in the web interface.
+#' This function attempts to convert an R expression using the columns of the
+#' [activityinfo::getRecords] object into an ActivityInfo formula (as a string).
 #'
 #' @param .data the remote records object fetched with getRecords().
 #' @param expr the expression to convert

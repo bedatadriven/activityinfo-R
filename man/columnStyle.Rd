@@ -8,7 +8,7 @@ columnStyle(
   referencedId = TRUE,
   referencedKey = TRUE,
   allReferenceFields = FALSE,
-  columnNames = c("code", "label"),
+  columnNames = "pretty",
   recordId = TRUE,
   lastEditedTime = TRUE,
   style

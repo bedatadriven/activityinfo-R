@@ -348,9 +348,10 @@ relocateForm <- function(formId, newDatabaseId) {
 #' @param requiredColumns a character vector of the column names of the form fields that should be required
 #' @param logicalAsSingleSelect by default TRUE and converts logical columns in the data frame to a single select form field; if FALSE then it will convert TRUE to 1 and FALSE to 0
 #' @param logicalText the single select replacement values for c(TRUE, FALSE); default is c("True","False")
+#' @param codes a character vector of field codes that must have the same length as the number of columns
 #' @param upload immediately upload the new form
 #' @export
-createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False"), upload = FALSE) {
+createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False"), codes = rep(NA_character_, ncol(x)), upload = FALSE) {
   stopifnot("A data frame or tibble must be provided to formSchemaFromData()" = is.data.frame(x))
   stopifnot("databaseId must be a singe character string" = is.character(databaseId)&&length(databaseId)==1)
   stopifnot("The label for the new form schema must not be empty" = !missing(label)&&is.character(label)&&length(label)==1&&nchar(label)>0)
@@ -358,6 +359,12 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId
   stopifnot("The keyColumns named must be provided as a character vector" = is.character(keyColumns))
   stopifnot("logicalAsSingleSelect must be TRUE or FALSE" = is.logical(logicalAsSingleSelect))
   stopifnot("Logical text values must be length 2" = is.character(logicalText)&&length(logicalText)==2)
+  stopifnot(
+    "Codes must be provided in a character vector with a unique code or NA for each column" = 
+      is.character(codes)&&
+      length(codes)==ncol(x)&&
+      length(unique(codes[!is.na(codes)]))==length(codes[!is.na(codes)])
+    )
 
   providedCols <- names(x)
 
@@ -371,8 +378,13 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId
 
   x2 <- x
 
-
-  lapply(providedCols, function(pCol) {
+  lapply(1:length(providedCols), function(iCol) {
+    pCol <- providedCols[[iCol]]
+    if (is.na(codes[[iCol]])) {
+      code <- NULL
+    } else {
+      code <- codes[[iCol]]
+    }
     y <- x[[pCol]]
     fieldClass <- class(y)
     key <- pCol %in% keyColumns
@@ -385,35 +397,35 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId
         stop(sprintf("Key column %s values invalid. Check for linebreaks or values with >1024 characters.", pCol))
       }
       if (!hasNewLine&&maxLength<=1024) {
-        addIt(textFieldSchema(label = pCol, key = key, required = required))
+        addIt(textFieldSchema(label = pCol, key = key, required = required, code = code))
       } else {
         # default to Narrative for longer fields > 1024 characters and fields with new lines
-        addIt(multilineFieldSchema(label = pCol))
+        addIt(multilineFieldSchema(label = pCol, code = code))
       }
     } else if ("factor" %in% fieldClass) {
       # default to single select field using factor labels; they must be unique
-      addIt(singleSelectFieldSchema(label = pCol, options = levels(y), key = key, required = required))
+      addIt(singleSelectFieldSchema(label = pCol, options = levels(y), key = key, required = required, code = code))
     } else if ("integer" %in% fieldClass) {
       if (key) keyStop("quantity", pCol)
-      addIt(quantityFieldSchema(label = pCol, required = required))
+      addIt(quantityFieldSchema(label = pCol, required = required, code = code))
     } else if ("numeric" %in% fieldClass) {
       if (key) keyStop("quantity", pCol)
-      addIt(quantityFieldSchema(label = pCol, required = required))
+      addIt(quantityFieldSchema(label = pCol, required = required, code = code))
     } else if ("logical" %in% fieldClass) {
       if (logicalAsSingleSelect) {
         x2[,pCol] <<- ifelse(y, logicalText[[1]], logicalText[[2]])
-        addIt(singleSelectFieldSchema(label = pCol, options = c(logicalText[[1]], logicalText[[2]]), key = key, required = required))
+        addIt(singleSelectFieldSchema(label = pCol, options = c(logicalText[[1]], logicalText[[2]]), key = key, required = required, code = code))
       } else {
         if (key) keyStop("quantity", pCol)
         x2[,pCol] <<- ifelse(y, 1L, 0L)
-        addIt(quantityFieldSchema(label = pCol, required = required))
+        addIt(quantityFieldSchema(label = pCol, required = required, code = code))
       }
     } else if ("Date" %in% fieldClass) {
-      addIt(dateFieldSchema(label = pCol, key = key, required = required))
+      addIt(dateFieldSchema(label = pCol, key = key, required = required, code = code))
     } else if ("POSIXt" %in% fieldClass) {
       warning(sprintf("POSIXt time+date column %s will be a text form field. Separate date into another column to store as date.", pCol))
       x2[,pCol] <<- as.character(y)
-      addIt(textFieldSchema(label = pCol, key = key, required = required))
+      addIt(textFieldSchema(label = pCol, key = key, required = required, code = code))
     } else {
       stop(sprintf("Unrecognized column type with class(es) (%s) in column %s", paste(fieldClass, collapse = ", "), pCol))
     }
@@ -424,7 +436,23 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId
     importRecords(formId = fmSchema$id, data = x2)
   }
   
+  checkForm(fmSchema, warnDuplicateLabels = TRUE)
+  
   list(schema = fmSchema, data = x2)
 }
 
+checkForm <- function(formSchema, df = as.data.frame(formSchema), warnDuplicateLabels = FALSE) {
+  if (length(unique(df$fieldId))<length(df$fieldId)) stop("The provided form schema has a duplicate field id and is badly formatted.")
+  codes <- df$fieldCode[!is.na(df$fieldCode)]
+  if (length(unique(codes))<length(codes)) stop("The provided form schema has a duplicate field codes and is badly formatted.")
+  stopifnot("Misformatted code in schema. Codes must start with a letter, must be made of letters and underscores _ and cannot be longer than 32 characters" = all(grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", codes)))
+  
+  if (warnDuplicateLabels) {
+    lbls <- df$fieldLabel[!is.na(df$fieldLabel)]
+    if (length(unique(lbls))<length(lbls)) {
+      duplicateLabels <- unique(lbls[duplicated(lbls)])
+      warning("There are duplicated field labels in this form schema with id ", formSchema$id, ": ", paste(duplicateLabels, collapse = ", "))
+    }
+  }
+}
 

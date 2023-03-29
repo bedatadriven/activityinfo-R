@@ -33,6 +33,7 @@ formFieldSchema <- function(type, label, description = NULL, code = NULL, id = c
   stopifnot("`hideInTable` must be a logical/boolean of length 1" = is.logical(hideInTable)&&length(hideInTable)==1)
   stopifnot("`reviewerOnly` must be a logical/boolean of length 1" = is.logical(reviewerOnly)&&length(reviewerOnly)==1)
   stopifnot("The type parameters must be a list if defined" = is.null(typeParameters)||is.list(typeParameters))
+  stopifnot("The code must start with a letter, must be made of letters and underscores _ and cannot be longer than 32 characters" = is.null(code)||grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", code))
   
   schema <- list()
   
@@ -788,6 +789,9 @@ deleteFormField.formSchema <- function(formSchema, id, code, label, upload = FAL
   
   found <- FALSE
   
+  df <- as.data.frame(formSchema)
+  checkForm(formSchema, df)
+  
   if (missing(code)&&missing(label)&&!missing(id)) {
     stopifnot("id must be provided as a character vector in deleteFormField()" = is.character(id))
     x <- id
@@ -809,19 +813,33 @@ deleteFormField.formSchema <- function(formSchema, id, code, label, upload = FAL
   } else if (missing(code)&&missing(id)&&!missing(label)) {
     stopifnot("label must be provided as a character vector in deleteFormField()" = is.character(label))
     x <- label
-    formSchema$elements <- lapply(formSchema$elements, function(y) {
-      if(y$label %in% label) {
-        found <<- TRUE
-        NULL
-      } else y
-    })    
+    
+    matches <- df[df$fieldLabel %in% label,]
+    nMatches <- nrow(matches)
+    
+    if (nMatches > 0) {
+      dupMatches <- matches[duplicated(matches$fieldLabel),]
+      nDupMatches <- nrow(dupMatches)
+      
+      if (nDupMatches > 0) {
+        stop("Cannot delete form field: ambiguous label(s) '", paste(unique(dupMatches$fieldLabel), collapse = ", "),"' with more than one matching form field with the same label. Use the id or code of the field to delete form fields in this case.")
+      }
+      
+      formSchema$elements <- lapply(formSchema$elements, function(y) {
+        if(y$label %in% label) {
+          found <<- TRUE
+          NULL
+        } else y
+      })
+    }
+
   } else {
     stop("It is required to provide a single argument as a character vector of fields to delete for the either id or code or label but not for more than one.")
   }
   
   if (!found) {
     warning(
-      sprintf("The no matching field(s) '%s' was identified in deleteFormSchema() in form with id %s", paste(x, collapse = ", "), formSchema$id)
+      sprintf("No matching field(s) '%s' was identified in deleteFormSchema() in form with id %s", paste(x, collapse = ", "), formSchema$id)
       )
   } else {
     # remove null entries
@@ -889,6 +907,9 @@ addFormField <- function(...) {
 #' @rdname addFormField
 addFormField.character <- function(formId, schema, upload = FALSE, ...) {
   formSchema <- getFormSchema(formId = formId)
+  sane <- checkFormField(formSchema, schema)
+  fromSchema <- sane$formSchema
+  schema <- sane$schema
   formSchema$elements[[length(formSchema$elements)+1]] <- schema
   if (upload == TRUE) {
     updateFormSchema(formSchema)
@@ -901,6 +922,9 @@ addFormField.character <- function(formId, schema, upload = FALSE, ...) {
 #' @export
 #' @rdname addFormField
 addFormField.formSchema <- function(formSchema, schema, upload = FALSE, ...) {
+  sane <- checkFormField(formSchema, schema)
+  fromSchema <- sane$formSchema
+  schema <- sane$schema
   formSchema$elements[[length(formSchema$elements)+1]] <- schema
   if (upload == TRUE) {
     updateFormSchema(formSchema)
@@ -909,10 +933,27 @@ addFormField.formSchema <- function(formSchema, schema, upload = FALSE, ...) {
   }
 }
 
+checkFormField <- function(formSchema, schema, df = as.data.frame(formSchema)) {
+  sane = list("formSchema" = formSchema, "schema" = schema)
+  
+  if (schema$id %in% df$fieldId) {
+    sane$schema$id <- cuid()
+    warning("There is already a form field with the same id. Automatically replacing the id in the new field with a new unique id.")
+  }
+  
+  if (!is.null(schema$code)&&!is.na(schema$code)) {
+    if (schema$code %in% df$fieldCode) {
+      codes <- gsub("([.])", "_", make.names(c(df$fieldCode, schema$code), unique = TRUE))
+      newCode <- codes[length(codes)]
+      sane$schema$code <- newCode
+      warning("There is already a form field with the same code. Changing the code in order to add the new field.")
+    }
+  }
+  checkForm(formSchema, df)
+  
+  sane
+}
 
-#' @export
-#' @rdname addFormField
-addFormField.default <- addFormField.character
 
 #' Migrate and convert the data of one form field into another
 #' 

@@ -5,6 +5,7 @@
 \alias{reexports}
 \alias{view}
 \alias{filter}
+\alias{collect}
 \title{Objects exported from other packages}
 \keyword{internal}
 \description{
@@ -12,7 +13,7 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{dplyr}{\code{\link[dplyr]{filter}}}
+  \item{dplyr}{\code{\link[dplyr:compute]{collect}}, \code{\link[dplyr]{filter}}}
 
   \item{tibble}{\code{\link[tibble]{view}}}
 }}

@@ -1,4 +1,4 @@
-# No errors are thrown when filtering on a variable that is found up the tree
+# In extractSchemaFromFields(), form with has duplicate labels can be fixed with useColumnNames = TRUE
 
     Code
       caseDf
@@ -533,7 +533,7 @@
       499               499                4_stuff            False    2021-07-24
       500               500                5_stuff            False    2021-07-25
 
-# Copying of schemas with copySchema()
+# Copying of schemas with extractSchemaFromFields()
 
     structure(list(databaseId = "<id value>", elements = list(structure(list(
         code = NULL, description = NULL, id = "<id value>", key = TRUE, 

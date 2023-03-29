@@ -4,7 +4,6 @@
 \alias{addFormField}
 \alias{addFormField.character}
 \alias{addFormField.formSchema}
-\alias{addFormField.default}
 \title{Add a new form field}
 \usage{
 addFormField(...)
@@ -12,8 +11,6 @@ addFormField(...)
 \method{addFormField}{character}(formId, schema, upload = FALSE, ...)
 
 \method{addFormField}{formSchema}(formSchema, schema, upload = FALSE, ...)
-
-\method{addFormField}{default}(formId, schema, upload = FALSE, ...)
 }
 \arguments{
 \item{...}{ignored}

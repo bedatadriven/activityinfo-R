@@ -7,7 +7,7 @@ interactiveTestEnvironment <- function() {
 
 testthat::test_that("Package options are set correctly", {
   testthat::expect_false(getOption("activityinfo.verbose.requests"))
-  testthat::expect_true(getOption("activityinfo.verbose.tasks"))
+  testthat::expect_false(getOption("activityinfo.verbose.tasks"))
   testthat::expect_null(getOption("activityinfo.interactive"))
   testthat::expect_identical(getOption("activityinfo.interactive.con"),stdin())
 })

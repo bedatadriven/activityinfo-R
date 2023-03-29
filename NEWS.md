@@ -1,10 +1,10 @@
 ## [4.33]
 - getRecords() added to represent remote records on the server with helper functions to set column name styles, e.g. prettyColumnStyle(), minimalColumnStyle()
-- Eager fetching of remote records and conversion to data.frame when required for dplyr verbs. filter(), arrange(), slice_head, and slice_tail() can be used on remote records before downloading and converting to a data.frame.
-- Support for all dplyr verbs and tidy selection of columns of remote records, including 
-- migrateFieldData() added to migrate data from a field to another and supply a conversion function
+- Support for tidy selection and renaming of columns of remote records
+- Eager collection of remote records and conversion to data.frame when required for dplyr verbs. filter(), arrange(), slice_head, and slice_tail() can be used on remote records before downloading and converting to a data.frame.
+- migrateFieldData() added to migrate data from a field to another using a user-supplied conversion function
 - createFormSchemaFromData() added to automatically guess a form field schema from a data.frame
-- copySchema() added to copy a schema from a remote records object (getRecords()) based on selected columns, including those from reference tables.
+- extractSchemaFromFields() added to extract form fields into a new form schema using the selected columns of a remote records object (getRecords()), including those from reference form fields.
 - Deprecation of importTable() in favour of importRecords()
 - getDatabases() always returns a data.frame
 

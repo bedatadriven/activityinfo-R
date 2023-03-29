@@ -13,6 +13,7 @@ createFormSchemaFromData(
   requiredColumns = keyColumns,
   logicalAsSingleSelect = TRUE,
   logicalText = c("True", "False"),
+  codes = rep(NA_character_, ncol(x)),
   upload = FALSE
 )
 }
@@ -33,6 +34,8 @@ schema}
 \item{logicalAsSingleSelect}{by default TRUE and converts logical columns in the data frame to a single select form field; if FALSE then it will convert TRUE to 1 and FALSE to 0}
 
 \item{logicalText}{the single select replacement values for c(TRUE, FALSE); default is c("True","False")}
+
+\item{codes}{a character vector of field codes that must have the same length as the number of columns}
 
 \item{upload}{immediately upload the new form}
 }

@@ -460,7 +460,7 @@ columnStyle <- function(
     referencedId = TRUE,
     referencedKey = TRUE,
     allReferenceFields = FALSE,
-    columnNames = c("code", "label"),
+    columnNames = "pretty",
     recordId = TRUE,
     lastEditedTime = TRUE,
     style) {
@@ -830,7 +830,7 @@ varNames.activityInfo_tbl_df <- function(x, style = NULL, addNames = TRUE) {
 #'
 #' @description
 #' This helper function provides form field schemas in a named list. This can be 
-#' useful for examining and manipulating form fields. See also [activityinfo::copySchema].
+#' useful for examining and manipulating form fields. See also [activityinfo::extractSchemaFromFields].
 #'
 #' @param formTree the form tree object.
 #' @param style a column style object.
@@ -1245,27 +1245,49 @@ tblWindow <- function(x, limit) {
 #' @description
 #' This function is useful for creating new forms based on existing forms and 
 #' may be used to copy only the fields in a single form or any combination of 
-#' fields in a form tree that can be fetched with getRecords(). Note some form 
-#' elements such as section headers will not be represented.
+#' fields in a form tree that can be fetched with [activityinfo::getRecords]. 
+#' Note some form elements such as section headers will not be represented.
 #'
-#' @param x the remote records object fetched with getRecords().
+#' @param x the remote records object fetched with [activityinfo::getRecords].
 #' @param databaseId the id of the database where the form should reside.
 #' @param label the label of the form
-#' @param ... parameters to pass on to formSchema()
+#' @param useColumnNames change the label of each field to the corresponding column name in the remote records object
+#' @param ... parameters to pass on to [activityinfo::formSchema]
 #' @export
-copySchema <- function(x, databaseId, label, ...) {
+extractSchemaFromFields <- function(x, databaseId, label, useColumnNames = FALSE, ...) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
   fmSchema <- formSchema(databaseId, label, ...)
 
-  elem <- x$elements[x$step$columns]
-  elem[sapply(elem, is.null)] <- NULL
-
-  lapply(elem, function(y) {
-    y$id <- cuid()
-    fmSchema <<- addFormField(fmSchema, y)
+  codes <- character(0)
+  
+  lapply(names(x$step$columns), function(colName) {
+    y <- x$elements[[x$step$columns[colName]]]
+    if(!is.null(y)) {
+      y$id <- cuid()
+      if (is.null(y$code)) {
+        codes[length(codes)+1] <<- NA
+      } else {
+        if (y$code %in% codes) {
+          codes[length(codes)+1] <<- y$code
+          codes[!is.na(codes)] <<- gsub("([.])", "_", make.names(codes[!is.na(codes)], unique = TRUE))
+          warning("Recoding duplicate code in form field '", y$label,"': '",y$code,"' to '", codes[length(codes)], "'")
+          y$code <- codes[length(codes)]
+        } else {
+          codes[length(codes)+1] <<- y$code
+        }
+      }
+      if (useColumnNames) {
+        y$label <- colName
+      }
+      fmSchema <<- addFormField(fmSchema, y)
+    }
   })
-
-  if (length(fmSchema$elements)==0) warning(sprintf("No form schema columns available. An empty schema will be provided for form with id %s.", fmSchema$id))
+  
+  if (length(fmSchema$elements)==0) {
+    warning(sprintf("No form schema columns available. An empty schema will be provided for form with id %s.", fmSchema$id))
+  } else {
+    checkForm(fmSchema, warnDuplicateLabels = TRUE)
+  }
 
   fmSchema
 }
@@ -1435,7 +1457,7 @@ filter.tbl_activityInfoRemoteRecords <- function(.data, ...) {
       addFilter(.data, paste(as.character(result, collapse = "&&")))
       },
       error = function(e) {
-        warn_collect("filter", "Error while converting r expression to an ActivityInfo formula so collecting data for dplyr::filter().")
+        warn_collect("filter", "Could not convert r expression to an ActivityInfo formula so collecting data for dplyr::filter().")
         .data <- collect(.data)
         filter(.data, ...)
       })
@@ -1461,6 +1483,9 @@ collect.tbl_activityInfoRemoteRecords <- function(x, ...) {
   attr(x = newTbl, which = "remoteRecords") <- x
   newTbl
 }
+
+#' @export
+dplyr::collect
 
 # can implement predicate function and create a function factory for the field types
 # need to change this to use the columns and adjust the var names

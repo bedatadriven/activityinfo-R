@@ -7,45 +7,45 @@ testthat::test_that("addRecord() works", {
 })
 
 testthat::test_that("deleteRecord() works", {
-
+  
 })
 
 testthat::test_that("getRecordHistory() works", {
-
+  
 })
 
 testthat::test_that("getRecord() works", {
-
+  
 })
 
 
 testthat::test_that("getAttachment() works", {
-
+  
 })
 
 testthat::test_that("reference() works", {
-
+  
 })
 
 testthat::test_that("recoverRecord() works", {
-
+  
 })
 
 
 testthat::test_that("getRecords() pretty field names are correct with deep reference fields in form trees", {
   # Create a country table
   countryData <- tibble("Code" = paste0(letters[1:2], letters[1:2], letters[1:2]), "Name" = paste0("Country ", 1:2))
-  countrySchemaPackage <- createFormSchemaFromData(countryData, database$databaseId, label = "Country (from Form)", keyColumns = c("Name"), requiredColumns = c("Code", "Name"))
+  countrySchemaPackage <- createFormSchemaFromData(countryData, database$databaseId, label = "Country (from Form)", keyColumns = c("Name"), requiredColumns = c("Code", "Name"), codes = c("code", "name"))
   uploadedCountryForm <- addForm(countrySchemaPackage$schema)
   countryFormId <- countrySchemaPackage$schema$id
   importRecords(formId = countryFormId, data = countryData)
-    
+  
   countries <- getRecords(countryFormId)
   countryRecordIds <- countries %>% select(id = `_id`) %>% collect() %>% pull(id)
   
   # Create a district table with a country key field
   districtData <- tibble(Code = paste0("D", 1:10), "Name" = paste0("District ", 1:10))
-  districtSchemaPackage <- createFormSchemaFromData(districtData, database$databaseId, label = "District (from form)", keyColumns = c("Name"), requiredColumns = c("Code", "Name"))
+  districtSchemaPackage <- createFormSchemaFromData(districtData, database$databaseId, label = "District (from form)", keyColumns = c("Name"), requiredColumns = c("Code", "Name"), codes = c("code", "name"))
   districtSchema <- districtSchemaPackage$schema %>% 
     addFormField(
       referenceFieldSchema(label = "Country (from Field)", referencedFormId = countryFormId, key = TRUE)
@@ -78,16 +78,33 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
   })
   
   importRecords(formId = caseFormId, caseData)
-
+  
   cases <- getRecords(caseFormId, style = prettyColumnStyle(allReferenceFields = TRUE))
   
   caseDf <- getRecords(caseFormId, style = minimalColumnStyle()) %>% slice_head(n = 10) %>% collect() %>% as.data.frame()
   
-  testthat::test_that("No errors are thrown when filtering on a variable that is found up the tree", {
+  testthat::test_that("No errors are thrown when filtering on a variable name that is also found up the tree", {
     testthat::expect_no_error({
-      getRecords(caseFormId) %>% filter(Name == "District 10")
+      getRecords(caseFormId) %>% filter(`District (from form) Name` == "District 10")
     })
-  }) 
+  })
+  
+  testthat::test_that("In extractSchemaFromFields(), form with duplicate codes from reference tables will be fixed with make.names", {
+    testthat::expect_warning({
+      testthat::expect_warning({
+        cases %>% select(contains("name")) %>% extractSchemaFromFields("dbId", "Test")
+      }, regexp = "Recoding duplicate code", )
+    }, regexp = "duplicated field labels")
+  })
+  
+  testthat::test_that("In extractSchemaFromFields(), form with has duplicate labels can be fixed with useColumnNames = TRUE", {
+    testthat::expect_no_warning({
+      testthat::expect_warning({
+        cases %>% select(contains("name")) %>% extractSchemaFromFields("dbId", "Test", useColumnNames = TRUE)
+      }, regexp = "Recoding duplicate code")
+    })
+  })
+  
   
   testthat::expect_snapshot(caseDf)
 })
@@ -122,9 +139,9 @@ testthat::test_that("getRecords() works", {
   testthat::expect_identical(dfA,dfB)
   
   dfC <- rcrds %>% 
-      filter(`A logical column` == "True") %>% 
-      arrange(`_id`) %>%
-      slice_head(n = 10) %>% collect()
+    filter(`A logical column` == "True") %>% 
+    arrange(`_id`) %>%
+    slice_head(n = 10) %>% collect()
   
   attr(dfC, "remoteRecords") <- NULL
   
@@ -141,7 +158,7 @@ testthat::test_that("getRecords() works", {
         slice_head(n = 10) %>% collect()
     })
   })
-
+  
   # removing columns required for a filter will result in an error
   # expect warning using select after filter or sort
   testthat::expect_error({
@@ -176,19 +193,19 @@ testthat::test_that("getRecords() works", {
         collect()
     })
   })
-
-  testthat::test_that("Copying of schemas with copySchema()", {
-    newSchema <- rcrds %>% select(id = `Identifier number`) %>% copySchema(databaseId = "dbid", label = "new form")
+  
+  testthat::test_that("Copying of schemas with extractSchemaFromFields()", {
+    newSchema <- rcrds %>% select(id = `Identifier number`) %>% extractSchemaFromFields(databaseId = "dbid", label = "new form")
     
     expectActivityInfoSnapshot(newSchema)
     
     # no form schema elements to provide - expect warning
     testthat::expect_warning({
-      rcrds %>% select(starts_with("_")) %>% copySchema(databaseId = "dbid", label = "new form")
+      rcrds %>% select(starts_with("_")) %>% extractSchemaFromFields(databaseId = "dbid", label = "new form")
     })
     
     testthat::test_that("It is possible to copy a form and upload the data to the new form", {
-      copiedForm <- rcrds %>% copySchema(label = "New reference table", databaseId = database$databaseId)
+      copiedForm <- rcrds %>% extractSchemaFromFields(label = "New reference table", databaseId = database$databaseId)
       addForm(copiedForm)
       importRecords(formId = copiedForm$id, data = testData)
     })
@@ -212,7 +229,7 @@ testthat::test_that("getRecords() works", {
     
     testthat::expect_true(c("_id haha") %in% colnames(renameWith))
   })
-
+  
   testthat::test_that("Reference field with shallow reference table should provide field based names", {
     getFormSchema(personFormId) %>%
       addFormField(
@@ -264,7 +281,7 @@ testthat::test_that("getRecords() works", {
     filteredRow <- personMinRef %>% 
       select(starts_with("Ref"), `Respondent name`) %>% 
       filter(`Ref 1 Identifier number` == "107")
-
+    
     filteredRowDf <- as.data.frame(filteredRow)
     
     testthat::expect_snapshot(filteredRowDf)
@@ -275,6 +292,6 @@ testthat::test_that("getRecords() works", {
         nrow(), 
       expected = 1)
   })
-
-          
+  
+  
 })

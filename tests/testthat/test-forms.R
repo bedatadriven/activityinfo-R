@@ -104,3 +104,17 @@ testthat::test_that("Creating a form schema with formSchemaFromData() from data 
   
   testthat::expect_snapshot(larlar2)
 })
+
+testthat::test_that("formSchemaFromData() errors with duplicate codes and badly formatted codes. It warns for duplicate labels", {
+  testthat::expect_error({
+    createFormSchemaFromData(data.frame(a = 1:10, b = as.character(1:10)), databaseId = "dbid", label = "Label", codes = c("A", "A"))
+  }, regexp = "code")
+
+  testthat::expect_error({
+    createFormSchemaFromData(data.frame(a = 1:10, b = as.character(1:10)), databaseId = "dbid", label = "Label", codes = c("A", "_A"))
+  }, regexp = "code")
+    
+  testthat::expect_warning({
+    createFormSchemaFromData(data.frame(a = 1:10, a = as.character(1:10), check.names = FALSE), databaseId = "dbid", label = "Label", codes = c("A1", "A2"))
+  }, regexp = "label")
+})

@@ -4,7 +4,7 @@
   options(activityinfo.interactive.con = stdin())
   options(activityinfo.interactive = NULL)
   options(activityinfo.verbose.requests = FALSE)
-  options(activityinfo.verbose.tasks = TRUE)
+  options(activityinfo.verbose.tasks = FALSE)
 }
 
 credentialsFile <- "~/.activityinfo.credentials"
@@ -51,7 +51,7 @@ activityInfoRootUrl <- local({
 #' @noRd
 activityInfoAuthentication <- local({
   credentials <- NULL
-
+  
   function(newValue) {
     if (!missing(newValue)) {
       credentials <<- newValue
@@ -67,7 +67,7 @@ activityInfoAuthentication <- local({
           credentials <<- line
         }
       }
-
+      
       if (is.null(credentials)) {
         warning("Connecting to activityinfo.org anonymously...")
         NULL
@@ -140,14 +140,14 @@ activityInfoToken <- function(token) {
   if (interactive2() && missing(token)) {
     token <- readline2("Enter your token: ")
   }
-
+  
   activityInfoAuthentication(token)
-
+  
   if (interactive2()) {
     cat("Do you want to save your token for future R sessions?\n")
     cat("WARNING: If you choose yes, your token will be stored plain text in your home\n")
     cat("directory. Don't choose this option on an insecure or public machine! (Y/n)\n")
-
+    
     save <- readline2("Save token? ")
     if (substr(tolower(save), 1, 1) == "y") {
       cat(token, file = credentialsFile)
@@ -179,7 +179,7 @@ deprecationOfBasicAuthWarning <- function() {
 activityInfoLogin <- function(userEmail, password) {
   .Deprecated("activityInfoToken")
   deprecationOfBasicAuthWarning()
-
+  
   if (missing(userEmail) || missing(password)) {
     attempts <- 0
     repeat {
@@ -196,15 +196,15 @@ activityInfoLogin <- function(userEmail, password) {
     }
     password <- readline2("Enter your password: ")
   }
-
+  
   credentials <- paste(userEmail, password, sep = ":")
   activityInfoAuthentication(credentials)
-
+  
   if (interactive2()) {
     cat("Do you want to save your password for future R sessions?\n")
     cat("WARNING: If you choose yes, your password will be stored plain text in your home\n")
     cat("directory. Don't choose this option on an insecure or public machine! (Y/n)\n")
-
+    
     save <- readline2("Save password? ")
     if (substr(tolower(save), 1, 1) == "y") {
       cat(credentials, file = credentialsFile)

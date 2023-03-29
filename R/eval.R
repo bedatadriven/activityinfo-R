@@ -44,7 +44,8 @@ toActivityInfoFormula <- function(.data, expr) {
       call <- match.call(definition = grepl, expr2)
       return(sprintf("REGEXMATCH(%s, %s)", toActivityInfoFormula(.data, !!call$x), toActivityInfoFormula(.data, !!call$pattern)))
     } else {
-      return(deparse(rlang::eval_tidy(exprQuo, data = columns)))
+      stop("This function is not yet supported: ", fn)
+      #return(deparse(rlang::eval_tidy(exprQuo, data = columns)))
     }
   }
   

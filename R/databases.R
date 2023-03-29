@@ -1,20 +1,27 @@
 #' getDatabases()
 #'
 #' Retrieves a list of databases the authenticated user owns, or has been shared
-#'  with the authenticated user as a data.frame.
+#'  with the authenticated user as a data.frame. You can retrieve it as a list
+#'  if you set the argument `asDataFrame` to `FALSE`.
 #'
+#' @param asDataFrame Retrieve database list as a data.frame, otherwise returns as list. Default: TRUE
 #'
 #' @export
-getDatabases <- function() {
+getDatabases <- function(asDataFrame = TRUE) {
   databases <- getResource("databases", task = "Getting all databases")
-  dplyr::tibble(
-    databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
-    label = unlist(lapply(databases, function(x) {x$label})),
-    description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
-    ownerId = unlist(lapply(databases, function(x) {x$ownerId})),
-    billingAccountId = unlist(lapply(databases, function(x) {x$billingAccountId})),
-    suspended = unlist(lapply(databases, function(x) {x$suspended}))
-  )
+  if (asDataFrame == TRUE) {
+    dbDF <- dplyr::tibble(
+      databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
+      label = unlist(lapply(databases, function(x) {x$label})),
+      description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
+      ownerId = unlist(lapply(databases, function(x) {x$ownerId})),
+      billingAccountId = unlist(lapply(databases, function(x) {x$billingAccountId})),
+      suspended = unlist(lapply(databases, function(x) {x$suspended}))
+    )
+    return(dbDF)
+  } else if (asDataFrame == FALSE) {
+    return(databases)
+  }
 }
 
 databaseUpdates <- function() {
@@ -175,18 +182,25 @@ print.databaseTree <- function(x, ...) {
 
 #' getDatabaseUsers
 #'
-#' Retrieves the list of users with access to the database.
+#' Retrieves the list of users with access to the database in a data.frame format.
 #'
 #' @param databaseId The database ID
+#' @param asDataFrame Retrieve user list as a data.frame, otherwise returns as list. Default: TRUE
 #'
 #' @export
-getDatabaseUsers <- function(databaseId) {
+getDatabaseUsers <- function(databaseId, asDataFrame = TRUE) {
   users <- getResource(
     paste("databases", databaseId, "users", sep = "/"),
     task = sprintf("Getting list of database %s users", databaseId)
   )
   
-  users
+  if (asDataFrame == TRUE) {
+    usersDF <- as.data.frame(do.call(rbind, users))
+    
+    return(usersDF)
+  } else if (asDataFrame == FALSE) {
+    return(users)
+  }
 }
 
 #' getDatabaseUser

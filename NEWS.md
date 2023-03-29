@@ -6,6 +6,7 @@
 - createFormSchemaFromData() added to automatically guess a form field schema from a data.frame
 - copySchema() added to copy a schema from a remote records object (getRecords()) based on selected columns, including those from reference tables.
 - Deprecation of importTable() in favour of importRecords()
+- getDatabases() always returns a data.frame
 
 ## [4.32]
 - Helper functions to create ActivityInfo form and field schemas (#32)

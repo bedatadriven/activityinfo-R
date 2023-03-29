@@ -1,18 +1,20 @@
 #' getDatabases()
 #'
 #' Retrieves a list of databases the authenticated user owns, or has been shared
-#'  with
+#'  with the authenticated user as a data.frame.
 #'
-#' @param asDf Default is false but if TRUE will return the list of databases as a dataframe.
 #'
 #' @export
-getDatabases <- function(asDf = FALSE) {
-  x <- getResource("databases", task = "Getting all databases")
-  if (asDf) {
-    do.call(rbind, lapply(x, data.frame))
-  } else {
-    x
-  }
+getDatabases <- function() {
+  databases <- getResource("databases", task = "Getting all databases")
+  dplyr::tibble(
+    databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
+    label = unlist(lapply(databases, function(x) {x$label})),
+    description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
+    ownerId = unlist(lapply(databases, function(x) {x$ownerId})),
+    billingAccountId = unlist(lapply(databases, function(x) {x$billingAccountId})),
+    suspended = unlist(lapply(databases, function(x) {x$suspended}))
+  )
 }
 
 databaseUpdates <- function() {

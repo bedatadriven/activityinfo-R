@@ -184,6 +184,8 @@ addForm <- function(...) {
 #' @export
 #' @rdname addForm
 addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
+  checkForm(schema)
+  
   schema <- prepFormSchemaForUpload(schema)
 
   request <- list(
@@ -263,6 +265,7 @@ validateFormSchema <- function(form) {
   for(e in form$elements) {
     isFormFieldSchema(e)
   }
+  checkForm(form)
 }
 
 #' Updates a form schema
@@ -273,6 +276,8 @@ validateFormSchema <- function(form) {
 #'
 #' @export
 updateFormSchema <- function(schema) {
+  checkForm(schema)
+  
   schema <- prepFormSchemaForUpload(schema)
 
   result <- postResource(

@@ -8,5 +8,5 @@ getDatabases()
 }
 \description{
 Retrieves a list of databases the authenticated user owns, or has been shared
-with the authenticated user as a data.frame.
+with the authenticated user as a
 }

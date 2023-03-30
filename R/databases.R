@@ -1,20 +1,27 @@
 #' getDatabases()
 #'
 #' Retrieves a list of databases the authenticated user owns, or has been shared
-#'  with the authenticated user as a data.frame.
+#'  with the authenticated user as a tibble. You can retrieve it as a list
+#'  if you set the argument `asDataFrame` to `FALSE`.
 #'
+#' @param asDataFrame Retrieve database list as a data.frame, otherwise returns as list. Default: TRUE
 #'
 #' @export
-getDatabases <- function() {
+getDatabases <- function(asDataFrame = TRUE) {
   databases <- getResource("databases", task = "Getting all databases")
-  dplyr::tibble(
-    databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
-    label = unlist(lapply(databases, function(x) {x$label})),
-    description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
-    ownerId = unlist(lapply(databases, function(x) {x$ownerId})),
-    billingAccountId = unlist(lapply(databases, function(x) {x$billingAccountId})),
-    suspended = unlist(lapply(databases, function(x) {x$suspended}))
-  )
+  if (asDataFrame == TRUE) {
+    dbDF <- dplyr::tibble(
+      databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
+      label = unlist(lapply(databases, function(x) {x$label})),
+      description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
+      ownerId = unlist(lapply(databases, function(x) {x$ownerId})),
+      billingAccountId = unlist(lapply(databases, function(x) {x$billingAccountId})),
+      suspended = unlist(lapply(databases, function(x) {x$suspended}))
+    )
+    return(dbDF)
+  } else if (asDataFrame == FALSE) {
+    return(databases)
+  }
 }
 
 databaseUpdates <- function() {
@@ -127,7 +134,7 @@ addDatabase <- function(label, databaseId = cuid()) {
       id = databaseId,
       label = label,
       templateId = "blank"
-    ),
+      ),
     task = sprintf("Creating new database '%s' with id %s", label, databaseId)
   )
 }
@@ -163,30 +170,37 @@ print.databaseTree <- function(x, ...) {
   cat(sprintf("  label:        %s\n", tree$label))
   cat(sprintf("  databaseId:   %s\n", tree$databaseId))
   cat(sprintf("  resources: %d\n", length(tree$resources)))
-  
+
   for (resource in tree$resources) {
     cat(sprintf("    %s: %s\n", resource$id, resource$label))
     cat(sprintf("      type: %s\n", resource$type))
     cat(sprintf("      visibility: %s\n", resource$visibility))
   }
-  
+
   invisible()
 }
 
 #' getDatabaseUsers
 #'
-#' Retrieves the list of users with access to the database.
+#' Retrieves the list of users with access to the database in a data.frame format.
 #'
 #' @param databaseId The database ID
+#' @param asDataFrame Retrieve user list as a data.frame, otherwise returns as list. Default: TRUE
 #'
 #' @export
-getDatabaseUsers <- function(databaseId) {
+getDatabaseUsers <- function(databaseId, asDataFrame = TRUE) {
   users <- getResource(
     paste("databases", databaseId, "users", sep = "/"),
     task = sprintf("Getting list of database %s users", databaseId)
   )
-  
-  users
+
+  if (asDataFrame == TRUE) {
+    usersDF <- as.data.frame(do.call(rbind, users))
+
+    return(usersDF)
+  } else if (asDataFrame == FALSE) {
+    return(users)
+  }
 }
 
 #' getDatabaseUser
@@ -200,7 +214,7 @@ getDatabaseUsers <- function(databaseId) {
 getDatabaseUser <- function(databaseId, userId) {
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "grants", sep = "/")
   result <- GET(url, activityInfoAuthentication(), accept_json())
-  
+
   if (result$status_code == 200) {
     return(fromJSON(content(result, as = "text", encoding = "UTF-8")))
   } else if (result$status_code == 404) {
@@ -285,9 +299,9 @@ getDatabaseUser2 <- function(databaseId, userId) {
 addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId,
                             roleParameters = list(),
                             roleResources = list(databaseId)) {
-  
+
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", sep = "/")
-  
+
   request <- list(
     email = email,
     name = name,
@@ -301,9 +315,9 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
   )
   # fix conversion to empty json array by changing it to an empty json object
   jsonPayload <- stringr::str_replace(string = jsonlite::toJSON(request, auto_unbox = TRUE), pattern = '"parameters":\\[\\]', replacement = '"parameters":{}')
-  
+
   response <- POST(url, body = jsonPayload, encode = "raw", activityInfoAuthentication(), accept_json(), httr::content_type_json())
-  
+
   if (response$status_code == 200) {
     return(list(
       added = TRUE,
@@ -358,9 +372,9 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
 #'
 deleteDatabaseUser <- function(databaseId, userId) {
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, sep = "/")
-  
+
   response <- DELETE(url, activityInfoAuthentication())
-  
+
   if (response$status_code != 200) {
     stop(sprintf(
       "Request for %s failed with status code %d %s: %s",
@@ -396,7 +410,7 @@ deleteDatabaseUser <- function(databaseId, userId) {
 updateUserRole <- function(databaseId, userId, assignment) {
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", userId, "role", sep = "/")
   request <- list(assignments = list(assignment))
-  
+
   response <- POST(url, body = request, encode = "json", activityInfoAuthentication(), accept_json())
   if (response$status_code != 200) {
     stop(sprintf(
@@ -440,11 +454,11 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
   if (any(is.na(names(roleParameters)))) {
     stop("roleParameters must be named.")
   }
-  
+
   if (length(roleParameters) == 0) {
     roleParameters <- NULL
   }
-  
+
   list(id = roleId, parameters = roleParameters, resources = as.list(roleResources))
 }
 
@@ -551,9 +565,9 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
       operations = permissions
     )
   ))
-  
+
   postResource(path, body = request, task = "updateGrant")
-  
+
   invisible(NULL)
 }
 
@@ -596,6 +610,6 @@ updateRole <- function(databaseId, role) {
   path <- paste("databases", databaseId, sep = "/")
   request <- list(roleUpdates = list(role))
   postResource(path, request, task = "updateRole")
-  
+
   invisible()
 }

@@ -4,9 +4,13 @@
 \alias{getDatabases}
 \title{getDatabases()}
 \usage{
-getDatabases()
+getDatabases(asDataFrame = TRUE)
+}
+\arguments{
+\item{asDataFrame}{Retrieve database list as a data.frame, otherwise returns as list. Default: TRUE}
 }
 \description{
 Retrieves a list of databases the authenticated user owns, or has been shared
-with the authenticated user as a
+with the authenticated user as a tibble. You can retrieve it as a list
+if you set the argument \code{asDataFrame} to \code{FALSE}.
 }

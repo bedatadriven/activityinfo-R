@@ -598,7 +598,6 @@ defaultColumnStyle <- function(style) {
 #' @param x the form id, form schema, form tree, or remote records object.
 #' @param select a character vector of column names to select.
 #' @param ... parameters passed on to [activityinfo::prettyColumnStyle]
-#' @export
 prettyColumns <- function(x, select, ...) {
   styleUI <- prettyColumnStyle(...)
 
@@ -622,7 +621,6 @@ prettyColumns <- function(x, select, ...) {
 #' @param style a column style object.
 #' @param forceId require the underlying expression for each column to be based 
 #' on form field ids and not the code or label
-#' @export
 styledColumns <- function(x, select, style = defaultColumnStyle(), forceId = FALSE) {
   stopifnot("activityInfoColumnStyle" %in% class(style))
 

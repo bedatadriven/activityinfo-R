@@ -6,7 +6,11 @@
 #' @param columns select columns, see Details
 #' @param truncateStrings TRUE if longer strings should be truncated to 128 characters
 #' @param truncate.strings Deprecated: please use truncateStrings. TRUE if longer strings should be truncated to 128 characters
+#' @param asTibble default is FALSE to return a data.frame; TRUE if a tibble should be returned
+#' @param makeNames default is TRUE; FALSE if column names should not be checked and left as-is
 #' @param filter an ActivityInfo formula string that limits the records returned
+#' @param window an integer vector in the format c(offset, limit) for the number of records to return.
+#' @param sort an ActivityInfo sort object that sorts the records returned
 #' @param ... If columns parameter is empty, the additional arguments are used as columns.
 #' @details To select columns, you can use
 #' \itemize{
@@ -24,7 +28,7 @@
 #' }
 #' @references
 #' Unix time, Wikipedia \url{https://en.wikipedia.org/wiki/Unix_time}
-#' @examples 
+#' @examples
 #' \dontrun{
 #' queryTable("a2145507918", columns = c(
 #'   id = "_id",
@@ -38,7 +42,7 @@
 #' ))
 #' }
 #' @export
-queryTable <- function(form, columns, ..., truncateStrings = TRUE, truncate.strings = truncateStrings, filter) {
+queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FALSE, makeNames = TRUE, truncate.strings = truncateStrings, filter, window, sort) {
   if (!missing(truncate.strings)) {
     warning("The parameter truncate.strings in queryTable is deprecated. Please switch to from truncate.strings to truncateStrings.", call. = FALSE, noBreaks. = TRUE)
     if (missing(truncateStrings)) {
@@ -48,17 +52,15 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, truncate.stri
     }
   }
 
-  formId <- if (inherits(form, "formtree")) {
-    # query the root form of a tree contained in a formtree result
-    attr(form, "tree")$root
+  if (inherits(form, "activityInfoFormTree")) {
+    # query the root form of a tree
+    formId <- form$root
+  } else if (inherits(form, "activityInfoFormSchema")) {
+    formId <- form$id
   } else if (is.character(form)) {
-    form
-  } else if (is.numeric(form)) {
-    # accept an activityId
-    site.form.id(form)
+    formId <- form
   } else {
-    # query the root of a form tree
-    form$root
+    stop("Unrecognized form provided to queryTable. Provide an id, form schema or form tree.")
   }
 
   if (missing(columns)) {
@@ -66,12 +68,24 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, truncate.stri
   }
 
   if (length(columns) == 0) {
-    return(parseColumnSet(getResource(sprintf("form/%s/query/columns", formId), task = sprintf("Getting form %s data.", formId))))
+    if ((missing(window)||is.null(window))&&(missing(filter)||is.null(filter))&&(missing(sort)||is.null(sort))) {
+      columnSet <- getResource(sprintf("form/%s/query/columns", formId), task = sprintf("Getting form %s data.", formId))
+      df <- parseColumnSet(columnSet, asTibble, makeNames)
+      if (makeNames&&asTibble) {
+        names(df) <- make.names(names(df), unique = TRUE)
+      }
+      attr(df, "offSet") <- columnSet$offset
+      attr(df, "rows") <- columnSet$rows
+      attr(df, "totalRows") <- columnSet$totalRows
+      return(df)
+    } else {
+      columns = c(list("@id" = "_id", "@lastEditTime" = "_lastEditTime"), prettyColumns(getFormTree(formId)))
+    }
   }
 
   stopifnot(length(columns) > 0)
 
-  names(columns) <- make.names(names(columns), unique = TRUE)
+  if (makeNames) names(columns) <- make.names(names(columns), unique = TRUE)
 
   query <- list(
     rowSources = list(
@@ -86,13 +100,37 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, truncate.stri
     truncateStrings = truncateStrings
   )
 
-  if (!missing(filter)) {
+  if (!missing(filter)&&!is.null(filter)) {
     stopifnot(is.character(filter))
     query$filter <- filter
   }
 
-  columnSet <- postResource("query/columns", query, task = sprintf("Getting form %s data for specified columns.", formId))
-  df <- parseColumnSet(columnSet)
+  if (!missing(sort)&&!is.null(sort)) {
+    checkSortList(sort)
+    query$sort <- sort
+  }
+  
+  if (!missing(window)&&!is.null(window)) {
+    stopifnot(is.integer(window)&&length(window)==2&&min(window)>=0)
+    query$window <- window
+  }
+  
+  jsonPayload <- jsonlite::toJSON(query, auto_unbox = TRUE)
+  
+  #response <- POST(url, body = jsonPayload, encode = "raw", activityInfoAuthentication(), accept_json(), httr::content_type_json())
+  
+
+  #columnSet <- postResource("query/columns", query, task = sprintf("Getting form %s data for specified columns.", formId))
+  columnSet <- postResource(
+    path = "query/columns", 
+    body = jsonPayload, 
+    task = sprintf("Getting form %s data for specified columns.", formId), 
+    requireStatus = NULL, 
+    encode = "raw", 
+    httr::content_type_json()
+    )
+  
+  df <- parseColumnSet(columnSet, asTibble, makeNames)
 
   # make sure we have a column for each name
   for (cn in names(columns)) {
@@ -103,15 +141,27 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, truncate.stri
 
   # order columns in the same order specified in the query
   df <- subset(df, subset = TRUE, select = names(columns))
-
+  
+  attr(df, "offSet") <- columnSet$offset
+  attr(df, "rows") <- columnSet$rows
+  attr(df, "totalRows") <- columnSet$totalRows
+  
   stopifnot(is.data.frame(df))
   return(df)
 }
 
 na.if.null <- function(x) if (is.null(x)) NA else x
 
-parseColumnSet <- function(columnSet) {
-  as.data.frame(
+parseColumnSet <- function(columnSet, asTibble = TRUE, makeNames = TRUE) {
+  if (asTibble) {
+    asDf <- dplyr::as_tibble
+  } else {
+    asDf <- function(x) {
+      as.data.frame(x, stringsAsFactors = FALSE, check.names = makeNames)
+    }
+  }
+
+  asDf(
     lapply(columnSet$columns, function(column) {
       cv <- switch(column$storage,
         constant = {
@@ -160,19 +210,24 @@ parseColumnSet <- function(columnSet) {
         stop("Internal error: Column length is inconsistent. Contact support@activityinfo.org")
       }
       cv
-    }),
-    stringsAsFactors = FALSE
+    })
   )
+}
+
+checkSortList <- function(sort) {
+  force(sort)
+  stopifnot(is.list(sort))
+  invisible(lapply(sort, function(x) {
+    stopifnot(all(names(x) %in% c("dir", "field")))
+    stopifnot(x[["dir"]]%in%c("ASC", "DESC"))
+    stopifnot(is.character(x[["field"]]))
+    stopifnot(is.character(x[["dir"]]))
+  }))
 }
 
 legacy <- function(domain, id) {
   stopifnot(nchar(domain) == 1)
   stopifnot(is.numeric(id))
-  
+
   sprintf("%s%010d", domain, id)
 }
-
-#' Returns the id of the form containing the sites
-#' associated with a 'classic' activity
-#' @param activityId The activity ID
-site.form.id <- function(activityId) legacy("a", activityId)

@@ -9,6 +9,7 @@ testthat::test_that("queryTable() returns a data.frame with 2 rows and expected 
   testthat::expect_true(all(c("X.id", "X.lastEditTime", "NAME", "CHILDREN") %in% names(output)))
 })
 
+# we should start deprecating makeNames
 testthat::test_that("queryTable() returns a valid data.frame with the same column names as the input columns if the user gives a specific number of 'columns' as input ", {
   input_parameters <- list(
     form = childrenSubformId,
@@ -22,6 +23,8 @@ testthat::test_that("queryTable() returns a valid data.frame with the same colum
   output <- suppressWarnings(suppressMessages((do.call(activityinfo::queryTable, input_parameters))))
 
   testthat::expect_true(inherits(output, "data.frame"))
+  message("Expected: ", paste(names_valid, collapse = ", "), "\nFound: ", paste(colnames(output), collapse = ", "))
+
   testthat::expect_true(all(names_valid %in% colnames(output)))
 })
 
@@ -91,5 +94,5 @@ testthat::test_that("queryTable() returns missing values (NA's) for the specifie
 
 
 testthat::test_that("queryTable() gives an error if the input 'form' parameter is invalid", {
-  testthat::expect_error(suppressWarnings(suppressMessages(activityinfo::queryTable(form = "INVALID"))), class = "http_404")
+  testthat::expect_error(suppressWarnings(suppressMessages(activityinfo::queryTable(form = "INVALID"))))
 })

@@ -27,3 +27,16 @@ addForm(...)
 \description{
 Adds a new form to a database
 }
+\examples{
+\dontrun{
+addForm(formSchema(
+  databaseId = myDatabaseId,
+  label = "ActivityInfo form generated from R",
+  elements = list(
+    textFieldSchema(label = "What is your name?", code = "name", required = TRUE),
+    dateFieldSchema(label = "When were you born?", code = "dob"))))
+}
+}
+\seealso{
+\link{formSchema}, \link{formFieldSchema}, \code{vignette("add-and-manipulate-forms", package = "activityinfo")}
+}

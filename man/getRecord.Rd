@@ -14,3 +14,48 @@ getRecord(formId, recordId)
 \description{
 Gets a single record
 }
+\examples{
+
+# Retrieve a record from the Afghan District form in the Geodatabase.
+# See: https://www.activityinfo.org/app#form/E0000001562/table
+
+record <- getRecord(formId = "E0000001562", recordId = "z0000455007")
+
+print(record)
+# $recordId
+# [1] "z0000455007"
+#
+# $formId
+# [1] "E0000001562"
+#
+# $lastEditTime
+# [1] 1667421104
+#
+# $fields
+# $fields$E00000015620000000005
+# $fields$E00000015620000000005$latitude
+# [1] 36.78076
+#
+# $fields$E00000015620000000005$longitude
+# [1] 68.8198
+#
+# $fields$E00000015620000000003
+# [1] "AF1701"
+#
+# $fields$E00000015620000000002
+# [1] "E0000001249:z0000000289"
+#
+# $fields$E00000015620000000001
+# [1] "Kunduz"
+
+}
+\seealso{
+Other record functions: 
+\code{\link{addRecord}()},
+\code{\link{deleteRecord}()},
+\code{\link{getAttachment}()},
+\code{\link{getRecordHistory}()},
+\code{\link{recoverRecord}()},
+\code{\link{updateRecord}()}
+}
+\concept{record functions}

@@ -45,11 +45,11 @@ userFieldSchema(
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }
 \description{
-User fields allow you to select a specific user from a list. It is a field 
-useful for the Case Management Database template with which you can assign 
-Cases to specific users. User fields and inactive users: If you are using 
-the User field in your Form and a user who has added Records to the Form, is 
-no longer active, instead of deleting that user, create a new Role empty of 
+User fields allow you to select a specific user from a list. It is a field
+useful for the Case Management Database template with which you can assign
+Cases to specific users. User fields and inactive users: If you are using
+the User field in your Form and a user who has added Records to the Form, is
+no longer active, instead of deleting that user, create a new Role empty of
 permissions and assign it to that user.
 }
 \seealso{

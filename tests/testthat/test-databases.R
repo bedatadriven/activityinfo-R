@@ -13,16 +13,10 @@ testthat::test_that("addDatabase() and deleteDatabase() works", {
 })
 
 testthat::test_that("getDatabases() works", {
-  testthat::expect_no_error({
-    databasesObject <- getDatabases()
-    testthat::expect_true(all(unlist(
-      lapply(databasesObject, function(x) {
-        (x$databaseId == database$databaseId || x$databaseId == database2$databaseId) &&
-          (all(names(x) %in% c("databaseId", "label", "description", "ownerId", "billingAccountId", "suspended", "publishedTemplate")))
-      })
-    )))
-  })
-  expectActivityInfoSnapshot(databasesObject)
+  databases <- getDatabases()
+  databases <- canonicalizeActivityInfoObject(databases)
+  
+  testthat::expect_snapshot(databases)
 })
 
 testthat::test_that("getDatabaseSchema() and getDatabaseTree() return same value and getDatabaseSchema() provides deprecation warning", {
@@ -90,7 +84,7 @@ deleteTestUsers <- function(database, returnedUsers) {
 
 testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseUsers() and getDatabaseUser() and getDatabaseUser2() work", {
   databases <- getDatabases()
-  database <- databases[[1]]
+  database <- databases[1,]
   tree <- getDatabaseTree(databaseId = database$databaseId)
 
   returnedUsers <- addTestUsers(database, tree, nUsers = 2)
@@ -99,7 +93,7 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
 
   testGetUsers <- function(database, tree, nUsers = 1) {
     testthat::expect_no_error({
-      users <- getDatabaseUsers(databaseId = database$databaseId)
+      users <- getDatabaseUsers(databaseId = database$databaseId, asDataFrame=FALSE)
     })
 
     testthat::expect_gte(length(users), expected = nUsers)

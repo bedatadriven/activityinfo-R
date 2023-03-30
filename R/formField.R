@@ -1,6 +1,6 @@
-#' Create a simple form field schema
+#' Create a simple form field schema object
 #' 
-#' This is the function to create a basic offline form field schema. It is 
+#' This is the function to create a basic form field schema object. It is 
 #' recommended to use the specific functions for each schema type such as 
 #' textFieldSchema() or serialNumberFieldSchema().
 #'
@@ -33,6 +33,7 @@ formFieldSchema <- function(type, label, description = NULL, code = NULL, id = c
   stopifnot("`hideInTable` must be a logical/boolean of length 1" = is.logical(hideInTable)&&length(hideInTable)==1)
   stopifnot("`reviewerOnly` must be a logical/boolean of length 1" = is.logical(reviewerOnly)&&length(reviewerOnly)==1)
   stopifnot("The type parameters must be a list if defined" = is.null(typeParameters)||is.list(typeParameters))
+  stopifnot("The code must start with a letter, must be made of letters and underscores _ and cannot be longer than 32 characters" = is.null(code)||grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", code))
   
   schema <- list()
   
@@ -103,8 +104,10 @@ addFormFieldSchemaCustomClass <- function(e) {
   } else if (e$type == "enumerated") {
     if (e$typeParameters$cardinality == "single") {
       class(e) <- c("activityInfoSingleSelectFieldSchema", class(e))
+      class(e$typeParameters$values) <- c("activityInfoSelectOptions", "list")
     } else if (e$typeParameters$cardinality == "multiple") {
       class(e) <- c("activityInfoMultipleSelectFieldSchema", class(e))
+      class(e$typeParameters$values) <- c("activityInfoSelectOptions", "list")
     }
   } else if (e$type == "attachment") {
     class(e) <- c("activityInfoAttachmentFieldSchema", class(e))
@@ -219,7 +222,7 @@ barcodeFieldSchema <- function(label, description = NULL, code = NULL, id = cuid
   schema
 }
 
-#' Create a serial number form field schema
+#' Create a serial number form field schema object
 #' 
 #' Only one serial number field is possible in a form. The Prefix Formula is 
 #' available for Serial Number fields and can be used to customise how the 
@@ -250,7 +253,7 @@ serialNumberFieldSchema <- function(label, description = NULL, digits = 5, prefi
   schema
 }
 
-#' Create a quantity form field schema
+#' Create a quantity form field schema object
 #' 
 #' A Quantity field allow users to enter a numerical value. You can define the 
 #' units and the aggregation function.
@@ -283,7 +286,7 @@ quantityFieldSchema <- function(label, description = NULL, units = "", aggregati
   schema
 }
 
-#' Create a multi-line or narrative form field schema
+#' Create a multi-line or narrative form field schema object
 #' 
 #' Multi-Line Text fields can be used to collect long answers to open-ended 
 #' questions. They could be used for example to collect Comments about a 
@@ -304,7 +307,7 @@ multilineFieldSchema <- function(label, description = NULL, code = NULL, id = cu
   schema
 }
 
-#' Create a date form field schema
+#' Create a date form field schema object
 #' 
 #' The Date format in ActivityInfo is YYYY-MM-DD so no matter the way the Date 
 #' is typed by a user it will always appear in this format.
@@ -324,7 +327,7 @@ dateFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(),
   schema
 }
 
-#' Create a week form field schema
+#' Create a week form field schema object
 #' 
 #' The Week format in ActivityInfo is YYYY-WW. Users can directly type using 
 #' this format or use the calendar to select a week. Please note that the Week 
@@ -345,7 +348,7 @@ weekFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(),
   schema
 }
 
-#' Create a month form field schema
+#' Create a month form field schema object
 #' 
 #' The Month format in ActivityInfo is YYYY-MM.
 #' 
@@ -384,7 +387,7 @@ selectFieldSchema <- function(cardinality, label, description = NULL, options = 
   schema
 }
 
-#' Create a Single Select form field schema
+#' Create a single-select form field schema object
 #' 
 #' There is an options parameter for the list of single select items. Single 
 #' Selection fields can be used to ask from users to select one out of two or 
@@ -443,28 +446,66 @@ toSelectOptions <- function(options) {
 
 #' @export
 toSelectOptions.character <- function(options) {
-  lapply(
-    options,
-    function(x) {
-      list(
-        id = cuid(), 
-        label = x)
+  if(length(unique(options))!=length(options)) stop("Select options must not contain any duplicates.")
+  if (!is.null(names(options))&&
+      length(names(options))==length(options)&&
+      length(unique(names(options)))==length(names(options))&&
+      !"" %in% names(options)
+  ) {
+    x <- list()
+    for (nm in names(options)) {
+      x <- c(x, list(list(
+        id = nm,
+        label = unname(options[[nm]])
+      )))
+    }
+  } else {
+    if (!is.null(names(options))) warning("Names provided for the options will be ignored and replaced. Supplied names must be unique to be used for an option id and there must be a name for each option defined.")
+    x <- lapply(
+      unname(options),
+      function(x) {
+        list(
+          id = cuid(), 
+          label = x)
       })
+  }
+  class(x) <- c("activityInfoSelectOptions", "list")
+  x
 }
 
 #' @export
 toSelectOptions.default <- toSelectOptions.character
 
-
 #' @export
 toSelectOptions.list <- function(options) {
-  options <- as.character(options)
+  if (
+    !is.null(names(options))
+    ) {
+    optionNames <- names(options)
+    options <- as.character(options)
+    names(options) <- optionNames
+  } else {
+    options <- as.character(options)
+  }
   toSelectOptions.character(options)
 }
 
 #' @export
 toSelectOptions.factor <- function(options) {
   toSelectOptions.character(levels(options))
+}
+
+#' @export
+toSelectOptions.activityInfoSelectOptions <- function(options) {
+  options
+}
+
+#' @export
+print.activityInfoSelectOptions <- function(x, ...) {
+  cat("ActivityInfo Select Options Object\n\tOption ID:\tOption Label\n")
+  for(option in 1:length(x)) {
+    cat(sprintf("\t%s:\t%s\n", x[[option]]$id, x[[option]]$label))
+  }
 }
 
 #' Create an attachment form field schema
@@ -685,14 +726,15 @@ isFormFieldSchema <- function(schema) {
 
 #' Delete a form field
 #' 
-#' Deletes a form field in an offline form schema or else downloads the form 
-#' schema and deletes form field. Note that the either the upload argument 
-#' must be TRUE for the field to be automatically deleted online. Otherwise, use 
-#' updateFormSchema() to upload the changes after they are completed.
+#' Deletes a form field from an existing form schema object.
+#' 
+#' This function can also be used to immediately delete a field from a 
+#' form schema on the ActivityInfo server by setting upload to TRUE. Otherwise,  
+#' use updateFormSchema() to upload the changes after they are completed.
 #' 
 #' @rdname deleteFormField
-#' @param formId The identifier of the form online (provide either a formId or formSchema)
-#' @param formSchema The offline schema of the form (provide either a formId or formSchema)
+#' @param formId The id of the form online (provide either a formId or formSchema)
+#' @param formSchema The form schema object (provide either a formId or formSchema)
 #' @param id The id of the form field (provide either an id, code, or label)
 #' @param code The code of the form field (provide either an id, code, or label)
 #' @param label The label of the form schema (provide either an id, code, or label)
@@ -702,6 +744,34 @@ isFormFieldSchema <- function(schema) {
 #' @return The form field schema after the deletion. This will be the form field schema from the server if changes are uploaded.
 #'
 #' @export
+#' @examples 
+#' #' Define a few field schema objects
+#' nameField <- textFieldSchema(label = "Your name", required = TRUE)
+#' dobField <- dateFieldSchema(label = "When were you born?", code = "dob")
+#' 
+#' 
+#' # Create a new form schema object and add the fields. We are not sending
+#' # anything to the server yet.
+#' survey <- formSchema(databaseId = "cxy123", label = "Household Survey") |>
+#'    addFormField(nameField) |>
+#'    addFormField(dobField)
+#'    
+#' # Remove the name field
+#' survey <- deleteFormField(survey, label = "Your name")
+#' 
+#' # Remove the date of birth field, but use the code to identify the field
+#' survey <- deleteFormField(survey, code = "dob")    
+#' 
+#' \dontrun{
+#' # Retrieve a form schema from the server by id and delete a field from it.
+#' # Nothing is changed on the server yet.
+#' updatedSurvey <- deleteFormField(formId = "cxyz123", code = "maize_yield")
+#'    
+#' # Retrieve a form schema from the server by id and delete a field from it
+#' # AND then send the updated schema to the server. 
+#' deleteFormField(formId = "cxyz123", code = "maize_yield", upload = TRUE)    
+#' }
+#' @seealso [activityinfo::formSchema], [activityinfo::formFieldSchema], [activityinfo::addForm]
 deleteFormField <- function(...) {
   UseMethod("deleteFormField")
 }
@@ -718,6 +788,9 @@ deleteFormField.character <- function(formId, id, code, label, upload = FALSE, .
 deleteFormField.formSchema <- function(formSchema, id, code, label, upload = FALSE, ...) {
   
   found <- FALSE
+  
+  df <- as.data.frame(formSchema)
+  checkForm(formSchema, df)
   
   if (missing(code)&&missing(label)&&!missing(id)) {
     stopifnot("id must be provided as a character vector in deleteFormField()" = is.character(id))
@@ -740,19 +813,33 @@ deleteFormField.formSchema <- function(formSchema, id, code, label, upload = FAL
   } else if (missing(code)&&missing(id)&&!missing(label)) {
     stopifnot("label must be provided as a character vector in deleteFormField()" = is.character(label))
     x <- label
-    formSchema$elements <- lapply(formSchema$elements, function(y) {
-      if(y$label %in% label) {
-        found <<- TRUE
-        NULL
-      } else y
-    })    
+    
+    matches <- df[df$fieldLabel %in% label,]
+    nMatches <- nrow(matches)
+    
+    if (nMatches > 0) {
+      dupMatches <- matches[duplicated(matches$fieldLabel),]
+      nDupMatches <- nrow(dupMatches)
+      
+      if (nDupMatches > 0) {
+        stop("Cannot delete form field: ambiguous label(s) '", paste(unique(dupMatches$fieldLabel), collapse = ", "),"' with more than one matching form field with the same label. Use the id or code of the field to delete form fields in this case.")
+      }
+      
+      formSchema$elements <- lapply(formSchema$elements, function(y) {
+        if(y$label %in% label) {
+          found <<- TRUE
+          NULL
+        } else y
+      })
+    }
+
   } else {
     stop("It is required to provide a single argument as a character vector of fields to delete for the either id or code or label but not for more than one.")
   }
   
   if (!found) {
     warning(
-      sprintf("The no matching field(s) '%s' was identified in deleteFormSchema() in form with id %s", paste(x, collapse = ", "), formSchema$id)
+      sprintf("No matching field(s) '%s' was identified in deleteFormSchema() in form with id %s", paste(x, collapse = ", "), formSchema$id)
       )
   } else {
     # remove null entries
@@ -773,7 +860,7 @@ deleteFormField.default <- deleteFormField.character
 
 #' Add a new form field
 #' 
-#' Adds a new form field to an offline form schema or else downloads the form 
+#' Adds a new form field to a form schema object or retrieves the form 
 #' schema and adds the new form field. Note that the either the upload argument 
 #' must be TRUE for the field to be added automatically online or the user will 
 #' also need to use updateFormSchema() to upload the changes after they are 
@@ -781,7 +868,7 @@ deleteFormField.default <- deleteFormField.character
 #' 
 #' @rdname addFormField
 #' @param formId The identifier of the form online
-#' @param formSchema The offline schema of the form
+#' @param formSchema The form schema object
 #' @param schema The form field schema to be added to the form
 #' @param upload Default is FALSE. If TRUE the modified form schema will be uploaded.
 #' @param ... ignored
@@ -789,6 +876,28 @@ deleteFormField.default <- deleteFormField.character
 #' @return The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
 #'
 #' @export
+#' @examples 
+#' # Define a few field schema objects
+#' nameField <- textFieldSchema(label = "Your name", required = TRUE)
+#' dobField <- dateFieldSchema(label = "When were you born?", code = "dob")
+#' 
+#' 
+#' # Create a new form schema object and add the fields. We are not sending
+#' # anything to the server yet.
+#' survey <- formSchema(databaseId = "cxy123", label = "Household Survey") |>
+#'    addFormField(nameField) |>
+#'    addFormField(dobField)
+#' 
+#' \dontrun{
+#' # Retrieve a form schema from the server by id and add a field to it.
+#' # Nothing is changed on the server yet.
+#' updatedSurvey <- addFormField(formId = "cxyz123", nameField)
+#'    
+#' # Retrieve a form schema from the server by id and add a field to it
+#' # AND then send the updated schema to the server. 
+#' addFormField(formId = "cxyz123", nameField, upload = TRUE)    
+#' }
+#' @seealso [activityinfo::formSchema], [activityinfo::formFieldSchema], [activityinfo::addForm]
 addFormField <- function(...) {
   UseMethod("addFormField")
 }
@@ -798,6 +907,9 @@ addFormField <- function(...) {
 #' @rdname addFormField
 addFormField.character <- function(formId, schema, upload = FALSE, ...) {
   formSchema <- getFormSchema(formId = formId)
+  sane <- checkFormField(formSchema, schema)
+  fromSchema <- sane$formSchema
+  schema <- sane$schema
   formSchema$elements[[length(formSchema$elements)+1]] <- schema
   if (upload == TRUE) {
     updateFormSchema(formSchema)
@@ -810,6 +922,9 @@ addFormField.character <- function(formId, schema, upload = FALSE, ...) {
 #' @export
 #' @rdname addFormField
 addFormField.formSchema <- function(formSchema, schema, upload = FALSE, ...) {
+  sane <- checkFormField(formSchema, schema)
+  fromSchema <- sane$formSchema
+  schema <- sane$schema
   formSchema$elements[[length(formSchema$elements)+1]] <- schema
   if (upload == TRUE) {
     updateFormSchema(formSchema)
@@ -818,7 +933,62 @@ addFormField.formSchema <- function(formSchema, schema, upload = FALSE, ...) {
   }
 }
 
+checkFormField <- function(formSchema, schema, df = as.data.frame(formSchema)) {
+  sane = list("formSchema" = formSchema, "schema" = schema)
+  
+  if (schema$id %in% df$fieldId) {
+    sane$schema$id <- cuid()
+    warning("There is already a form field with the same id. Automatically replacing the id in the new field with a new unique id.")
+  }
+  
+  if (!is.null(schema$code)&&!is.na(schema$code)) {
+    if (schema$code %in% df$fieldCode) {
+      codes <- gsub("([.])", "_", make.names(c(df$fieldCode, schema$code), unique = TRUE))
+      newCode <- codes[length(codes)]
+      sane$schema$code <- newCode
+      warning("There is already a form field with the same code. Changing the code in order to add the new field.")
+    }
+  }
+  checkForm(formSchema, df)
+  
+  sane
+}
 
+
+#' Migrate and convert the data of one form field into another
+#' 
+#' With this function, the data from one form field (column) can be moved to 
+#' another form field and converted with a user-supplied function. 
+#'  
+#' @rdname migrateFieldData
+#' @param .data remote records object of the form online
+#' @param from the source form field from which to get the data
+#' @param to the destination form field which will receive the converted data
+#' @param fn the user-supplied conversion function; default is to do nothing
+#' @param idColumn the id column. The default is `_id`
+#' 
+#' @return The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
+#'
+#' @importFrom rlang enquo
 #' @export
-#' @rdname addFormField
-addFormField.default <- addFormField.character
+migrateFieldData <- function(.data, from, to, fn = function(x) x, idColumn = as.name("_id")) {
+  stopifnot("It is required to first use getRecords() to select the fields for migration."= "tbl_activityInfoRemoteRecords" %in% class(.data))
+  
+  id <- NULL
+  
+  from <- dplyr::enquo(from)
+  to <- dplyr::enquo(to)
+  idColumn <- dplyr::enquo(idColumn)
+  
+  remoteDf <- .data |> select(id = !!idColumn, from = !!from, to = !!to) 
+  df <- remoteDf |> 
+    select(id, from) |> 
+    collect() |> 
+    mutate(to = fn(from)) |>
+    select(id, to)
+  
+  cols <- tblColumns(remoteDf |> select(id, to))
+  names(df) <- cols
+  
+  importRecords(formId = .data$formTree$root, data = df, recordIdColumn = "_id")
+}

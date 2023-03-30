@@ -1,14 +1,14 @@
-
-
 #' Batch imports a data.frame into an ActivityInfo form
+#' 
 #' @param formId The form ID
 #' @param data The data.frame to import
 #' @param recordIdColumn The record ID column
 #' @param parentIdColumn The parent ID column required when importing a subform
+#' @param stageDirect Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.
 #'
 #' @importFrom utils head
 #' @export
-importTable <- function(formId, data, recordIdColumn, parentIdColumn) { 
+importRecords <- function(formId, data, recordIdColumn, parentIdColumn, stageDirect = TRUE) { 
   parentId <- NULL
 
   schema <- activityinfo::getFormSchema(formId)
@@ -34,6 +34,10 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
     stop("The data.frame to import does not have any fields to import.")
   }
   
+  factorColumns <- unlist(lapply(data, is.factor))
+  data[factorColumns] <- as.data.frame(lapply(data[factorColumns], as.character))
+  #data <- dplyr::mutate(data, dplyr::across(dplyr::where(is.factor), as.character))
+  
   fieldIds <- sapply(providedCols, USE.NAMES = FALSE, matchColumn, schemaTable)
   fieldValues <- list()
   for(i in 1:length(fieldIds)) {
@@ -51,12 +55,22 @@ importTable <- function(formId, data, recordIdColumn, parentIdColumn) {
     recordId <- matchRecordIdsByKey(schema, data, fieldIds, fieldValues)
   }
   lines <- formatImport(data, recordId, parentId, fieldIds, fieldValues)
-  importId <- stageImport(paste(lines, collapse = "\n"))
+  importId <- stageImport(paste(lines, collapse = "\n"), direct = stageDirect)
   
   executeJob("importRecords", descriptor =
                               list(formId = formId,
                                    importId = importId))
   
+}
+
+#' Deprecated function to batch import a data.frame into an ActivityInfo form; use importRecords()
+#'
+#' @param ... parameters of importRecords()
+#'
+#' @export
+importTable <- function(...) {
+  warning("importTable() is deprecated. Use importRecords() instead.")
+  importRecords(...)
 }
 
 recordIdFromData <- function(data, recordIdColumn) {
@@ -129,7 +143,7 @@ prepareImport <- function(field, columnName, column) {
 prepareEnumImport <- function(field, columnName, column) {
   items <- sapply(field$typeParameters$values, function(item) item$id)
   names(items) <- sapply(field$typeParameters$values, function(item) tolower(item$label))
-  
+
   # Replace empty strings with NAs
   column[!nzchar(column)] <- NA_character_
   
@@ -305,7 +319,7 @@ queryLookupTable <- function(formId, keyFieldIds) {
   names(columns) <- sprintf("k%d", seq_along(keyFieldIds))
   columns[["id"]] <- "_id"
 
-  queryTable(formId, columns, truncate.strings = FALSE)
+  queryTable(formId, columns, truncateStrings = FALSE)
 }
 
 formatImport <- function(data, recordId, parentId, fieldIds, fieldValues) {
@@ -345,9 +359,19 @@ formatImport <- function(data, recordId, parentId, fieldIds, fieldValues) {
 #' Stages data to import to ActivityInfo
 #' 
 #' @param text The text of the file to import.
-stageImport <- function(text) {
+#' @param direct Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.
+stageImport <- function(text, direct = TRUE) {
   
-  url <- paste(activityInfoRootUrl(), "resources", "imports", "stage", sep = "/")
+  if(direct && !grepl(activityInfoRootUrl(), pattern = "www\\.activityinfo\\.org||appspot\\.com")) {
+    warning("Disabling direct import staging for self-managed server")
+    direct <- FALSE
+  }
+  
+  if(direct) {
+    url <- paste(activityInfoRootUrl(), "resources", "imports", "stage", "direct", sep = "/") 
+  } else {
+    url <- paste(activityInfoRootUrl(), "resources", "imports", "stage", sep = "/")
+  }
   
   result <- POST(url, activityInfoAuthentication(), accept_json())
   

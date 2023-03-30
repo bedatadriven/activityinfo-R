@@ -12,7 +12,7 @@ testField <- function(fieldSchema) {
   fmSchm2 <- getFormSchema(formId = fmSchm$id)
   
   deleteForm(databaseId = databaseId, formId = fmSchm2$id)
-
+  
   identicalForm(fmSchm, fmSchm2)
 }
 
@@ -38,6 +38,22 @@ test_that("Test deleteFormField()", {
 
   testthat::expect_warning({
     fmSchm %>% deleteFormField(id = c("Text field 1", "Text field 5"))
+  }, regexp = "No matching field")
+  
+  test_that("The form sanity checks are working", {
+    fmSchm2 <- fmSchm
+    fmSchm2$elements[length(fmSchm2$elements)+1] <- fmSchm2$elements[length(fmSchm2$elements)]
+    testthat::expect_error({
+      fmSchm2 %>% deleteFormField(id = "Text5")
+    })
+  })
+  
+  test_that("The sanity checks for duplicate labels are working", {
+    fmSchm2 <- fmSchm
+    fmSchm2$elements[[length(fmSchm2$elements)]]$label <- "Text field 4"
+    testthat::expect_error({
+      fmSchm2 %>% deleteFormField(label = "Text field 4")
+    }, regexp = "ambiguous")
   })
   
   fmSchm %>% deleteFormField(label = c("Text field 1", "Text field 5"), upload = TRUE)
@@ -47,10 +63,6 @@ test_that("Test deleteFormField()", {
   deleteForm(databaseId = fmSchm$databaseId, formId = fmSchm$id)
   
   identicalForm(fmSchm %>% deleteFormField(label = c("Text field 1", "Text field 5")), fmSchm2)
-})
-
-test_that("Test addFormField()", {
-  
 })
 
 test_that("Test roundtrip of attachmentFieldSchema()", {
@@ -165,3 +177,74 @@ test_that("Form with many fields can be created and uploaded and downloaded and 
   
   identicalForm(fmSchm, fmSchm2)
 })
+
+testthat::test_that("addFormField will warn and mitigate adding fields with same id or codes.", {
+  databaseId = database$databaseId
+  fmSchm <- formSchema(databaseId = databaseId, label = paste0("R form with multiple fields test ", cuid()))
+  
+  dupCuid <- cuid()
+  
+  newField <- barcodeFieldSchema(label = "A barcode field", id = dupCuid)
+  newFieldDuplicateId <- textFieldSchema(label = "A text field", id = dupCuid, code = "duplicate")
+  newFieldDuplicateCode <- serialNumberFieldSchema(label = "A serial number field", code = "duplicate")
+    
+  testthat::expect_warning({
+    fmSchm <- fmSchm |> 
+      addFormField(newField) |>
+      addFormField(newFieldDuplicateId)
+  }, regexp = "form field with the same id")
+
+  testthat::expect_warning({
+    fmSchm <- addFormField(fmSchm, newFieldDuplicateCode)
+  }, regexp = "form field with the same code")
+  
+})
+
+testthat::test_that("migrateFieldData() works", {
+  df <- data.frame(a = 1:10, b = as.character(1:10), c = factor(1:10))
+  newForm <- createFormSchemaFromData(df, database$databaseId, label = "Migrate field test", upload = TRUE)
+  
+  newSchema <- newForm$schema %>% 
+    addFormField(
+      dateFieldSchema(label = "newA")
+    ) %>%
+    addFormField(
+      quantityFieldSchema(label = "newB")
+    ) %>% 
+    addFormField(
+      singleSelectFieldSchema(label = "newC", options = as.list(letters[1:10]))
+    )
+  
+  updateFormSchema(schema = newSchema)
+  
+  records <- getRecords(newSchema, prettyColumnStyle())
+  
+  migrateFieldData(
+    records, 
+    from = a, 
+    to = newA, 
+    function(x) {
+      sprintf("2023-03-%02d", x)
+    })
+  
+  migrateFieldData(
+    records, 
+    from = b, 
+    to = newB, 
+    function(x) {
+      as.numeric(x)
+    })
+  
+  migrateFieldData(
+    records, 
+    from = c, 
+    to = newC, 
+    function(x) {
+      letters[as.numeric(x)]
+    })
+  
+  recordsMinimal <- getRecords(newSchema, minimalColumnStyle()) %>% collect() %>% as.data.frame()
+  
+  testthat::expect_snapshot(recordsMinimal)
+})
+

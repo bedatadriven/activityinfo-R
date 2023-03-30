@@ -12,5 +12,30 @@ deleteDatabaseUser(databaseId, userId)
 \item{userId}{the (numeric) id of the user to remove from the database.}
 }
 \description{
-Deletes a user from a database
+Deletes a user from a database.
+}
+\details{
+The user will receive a notification that their permission to access
+the database has been revoked.
+}
+\examples{
+\dontrun{
+
+# Get the list of users in the database
+databaseId <- "cxy12345gh"
+users <- getDatabaseUsers(databaseId)
+
+# Find the user with the email "bob@example.com"
+matching <- sapply(users, function(u) u$email == "bob@example.com")
+bob <- users[[which(matching)]]
+
+# Remove the user from the database
+deleteDatabaseUser(databaseId = databaseId, userId = bob$userId)
+
+# You could also remove all users
+for(user in users) {
+  deleteDatabaseUser(databaseId = databaseId, userId = user$userId)
+}
+}
+
 }

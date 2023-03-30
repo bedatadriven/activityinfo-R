@@ -15,3 +15,23 @@ deleteRecord(formId, recordId)
 This call deletes a single record for the given \code{formId} and
 \code{recordId}.
 }
+\examples{
+\dontrun{
+
+# Deletes a record
+deleteRecord(formId = "cyx123", recordId = "c23g322j432")
+
+# Recover (undelete) a record
+recoverRecord(formId = "cyx123", recordId = "c23g322j432")
+}
+}
+\seealso{
+Other record functions: 
+\code{\link{addRecord}()},
+\code{\link{getAttachment}()},
+\code{\link{getRecordHistory}()},
+\code{\link{getRecord}()},
+\code{\link{recoverRecord}()},
+\code{\link{updateRecord}()}
+}
+\concept{record functions}

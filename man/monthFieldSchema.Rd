@@ -2,7 +2,7 @@
 % Please edit documentation in R/formField.R
 \name{monthFieldSchema}
 \alias{monthFieldSchema}
-\title{Create a month form field schema}
+\title{Create a month form field schema object}
 \usage{
 monthFieldSchema(
   label,

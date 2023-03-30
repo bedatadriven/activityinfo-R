@@ -4,11 +4,13 @@
 \alias{getDatabaseUsers}
 \title{getDatabaseUsers}
 \usage{
-getDatabaseUsers(databaseId)
+getDatabaseUsers(databaseId, asDataFrame = TRUE)
 }
 \arguments{
 \item{databaseId}{The database ID}
+
+\item{asDataFrame}{Retrieve user list as a data.frame, otherwise returns as list. Default: TRUE}
 }
 \description{
-Retrieves the list of users with access to the database.
+Retrieves the list of users with access to the database in a data.frame format.
 }

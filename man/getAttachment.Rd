@@ -19,3 +19,13 @@ getAttachment(formId, recordId, fieldId, blobId)
 Retrieve an attachment and store it to a temporary file. The name
 of the temporary file is returned.
 }
+\seealso{
+Other record functions: 
+\code{\link{addRecord}()},
+\code{\link{deleteRecord}()},
+\code{\link{getRecordHistory}()},
+\code{\link{getRecord}()},
+\code{\link{recoverRecord}()},
+\code{\link{updateRecord}()}
+}
+\concept{record functions}

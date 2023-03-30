@@ -1,10 +1,14 @@
 # getDatabases() works
 
-    list(list(billingAccountId = "<id value>", databaseId = "<id value>", 
-        description = "", label = "My first database", ownerId = "<id value>", 
-        publishedTemplate = FALSE, suspended = FALSE), list(billingAccountId = "<id value>", 
-        databaseId = "<id value>", description = "", label = "My second database", 
-        ownerId = "<id value>", publishedTemplate = FALSE, suspended = FALSE))
+    Code
+      databases
+    Output
+      # A tibble: 2 x 6
+        billingAccountId databaseId description label              ownerId    suspen~1
+      * <chr>            <chr>      <chr>       <chr>              <chr>      <lgl>   
+      1 <id value>       <id value> <NA>        My first database  <id value> FALSE   
+      2 <id value>       <id value> <NA>        My second database <id value> FALSE   
+      # ... with abbreviated variable name 1: suspended
 
 # getDatabaseTree() works
 
@@ -64,9 +68,11 @@
     Code
       dbResources
     Output
-               id       label  parentId     type visibility
-      1 c10000005 Person form c10000003     FORM    PRIVATE
-      2 c10000006    Children c10000005 SUB_FORM    PRIVATE
+      # A tibble: 2 x 5
+        id        label       parentId  type     visibility
+      * <chr>     <chr>       <chr>     <chr>    <chr>     
+      1 c10000005 Person form c10000003 FORM     PRIVATE   
+      2 c10000006 Children    c10000005 SUB_FORM PRIVATE   
 
 # addDatabaseUser() and deleteDatabaseUser() and getDatabaseUsers() and getDatabaseUser() and getDatabaseUser2() work
 

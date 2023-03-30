@@ -2,7 +2,7 @@
 % Please edit documentation in R/formField.R
 \name{quantityFieldSchema}
 \alias{quantityFieldSchema}
-\title{Create a quantity form field schema}
+\title{Create a quantity form field schema object}
 \usage{
 quantityFieldSchema(
   label,
@@ -26,7 +26,7 @@ quantityFieldSchema(
 
 \item{units}{A character string describing the units, e.g. "litres per day"}
 
-\item{aggregation}{A character string giving the aggregation function; "SUM" 
+\item{aggregation}{A character string giving the aggregation function; "SUM"
 is default}
 
 \item{code}{The code name of the form field}
@@ -46,7 +46,7 @@ is default}
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }
 \description{
-A Quantity field allow users to enter a numerical value. You can define the 
+A Quantity field allow users to enter a numerical value. You can define the
 units and the aggregation function.
 }
 \details{

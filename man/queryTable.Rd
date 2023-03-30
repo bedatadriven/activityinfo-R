@@ -9,8 +9,12 @@ queryTable(
   columns,
   ...,
   truncateStrings = TRUE,
+  asTibble = FALSE,
+  makeNames = TRUE,
   truncate.strings = truncateStrings,
-  filter
+  filter,
+  window,
+  sort
 )
 }
 \arguments{
@@ -23,9 +27,17 @@ form as a character.}
 
 \item{truncateStrings}{TRUE if longer strings should be truncated to 128 characters}
 
+\item{asTibble}{default is FALSE to return a data.frame; TRUE if a tibble should be returned}
+
+\item{makeNames}{default is TRUE; FALSE if column names should not be checked and left as-is}
+
 \item{truncate.strings}{Deprecated: please use truncateStrings. TRUE if longer strings should be truncated to 128 characters}
 
 \item{filter}{an ActivityInfo formula string that limits the records returned}
+
+\item{window}{an integer vector in the format c(offset, limit) for the number of records to return.}
+
+\item{sort}{an ActivityInfo sort object that sorts the records returned}
 }
 \description{
 Queries a form as a flat, two-dimensional table
@@ -33,17 +45,17 @@ Queries a form as a flat, two-dimensional table
 \details{
 To select columns, you can use
 \itemize{
-  \item \code{_id} to get the record identifier,
-  \item \code{_lastEditTime} to get the (Unix) timestamp (in seconds),
-  \item the identifier of the form field (e.g. \code{ck849fbaw4}),
-  \item the field code (e.g. \code{TOT_BNF}),
-  \item the field label, enclosed in brackets if it contains spaces (e.g. \code{[Type of school]})
+\item \code{_id} to get the record identifier,
+\item \code{_lastEditTime} to get the (Unix) timestamp (in seconds),
+\item the identifier of the form field (e.g. \code{ck849fbaw4}),
+\item the field code (e.g. \code{TOT_BNF}),
+\item the field label, enclosed in brackets if it contains spaces (e.g. \code{[Type of school]})
 }
 If you want to select a column in a reference form or in a parent form, use a period to create a path to the desired
 column. For example:
 \itemize{
-  \item \code{parent._id} will select the identifier of the parent record and
-  \item \code{Camp.Name} will select the \sQuote{Name} field in the \sQuote{Camp} form.
+\item \code{parent._id} will select the identifier of the parent record and
+\item \code{Camp.Name} will select the \sQuote{Name} field in the \sQuote{Camp} form.
 }
 }
 \examples{

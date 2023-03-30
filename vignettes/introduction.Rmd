@@ -1,0 +1,214 @@
+---
+title: "Introduction to ActivityInfo and R"
+author: "BeDataDriven B.V."
+date: "`r Sys.Date()`"
+layout: docArticle
+category: tutorials
+order: 0
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+relatedVideos:
+- /support/webinars/2022-09-22-introduction-to-R-and-ActivityInfo
+vignette: >
+  %\VignetteIndexEntry{Introduction to ActivityInfo and R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>")
+```
+
+## Introduction
+
+This tutorial is about the *ActivityInfo R Package* that is a client used to 
+access to the [ActivityInfo REST API](https://www.activityinfo.org/apidocs/index.html).
+While this is an API client, names of functions and arguments are modeled more
+closely to web user interface to facilitate its use.
+
+With this client, you can programmatically obtain and modify your data. You can also manage users, create new
+databases and forms, or define reports. Any thing else that is possible through
+ActivityInfo's user interface can be automated using the API and this R package.
+
+## Install the R client
+
+First, you should install *ActivityInfo API R client* in your system.
+
+```{r, eval=FALSE}
+# install.packages("devtools")
+devtools::install_github("bedatadriven/activityinfo-R")
+```
+
+Then, put the library call at the top of your script file. 
+
+```{r, warning=FALSE}
+library(activityinfo)
+library(dplyr)
+```
+
+If you are using the [ActivityInfo Self-Managed  Server](https://www.activityinfo.org/support/docs/self-managed/index.html), you must
+provide the URL of your server using [activityInfoRootUrl](../reference/activityInfoRootUrl.html)
+
+## Authentication
+
+In order to access to the *ActivityInfo API*, you must authenticate to the server 
+with a personal API token. You can 
+[generate a personal access token](https://www.activityinfo.org/support/docs/m/84880/l/1333305.html)
+from the Profile Settings page in ActivityInfo. Logging in by email and password through the API is now deprecated and insecure.
+
+```{r, eval=FALSE}
+activityInfoToken("2d6016c9cb3be78954eb396f806a20e9")
+```
+
+After the authentication process has been successfully completed, a prompt will ask if the token file named *`r basename(activityinfo:::credentialsFile)`* should be written to your home directory. Only write the file to your home directory if this is secure. Don't share or publish this token file and preserve securely as it contains your personal access token.
+
+Before start working on the API calls, do not forget to restart your *R* session to have changes applied.
+
+## Databases
+
+You can list the databases that you own or have been shared with you using 
+[activityinfo::getDatabases]. Use the `asDf` argument to get the list 
+as a `data.frame`:
+
+```{r, eval=FALSE}
+dblist <- getDatabases()
+head(dblist)
+```
+
+
+In order to get details about a specific database, you can use [activityinfo::getDatabaseTree],
+or [activityinfo::getDatabaseResources] to return a `data.frame` with the list 
+of resources in the database. "Resources" include forms, subforms, folders,
+and reports.
+
+```{r}
+resources <- getDatabaseResources("cfcdyr0kq6ik2wmf")
+head(resources)
+```
+
+## Forms
+
+In order to get the form or sub-form schemas that you have access to, use `getFormSchema(formId)` call,
+which retrieves the the form's schema, including a list of fields in the form:
+
+
+```{r}
+schema <- getFormSchema("ceam1x8kq6ikcujg")
+head(schema, 4)
+```
+
+You can find a form's ID from your browser's address bar when you have the form
+page open:
+
+![The form id is the part following "form/"](https://www.activityinfo.org/support/screenshot/S65tNEnPlFqua.png)
+
+## Getting records
+
+You can get the records from an ActivityInfo form as a dplyr-compatible table.
+Let's retrieve the list of projects from the [Simple 3W template](https://www.activityinfo.org/support/templates/3w.html)
+
+
+```{r}
+records <- getRecords("ceam1x8kq6ikcujg") |> collect()
+head(records)
+```
+
+Note that we pipe the records to [dplyr::collect], which actually retrieves
+all the records from the server. 
+
+For forms with tens of thousands of records, you may want to apply filtering
+to narrow down the results before downloading all the records from the server.
+You can use the [dplyr::filter] function to apply a filter:
+
+```{r}
+unicef <- getRecords("ceam1x8kq6ikcujg", prettyColumnStyle())  |> 
+  filter(`Organization Name` == "United Nations Childrens Fund") |>
+  collect()
+```
+
+This will send the filter to the server, and only download matching records.
+
+## Updating records
+
+You can also use the R package to add, update, and import records. For single
+records you can use the [activityinfo::addRecord] and [activityinfo::updateRecord]
+functions:
+
+```{r,eval=FALSE}
+addRecord(formId = "cxy123", fieldValues = list(
+    text_field = "Alice Jones",
+    multi_line_text = "Line 1\nLine 2",
+    date_of_birth = "1980-01-01",
+    week_project_start = "2022W1",
+    month = "2023-06",
+    quantity_field = 42.0, 
+    location = list(latitude = 52.0705, longitude = 4.3)))
+
+updateRecord(formId = "cxy123", recordId = "" fieldValues = list(
+    text_field = "Alice Smith"))
+```
+
+For adding or updating many records at once, you can use the [activityinfo::importRecords] function.
+
+## Adding and modifying forms
+
+You can also add new forms and modify existing form schemas. You can add or remove
+fields from a form, or add an entirely new form. 
+
+The example below will add a new database, and then add a new form for a survey
+to the database.
+
+```{r, eval=FALSE}
+surveyDb <- addDatabase("Surveys")
+surveySchema <- formSchema(
+  databaseId = surveyDb$databaseId,
+  label = "My new survey",
+  elements = list(
+    textFieldSchema(
+      label = "What is your name?",
+      code = "NAME",
+      description = "Please provide your full name",
+      required = TRUE
+    ),
+    singleSelectFieldSchema(
+      label = "What is your sex?",
+      code = "SEX",
+      options = c("Female", "Male", "Prefer not to answer"),
+      required = TRUE
+    ),
+    singleSelectFieldSchema(
+      label = "Are you pregnant",
+      relevanceRule = "SEX != 'Male'",
+      options = c("Yes", "No"),
+      required = TRUE
+    )
+  )
+)
+surveyForm <- addForm(survey)
+
+```
+## Managing users
+
+The R package can also be used to automate user management for a database.
+
+For example, you could read a list of users from Active Directory or other
+external source and automatically add them to an ActivityInfo database using
+[activityinfo::addDatabaseUser]:
+
+```{r,eval=FALSE}
+
+addDatabaseUser(
+  databaseId = databaseId,
+  email = "alex@example.com",
+  name = "Alex",
+  locale = "en",
+  roleId = "admin")
+```
+
+
+
+

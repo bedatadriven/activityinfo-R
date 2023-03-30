@@ -93,7 +93,7 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
 
   testGetUsers <- function(database, tree, nUsers = 1) {
     testthat::expect_no_error({
-      users <- getDatabaseUsers(databaseId = database$databaseId)
+      users <- getDatabaseUsers(databaseId = database$databaseId, asDataFrame=FALSE)
     })
 
     testthat::expect_gte(length(users), expected = nUsers)

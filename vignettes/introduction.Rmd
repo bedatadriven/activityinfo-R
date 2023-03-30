@@ -114,8 +114,9 @@ Let's retrieve the list of projects from the [Simple 3W template](https://www.ac
 
 ```{r}
 records <- getRecords("ceam1x8kq6ikcujg") |> collect()
-View(records)
+head(records)
 ```
+
 Note that we pipe the records to [dplyr::collect], which actually retrieves
 all the records from the server. 
 

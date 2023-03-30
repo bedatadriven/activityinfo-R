@@ -1,13 +1,36 @@
 Package: activityinfo
 Type: Package
-Title: Query and update datasets from ActivityInfo.org
-Version: 4.32.9999
-Date: 2023-02-20
-Author: Alex Bertram <alex@bedatadriven.com>, Nicolas Dickinson <dickinson@washnote.com>
+Title: R interface to ActivityInfo.org, an information management software for
+    humanitarian and development operations.
+Version: 4.33.9999
+Date: 2023-04-07
+Authors@R: c(
+    person("Alex", "Bertram", email = "alex@bedatadriven.com", 
+           role = c("aut", "cre")),
+    person("Nicolas", "Dickinson", email = "dickinson@washnote.com", 
+           role = "aut"),
+    person("Ryo", "Nakagawara", email = "rnakagawara@acdivoca-aux.org", 
+           role = "ctb"),
+    person("BeDataDriven B.V.", role = c("cph", "fnd"))
+  )
 Maintainer: Alex Bertram <alex@bedatadriven.com>
-Description: An interface to ActivityInfo, an information management system.
+Description: 
+    An interface to ActivityInfo, a web-based information management software 
+    used for partner reporting, monitoring and evaluation and case management in
+    humanitarian aid, emergencies and international development.
 License: GPL-3
-Imports: stats, utils, httr (>= 1.4.5), rjson, jsonlite, stringr (>= 1.5.0), dplyr (>= 1.1.1), pillar (>= 1.8.1), rlang (>= 1.1.0), tibble (>= 3.2.1), tidyselect (>= 1.2.0)
+Imports: 
+    stats, 
+    utils, 
+    httr (>= 1.4.5), 
+    rjson, 
+    jsonlite, 
+    stringr (>= 1.5.0), 
+    dplyr (>= 1.1.1), 
+    pillar (>= 1.8.1), 
+    rlang (>= 1.1.0), 
+    tibble (>= 3.2.1), 
+    tidyselect (>= 1.2.0)
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)

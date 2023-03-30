@@ -443,7 +443,7 @@ getRecords.default <- getRecords.character
 #' * "code" : Using form field codes as defined by the user, for example "country.name". As codes are optional, the fallback columnName option can be specified as a vector, for example c("code", "label") or c("code", "id).
 #' * "id" : Using the form field unique id used by ActivityInfo, for example "c12c92vi5olfmn7khb4.c13cmf6la3lfmn7khb5"
 #'
-#' @param recordId include the record if of each record in the form table; 
+#' @param recordId include the record id of each record in the form table; 
 #' default is TRUE to make it easier to join data in R
 #' @param lastEditedTime the time the record was last edited; default is TRUE
 #' @param referencedId include the record id for values in referenced fields; 

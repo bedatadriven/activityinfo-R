@@ -6,7 +6,7 @@
 - createFormSchemaFromData() added to automatically guess a form field schema from a data.frame
 - extractSchemaFromFields() added to extract form fields into a new form schema using the selected columns of a remote records object (getRecords()), including those from reference form fields.
 - Deprecation of importTable() in favour of importRecords()
-- getDatabases() always returns a data.frame
+- getDatabases() and getDatabaseUsers() always returns a data.frame
 
 ## [4.32]
 - Helper functions to create ActivityInfo form and field schemas (#32)

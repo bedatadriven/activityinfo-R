@@ -45,7 +45,7 @@ databaseUpdates <- function() {
 
 #' getDatabaseSchema
 #'
-#' This function is deprecated in favor of getDatabaseTree(). Please use getDatabaseTree().
+#' This function is deprecated in favor of getDatabaseTree(). Please use \link{getDatabaseTree}.
 #'
 #' @param databaseId database identifier
 #' @examples
@@ -474,21 +474,21 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
 #' be a formula that conditions the permission on the values of the record.
 #'
 #' @param view View the resource, whether a form, folder, or database.
-#' @param add_record Add a record within a form contained by this folder or form
+#' @param add_record Add a record within a form contained by this folder or form.
 #' @param edit_record Edit a record's values within a form contained by this folder or form.
 #' @param delete_record Delete a record within this form.
 #' @param export_records Export Records from a form, folder or database.
 #' @param manage_users Grant permissions to a user to this database, folder, or form.
 #' @param lock_records Add, modify, or remove locks on records.
-#' @param add_resource  Create a new Resource (Form or Folder)
+#' @param add_resource  Create a new Resource (Form or Folder).
 #' @param edit_resource  Edit a Resource's schema, structure, attributes or data.
-#' @param delete_resource Delete a Resource (Form or Folder)
-#' @param manage_collection_links  Manage (open/close) collection links for the given form
-#' @param audit Access the Audit logs for a database (or a subset)
+#' @param delete_resource Delete a Resource (Form or Folder).
+#' @param manage_collection_links  Manage (open/close) collection links for the given form.
+#' @param audit Access the Audit logs for a database (or a subset).
 #' @param share_reports Allow the user to share reports with other roles in the database.
 #' @param publish_reports Allows the user to publish reports.
-#' @param manage_roles Add, modify and delete roles
-#' @param manage_reference_data Manage reference data
+#' @param manage_roles Add, modify and delete roles.
+#' @param manage_reference_data Manage reference data.
 #'
 #' @export
 #'
@@ -532,9 +532,10 @@ permissions <- function(view = TRUE,
 
 
 
-#' updateUserGrant
+#' updateGrant
 #'
-#' Adds or updates a grant for a user to a specific resource.
+#' Adds or updates a grant for a user to a specific resource. 
+#' See \link{permissions} for how to set permissions for a grant.
 #'
 #' @param databaseId the id of the database
 #' @param userId the (numeric) id of the user to update
@@ -572,9 +573,10 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 }
 
 #' Updates a role's definition in the database
+#' See \link{permissions} for more details.
 #'
 #' @param databaseId the id of the database
-#' @param role the role definition,
+#' @param role the role definition
 #'
 #'
 #' @export

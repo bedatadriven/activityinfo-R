@@ -26,7 +26,7 @@ default is FALSE}
 
 \item{columnNames}{Can be "pretty", "label", "id", c("code", "id), or c("code", "label")}
 
-\item{recordId}{include the record if of each record in the form table;
+\item{recordId}{include the record id of each record in the form table;
 default is TRUE to make it easier to join data in R}
 
 \item{lastEditedTime}{the time the record was last edited; default is TRUE}

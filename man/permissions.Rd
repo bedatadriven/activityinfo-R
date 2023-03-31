@@ -26,7 +26,7 @@ permissions(
 \arguments{
 \item{view}{View the resource, whether a form, folder, or database.}
 
-\item{add_record}{Add a record within a form contained by this folder or form}
+\item{add_record}{Add a record within a form contained by this folder or form.}
 
 \item{edit_record}{Edit a record's values within a form contained by this folder or form.}
 
@@ -36,21 +36,21 @@ permissions(
 
 \item{lock_records}{Add, modify, or remove locks on records.}
 
-\item{add_resource}{Create a new Resource (Form or Folder)}
+\item{add_resource}{Create a new Resource (Form or Folder).}
 
 \item{edit_resource}{Edit a Resource's schema, structure, attributes or data.}
 
-\item{delete_resource}{Delete a Resource (Form or Folder)}
+\item{delete_resource}{Delete a Resource (Form or Folder).}
 
-\item{manage_collection_links}{Manage (open/close) collection links for the given form}
+\item{manage_collection_links}{Manage (open/close) collection links for the given form.}
 
 \item{manage_users}{Grant permissions to a user to this database, folder, or form.}
 
-\item{manage_roles}{Add, modify and delete roles}
+\item{manage_roles}{Add, modify and delete roles.}
 
-\item{manage_reference_data}{Manage reference data}
+\item{manage_reference_data}{Manage reference data.}
 
-\item{audit}{Access the Audit logs for a database (or a subset)}
+\item{audit}{Access the Audit logs for a database (or a subset).}
 
 \item{share_reports}{Allow the user to share reports with other roles in the database.}
 

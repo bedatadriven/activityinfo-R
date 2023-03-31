@@ -2,7 +2,7 @@
 % Please edit documentation in R/databases.R
 \name{updateGrant}
 \alias{updateGrant}
-\title{updateUserGrant}
+\title{updateGrant}
 \usage{
 updateGrant(databaseId, userId, resourceId, permissions)
 }
@@ -17,6 +17,7 @@ updateGrant(databaseId, userId, resourceId, permissions)
 }
 \description{
 Adds or updates a grant for a user to a specific resource.
+See \link{permissions} for how to set permissions for a grant.
 }
 \examples{
 \dontrun{

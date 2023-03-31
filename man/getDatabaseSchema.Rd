@@ -10,7 +10,7 @@ getDatabaseSchema(databaseId)
 \item{databaseId}{database identifier}
 }
 \description{
-This function is deprecated in favor of getDatabaseTree(). Please use getDatabaseTree().
+This function is deprecated in favor of getDatabaseTree(). Please use \link{getDatabaseTree}.
 }
 \examples{
 \dontrun{

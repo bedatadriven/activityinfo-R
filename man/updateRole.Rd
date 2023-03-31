@@ -2,17 +2,19 @@
 % Please edit documentation in R/databases.R
 \name{updateRole}
 \alias{updateRole}
-\title{Updates a role's definition in the database}
+\title{Updates a role's definition in the database
+See \link{permissions} for more details.}
 \usage{
 updateRole(databaseId, role)
 }
 \arguments{
 \item{databaseId}{the id of the database}
 
-\item{role}{the role definition,}
+\item{role}{the role definition}
 }
 \description{
 Updates a role's definition in the database
+See \link{permissions} for more details.
 }
 \examples{
 \dontrun{

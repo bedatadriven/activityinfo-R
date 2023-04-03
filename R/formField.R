@@ -873,7 +873,7 @@ deleteFormField.default <- deleteFormField.character
 #' @param upload Default is FALSE. If TRUE the modified form schema will be uploaded.
 #' @param ... ignored
 #' 
-#' @return The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
+#' @return The form field schema after the addition. This will be the form field schema from the server if changes are uploaded.
 #'
 #' @export
 #' @examples 
@@ -967,7 +967,7 @@ checkFormField <- function(formSchema, schema, df = as.data.frame(formSchema)) {
 #' @param fn the user-supplied conversion function; default is to do nothing
 #' @param idColumn the id column. The default is `_id`
 #' 
-#' @return The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
+#' @return The form field schema after the addition. This will be the form field schema from the server if changes are uploaded.
 #'
 #' @importFrom rlang enquo
 #' @export

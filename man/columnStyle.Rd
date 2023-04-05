@@ -24,7 +24,7 @@ default is TRUE to make it easier to join data in R.}
 \item{allReferenceFields}{include all the fields in referenced records; the
 default is FALSE}
 
-\item{columnNames}{Can be "pretty", "label", "id", c("code", "id), or c("code", "label")}
+\item{columnNames}{Can be "pretty", "label", "id", c("code", "id), or c("code", "label"); default is "pretty".}
 
 \item{recordId}{include the record id of each record in the form table;
 default is TRUE to make it easier to join data in R}

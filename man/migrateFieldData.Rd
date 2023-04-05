@@ -24,7 +24,7 @@ migrateFieldData(
 \item{idColumn}{the id column. The default is \verb{_id}}
 }
 \value{
-The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
+The form field schema after the addition. This will be the form field schema from the server if changes are uploaded.
 }
 \description{
 With this function, the data from one form field (column) can be moved to

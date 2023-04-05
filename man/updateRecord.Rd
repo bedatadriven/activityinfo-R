@@ -60,7 +60,7 @@ updateRecord(formId = "cxy123", recordId = "czyz3323", fieldValues = list(
    province = "z0000000289"))
 
 # When providing a value for geographic point fields, provide a named list
-# for the point, including the latitude, longitude, an optionally the accuracy
+# for the point, including the latitude, longitude, and optionally the accuracy
 # in meters reported by a geolocation sensor.
 
 updateRecord(formId = "cxy123", recordId = "czyz3323", fieldValues = list(

@@ -9,7 +9,8 @@ getRecords(form, style)
 \arguments{
 \item{form}{a form id, form schema, form tree, or activity info data frame}
 
-\item{style}{a column style object that defines how table columns should be created from a form; use \link{columnStyle} to create a new style; default column styles can be set with an option or \link{defaultColumnStyle}}
+\item{style}{a column style object that defines how table columns should be created from a form; use \link{columnStyle} to create a new style;
+default column styles can be set with an option or \link{defaultColumnStyle}. Default \code{columnNames} is set to "pretty".}
 }
 \description{
 This function will create a reference to records on the server. For large forms,
@@ -33,15 +34,19 @@ this order.
 records <- getRecords("ceam1x8kq6ikcujg")
 
 # Now, filter by only projects with a status "Under implementation"
-# By default, the columns will be labelled with the field's code defined
-# in ActivityInfo if one is defined:
 records <- getRecords("ceam1x8kq6ikcujg") |>
+   filter(`Project status` == "Under implementation")
+
+# If you want to use the field codes, set the column style using the `columnStyle()`
+# function and setting `columnName` argument to 'code'.
+# You can then use the field code in your filter:
+records <- getRecords("ceam1x8kq6ikcujg", style = columnStyle(columnNames = "code")) |>
    filter(START_MONTH == "2018-01")
 
-# If you prefer to work with the longer field labels, then you can change
-# the column style:
-records <- getRecords("ceam1x8kq6ikcujg", style = prettyColumnStyle()) |>
-   filter(`Project start month` == "2018-01")
+# If you prefer to work with the ActivityInfo field IDs, then you can change
+# the column style and the `columnNames` argument to "id":
+records <- getRecords("ceam1x8kq6ikcujg", style = columnStyle(columnNames = "id")) |>
+   filter(cgkh1k5kq6k0gsmv == "2018-01")
 
 }
 

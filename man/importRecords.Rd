@@ -18,5 +18,10 @@ importRecords(formId, data, recordIdColumn, parentIdColumn, stageDirect = TRUE)
 \item{stageDirect}{Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.}
 }
 \description{
-Batch imports a data.frame into an ActivityInfo form
+Please be aware of the 600 column and 200,000 row limit for ActivityInfo forms.
+See more details here: https://www.activityinfo.org/support/docs/m/84877/l/1144008.html
+}
+\details{
+Currently, not all types of fields are supported and you will get a warning
+if you attempt to import records with unsupported fields.
 }

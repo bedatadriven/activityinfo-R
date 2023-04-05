@@ -1,5 +1,11 @@
 #' Batch imports a data.frame into an ActivityInfo form
 #' 
+#' Please be aware of the 600 column and 200,000 row limit for ActivityInfo forms.
+#' See more details here: https://www.activityinfo.org/support/docs/m/84877/l/1144008.html
+#' 
+#' Currently, not all types of fields are supported and you will get a warning
+#' if you attempt to import records with unsupported fields.
+#' 
 #' @param formId The form ID
 #' @param data The data.frame to import
 #' @param recordIdColumn The record ID column

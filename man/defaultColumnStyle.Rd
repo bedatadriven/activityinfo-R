@@ -16,6 +16,8 @@ For example to set a column style, the following are possible:
 
 defaultColumnStyle(minimalColumnStyle())
 defaultColumnStyle(allColumnStyle())
+
+Set to prettyColumnStyle but you also want all reference fields:
 defaultColumnStyle(prettyColumnStyle(allReferenceFields = TRUE))
 
 Use defaultColumnStyle() without an argument to get the current default style

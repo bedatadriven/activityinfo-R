@@ -12,6 +12,6 @@ submitPending(file.name)
 \description{
 If a device is no longer able to connect to the internet, you can export
 the changes queued for synchronization and manually transfer the pending.json
-file to the database owner, who can use this send the changes to the server
+file to the database owner, who can use this to send the changes to the server
 under their own account.
 }

@@ -13,7 +13,7 @@ getRecordHistory(formId, recordId)
 }
 \description{
 This calls retrieves a list of all changes to the record, and the users
-who are
+who initially added and then have modified that record.
 }
 \seealso{
 Other record functions: 

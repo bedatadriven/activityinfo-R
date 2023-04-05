@@ -11,7 +11,7 @@ addRecord(formId, parentRecordId = NA_character_, fieldValues)
 
 \item{parentRecordId}{the id of this record's parent record, if the form is a subform}
 
-\item{fieldValues}{a named list of fields to change. Fields need to be}
+\item{fieldValues}{a named list of fields to change.}
 }
 \description{
 Adds a new record
@@ -55,7 +55,7 @@ addRecord(formId = "cxy123", fieldValues = list(
    province = "z0000000289"))
 
 # When providing a value for geographic point fields, provide a named list
-# for the point, including the latitude, longitude, an optionally the accuracy
+# for the point, including the latitude, longitude, and optionally the accuracy
 # in meters reported by a geolocation sensor.
 
 addRecord(formId = "cxy123", fieldValues = list(

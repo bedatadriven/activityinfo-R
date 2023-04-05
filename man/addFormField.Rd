@@ -24,7 +24,7 @@ addFormField(...)
 \item{formSchema}{The form schema object}
 }
 \value{
-The form field schema after the addition This will be the form field schema from the server if changes are uploaded.
+The form field schema after the addition. This will be the form field schema from the server if changes are uploaded.
 }
 \description{
 Adds a new form field to a form schema object or retrieves the form

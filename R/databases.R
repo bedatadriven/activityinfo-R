@@ -195,7 +195,20 @@ getDatabaseUsers <- function(databaseId, asDataFrame = TRUE) {
   )
 
   if (asDataFrame == TRUE) {
-    usersDF <- as.data.frame(do.call(rbind, users))
+
+    usersDF <- data.frame(
+      databaseId = unlist(lapply(users, function(x) {x$databaseId})),
+      userId = unlist(lapply(users, function(x) {x$userId})),
+      name = unlist(lapply(users, function(x) {x$name})),
+      email = unlist(lapply(users, function(x) {x$email})),
+      version = unlist(lapply(users, function(x) {x$version})),
+      inviteDate = as.Date(unlist(lapply(users, function(x) {x$inviteDate}))),
+      deliveryStatus = unlist(lapply(users, function(x) {x$deliveryStatus})),
+      inviteAccepted = unlist(lapply(users, function(x) {x$inviteAccepted})) # ,
+      # role = lapply(users, function(x) {x$role})
+    )
+    
+    usersDF$role <- lapply(users, function(x) {x$role})
 
     return(usersDF)
   } else if (asDataFrame == FALSE) {
@@ -216,7 +229,22 @@ getDatabaseUser <- function(databaseId, userId) {
   result <- GET(url, activityInfoAuthentication(), accept_json())
 
   if (result$status_code == 200) {
-    return(fromJSON(content(result, as = "text", encoding = "UTF-8")))
+    userRes <- fromJSON(content(result, as = "text", encoding = "UTF-8"))
+    userDF <- data.frame(
+      databaseId = userRes$databaseId,
+      userId = userRes$userId,
+      name = userRes$name,
+      email = userRes$email,
+      version = userRes$version,
+      inviteTime = format(as.POSIXct(userRes$inviteTime, origin = "1970-01-01", tz = "UTC"), "%H:%M:%S"),
+      deliveryStatus = userRes$deliveryStatus,
+      activationStatus = userRes$activationStatus,
+      lastLoginTime = format(as.POSIXct(userRes$lastLoginTime, origin = "1970-01-01", tz = "UTC"), "%H:%M:%S")
+    )
+    
+    userDF$role <- list(userRes$role)
+    
+    return(userDF)
   } else if (result$status_code == 404) {
     return(NULL)
   } else {
@@ -236,7 +264,7 @@ getDatabaseUser <- function(databaseId, userId) {
 #' @param databaseId The database ID
 #' @param userId The user ID
 #'
-#' @export
+
 getDatabaseUser2 <- function(databaseId, userId) {
   url <- paste("databases", databaseId, "users", userId, "grants", sep = "/")
   getResource(url, task = sprintf("Request for database/user %s/%s", databaseId, userId))

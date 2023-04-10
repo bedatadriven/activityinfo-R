@@ -95,7 +95,7 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
     testthat::expect_no_error({
       users <- getDatabaseUsers(databaseId = database$databaseId, asDataFrame=FALSE)
     })
-
+    
     testthat::expect_gte(length(users), expected = nUsers)
 
     if (length(users) == 0) stop("No users available to test.")
@@ -114,6 +114,12 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
       user2 <- getDatabaseUser2(databaseId = database$databaseId, userId = users[[x]]$userId)
       testthat::expect_identical(user, user2)
     })
+    
+    testthat::expect_no_error({
+      users2 <- getDatabaseUsers(databaseId = database$databaseId, asDataFrame=TRUE)
+    })
+    
+    testthat::expect_equal(class(users2), "data.frame")
 
     expectActivityInfoSnapshot(users)
 

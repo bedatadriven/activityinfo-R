@@ -69,7 +69,7 @@ importRecords <- function(formId, data, recordIdColumn, parentIdColumn, stageDir
   
 }
 
-#' Deprecated function to batch import a data.frame into an ActivityInfo form; use importRecords()
+#' Deprecated function to batch import a data.frame into an ActivityInfo form; use \link{importRecords}.
 #'
 #' @param ... parameters of importRecords()
 #'

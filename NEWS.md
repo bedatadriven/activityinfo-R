@@ -5,8 +5,8 @@
 - migrateFieldData() added to migrate data from a field to another using a user-supplied conversion function
 - createFormSchemaFromData() added to automatically guess a form field schema from a data.frame
 - extractSchemaFromFields() added to extract form fields into a new form schema using the selected columns of a remote records object (getRecords()), including those from reference form fields.
-- Deprecation of importTable() in favour of importRecords()
-- getDatabases() and getDatabaseUsers() always returns a data.frame
+- Deprecation of importTable() in favour of importRecords().
+- getDatabases(), getDatabaseUsers(), getRecordHistory() now returns a data.frame by default.
 
 ## [4.32]
 - Helper functions to create ActivityInfo form and field schemas (#32)

@@ -4,12 +4,14 @@
 \alias{getRecordHistory}
 \title{Gets the list of changes to a record}
 \usage{
-getRecordHistory(formId, recordId)
+getRecordHistory(formId, recordId, asDataFrame = TRUE)
 }
 \arguments{
 \item{formId}{a form id}
 
 \item{recordId}{a record id}
+
+\item{asDataFrame}{Retrieve user list as a data.frame, otherwise returns as list. Default: TRUE}
 }
 \description{
 This calls retrieves a list of all changes to the record, and the users

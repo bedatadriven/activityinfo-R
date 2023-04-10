@@ -2,7 +2,7 @@
 % Please edit documentation in R/import.R
 \name{importTable}
 \alias{importTable}
-\title{Deprecated function to batch import a data.frame into an ActivityInfo form; use importRecords()}
+\title{Deprecated function to batch import a data.frame into an ActivityInfo form; use \link{importRecords}.}
 \usage{
 importTable(...)
 }
@@ -10,5 +10,5 @@ importTable(...)
 \item{...}{parameters of importRecords()}
 }
 \description{
-Deprecated function to batch import a data.frame into an ActivityInfo form; use importRecords()
+Deprecated function to batch import a data.frame into an ActivityInfo form; use \link{importRecords}.
 }

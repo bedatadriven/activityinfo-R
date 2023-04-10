@@ -212,13 +212,34 @@ deleteRecord <- function(formId, recordId) {
 #'
 #' @param formId a form id
 #' @param recordId a record id
+#' @param asDataFrame Retrieve user list as a data.frame, otherwise returns as list. Default: TRUE
 #' @export
 #' @family record functions
-getRecordHistory <- function(formId, recordId) {
-  getResource(
+getRecordHistory <- function(formId, recordId, asDataFrame = TRUE) {
+  recHist <- getResource(
     paste("form", formId, "record", recordId, "history", sep = "/"),
     task = sprintf("Get record %s history from form %s", recordId, formId)
     )
+  
+  if (asDataFrame == TRUE) {
+    recHist <- recHist$entries
+    
+    recHistDF <- dplyr::tibble(
+      formId = unlist(lapply(reHist, function(x) {x$formId})),
+      recordId = unlist(lapply(reHist, function(x) {x$recordId})),
+      time = format(as.POSIXct(recHistDF$time, origin = "1970-01-01", tz = "UTC"), "%Y-%m-%d %H:%M:%S"), #unlist(lapply(reHist, function(x) {x$time})),
+      subFieldId = unlist(lapply(reHist, function(x) {x$subFieldId})),
+      subFieldLabel = unlist(lapply(reHist, function(x) {x$subFieldLabel})),
+      subRecordKey = unlist(lapply(reHist, function(x) {x$subRecordKey})),
+      changeType = unlist(lapply(reHist, function(x) {x$changeType})),
+      user = lapply(reHist, function(x) {x$user}),
+      values = lapply(reHist, function(x) {x$values})
+    )
+    # recHistDF$time <- format(as.POSIXct(recHistDF$time, origin = "1970-01-01", tz = "UTC"), "%Y-%m-%d %H:%M:%S")
+    return(recHistDF)
+  }
+  
+  return(recHist)
 }
 
 #' Gets a single record

@@ -41,8 +41,8 @@ dobField <- dateFieldSchema(label = "When were you born?", code = "dob")
 
 # Create a new form schema object and add the fields. We are not sending
 # anything to the server yet.
-survey <- formSchema(databaseId = "cxy123", label = "Household Survey") |>
-   addFormField(nameField) |>
+survey <- formSchema(databaseId = "cxy123", label = "Household Survey") \%>\%
+   addFormField(nameField) \%>\%
    addFormField(dobField)
 
 \dontrun{

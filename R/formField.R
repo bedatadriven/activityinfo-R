@@ -752,8 +752,8 @@ isFormFieldSchema <- function(schema) {
 #' 
 #' # Create a new form schema object and add the fields. We are not sending
 #' # anything to the server yet.
-#' survey <- formSchema(databaseId = "cxy123", label = "Household Survey") |>
-#'    addFormField(nameField) |>
+#' survey <- formSchema(databaseId = "cxy123", label = "Household Survey") %>%
+#'    addFormField(nameField) %>%
 #'    addFormField(dobField)
 #'    
 #' # Remove the name field
@@ -884,8 +884,8 @@ deleteFormField.default <- deleteFormField.character
 #' 
 #' # Create a new form schema object and add the fields. We are not sending
 #' # anything to the server yet.
-#' survey <- formSchema(databaseId = "cxy123", label = "Household Survey") |>
-#'    addFormField(nameField) |>
+#' survey <- formSchema(databaseId = "cxy123", label = "Household Survey") %>%
+#'    addFormField(nameField) %>%
 #'    addFormField(dobField)
 #' 
 #' \dontrun{
@@ -980,14 +980,14 @@ migrateFieldData <- function(.data, from, to, fn = function(x) x, idColumn = as.
   to <- dplyr::enquo(to)
   idColumn <- dplyr::enquo(idColumn)
   
-  remoteDf <- .data |> select(id = !!idColumn, from = !!from, to = !!to) 
-  df <- remoteDf |> 
-    select(id, from) |> 
-    collect() |> 
-    mutate(to = fn(from)) |>
+  remoteDf <- .data %>% select(id = !!idColumn, from = !!from, to = !!to) 
+  df <- remoteDf %>% 
+    select(id, from) %>% 
+    collect() %>% 
+    mutate(to = fn(from)) %>%
     select(id, to)
   
-  cols <- tblColumns(remoteDf |> select(id, to))
+  cols <- tblColumns(remoteDf %>% select(id, to))
   names(df) <- cols
   
   importRecords(formId = .data$formTree$root, data = df, recordIdColumn = "_id")

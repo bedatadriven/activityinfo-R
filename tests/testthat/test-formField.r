@@ -20,11 +20,11 @@ test_that("Test deleteFormField()", {
   
   fmSchm <- formSchema(databaseId = database$databaseId, label = "R form with multiple fields to delete")
   
-  fmSchm <- fmSchm |> 
-    addFormField(textFieldSchema(label = "Text field 1", code = "txt1", id = "Text1")) |>
-    addFormField(textFieldSchema(label = "Text field 2", code = "txt2", id = "Text2")) |>
-    addFormField(textFieldSchema(label = "Text field 3", code = "txt3", id = "Text3")) |>
-    addFormField(textFieldSchema(label = "Text field 4", code = "txt4", id = "Text4")) |>
+  fmSchm <- fmSchm %>% 
+    addFormField(textFieldSchema(label = "Text field 1", code = "txt1", id = "Text1")) %>%
+    addFormField(textFieldSchema(label = "Text field 2", code = "txt2", id = "Text2")) %>%
+    addFormField(textFieldSchema(label = "Text field 3", code = "txt3", id = "Text3")) %>%
+    addFormField(textFieldSchema(label = "Text field 4", code = "txt4", id = "Text4")) %>%
     addFormField(textFieldSchema(label = "Text field 5", code = "txt5", id = "Text5"))
     
   test1 <- fmSchm %>% deleteFormField(code = c("txt1", "txt3"))
@@ -165,9 +165,9 @@ test_that("Form with many fields can be created and uploaded and downloaded and 
   databaseId = database$databaseId
   fmSchm <- formSchema(databaseId = databaseId, label = paste0("R form with multiple fields test ", cuid()))
   
-  fmSchm <- fmSchm |> 
-    addFormField(barcodeFieldSchema(label = "A barcode field")) |>
-    addFormField(textFieldSchema(label = "A text field")) |>
+  fmSchm <- fmSchm %>% 
+    addFormField(barcodeFieldSchema(label = "A barcode field")) %>%
+    addFormField(textFieldSchema(label = "A text field")) %>%
     addFormField(serialNumberFieldSchema(label = "A serial number field"))
     
   dbMetadata <- addForm(databaseId = databaseId, schema = fmSchm)
@@ -189,8 +189,8 @@ testthat::test_that("addFormField will warn and mitigate adding fields with same
   newFieldDuplicateCode <- serialNumberFieldSchema(label = "A serial number field", code = "duplicate")
     
   testthat::expect_warning({
-    fmSchm <- fmSchm |> 
-      addFormField(newField) |>
+    fmSchm <- fmSchm %>% 
+      addFormField(newField) %>%
       addFormField(newFieldDuplicateId)
   }, regexp = "form field with the same id")
 

@@ -11,7 +11,8 @@ Authors@R: c(
            role = "aut"),
     person("Ryo", "Nakagawara", email = "rnakagawara@acdivoca-aux.org", 
            role = "ctb"),
-    person("BeDataDriven B.V.", role = c("cph", "fnd"))
+    person("BeDataDriven B.V.", role = c("cph", "fnd")),
+    person("ACDI/VOCA", role = c("fnd"))
   )
 Maintainer: Alex Bertram <alex@bedatadriven.com>
 Description: 
@@ -19,18 +20,20 @@ Description:
     used for partner reporting, monitoring and evaluation and case management in
     humanitarian aid, emergencies and international development.
 License: GPL-3
+Depends:
+    dplyr (>= 1.1.1)
 Imports: 
-    stats, 
-    utils, 
-    httr (>= 1.4.5), 
-    rjson, 
-    jsonlite, 
-    stringr (>= 1.5.0), 
-    dplyr (>= 1.1.1), 
-    pillar (>= 1.8.1), 
-    rlang (>= 1.1.0), 
-    tibble (>= 3.2.1), 
-    tidyselect (>= 1.2.0)
+    stats,
+    utils,
+    httr (>= 1.4.5),
+    rjson,
+    jsonlite,
+    stringr (>= 1.5.0),
+    pillar (>= 1.8.1),
+    rlang (>= 1.1.0),
+    tibble (>= 3.2.1),
+    tidyselect (>= 1.2.0),
+    magrittr
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)

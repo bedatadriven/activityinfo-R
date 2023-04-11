@@ -401,18 +401,18 @@ recoverRecord <- function(formId, recordId) {
 #' records <- getRecords("ceam1x8kq6ikcujg")
 #' 
 #' # Now, filter by only projects with a status "Under implementation"
-#' records <- getRecords("ceam1x8kq6ikcujg") |>
+#' records <- getRecords("ceam1x8kq6ikcujg") %>%
 #'    filter(`Project status` == "Under implementation")
 #' 
 #' # If you want to use the field codes, set the column style using the `columnStyle()`
 #' # function and setting `columnName` argument to 'code'.
 #' # You can then use the field code in your filter:
-#' records <- getRecords("ceam1x8kq6ikcujg", style = columnStyle(columnNames = "code")) |>
+#' records <- getRecords("ceam1x8kq6ikcujg", style = columnStyle(columnNames = "code")) %>%
 #'    filter(START_MONTH == "2018-01")
 #' 
 #' # If you prefer to work with the ActivityInfo field IDs, then you can change
 #' # the column style and the `columnNames` argument to "id":
-#' records <- getRecords("ceam1x8kq6ikcujg", style = columnStyle(columnNames = "id")) |>
+#' records <- getRecords("ceam1x8kq6ikcujg", style = columnStyle(columnNames = "id")) %>%
 #'    filter(cgkh1k5kq6k0gsmv == "2018-01")
 #' 
 #' }

@@ -1,3 +1,7 @@
+## [4.34]
+- `dplyr` is loaded onto the search path when `activityinfo` is loaded
+- documentation improvements
+
 ## [4.33]
 - getRecords() added to represent remote records on the server with helper functions to set column name styles, e.g. prettyColumnStyle(), minimalColumnStyle()
 - Support for tidy selection and renaming of columns of remote records

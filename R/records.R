@@ -225,15 +225,15 @@ getRecordHistory <- function(formId, recordId, asDataFrame = TRUE) {
     recHist <- recHist$entries
     
     recHistDF <- dplyr::tibble(
-      formId = unlist(lapply(reHist, function(x) {x$formId})),
-      recordId = unlist(lapply(reHist, function(x) {x$recordId})),
-      time = format(as.POSIXct(recHistDF$time, origin = "1970-01-01", tz = "UTC"), "%Y-%m-%d %H:%M:%S"), #unlist(lapply(reHist, function(x) {x$time})),
-      subFieldId = unlist(lapply(reHist, function(x) {x$subFieldId})),
-      subFieldLabel = unlist(lapply(reHist, function(x) {x$subFieldLabel})),
-      subRecordKey = unlist(lapply(reHist, function(x) {x$subRecordKey})),
-      changeType = unlist(lapply(reHist, function(x) {x$changeType})),
-      user = lapply(reHist, function(x) {x$user}),
-      values = lapply(reHist, function(x) {x$values})
+      formId = unlist(lapply(recHist, function(x) {x$formId})),
+      recordId = unlist(lapply(recHist, function(x) {x$recordId})),
+      time = format(as.POSIXct(unlist(lapply(recHist, function(x) {x$time})), origin = "1970-01-01", tz = "UTC"), "%Y-%m-%d %H:%M:%S"), #unlist(lapply(reHist, function(x) {x$time})),
+      subFieldId = unlist(lapply(recHist, function(x) {x$subFieldId})),
+      subFieldLabel = unlist(lapply(recHist, function(x) {x$subFieldLabel})),
+      subRecordKey = unlist(lapply(recHist, function(x) {x$subRecordKey})),
+      changeType = unlist(lapply(recHist, function(x) {x$changeType})),
+      user = lapply(recHist, function(x) {x$user}),
+      values = lapply(recHist, function(x) {x$values})
     )
     # recHistDF$time <- format(as.POSIXct(recHistDF$time, origin = "1970-01-01", tz = "UTC"), "%Y-%m-%d %H:%M:%S")
     return(recHistDF)

@@ -505,6 +505,7 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
 #' @param add_record Add a record within a form contained by this folder or form.
 #' @param edit_record Edit a record's values within a form contained by this folder or form.
 #' @param delete_record Delete a record within this form.
+#' @param bulk_delete Delete records in bulk
 #' @param export_records Export Records from a form, folder or database.
 #' @param manage_users Grant permissions to a user to this database, folder, or form.
 #' @param lock_records Add, modify, or remove locks on records.
@@ -512,12 +513,13 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
 #' @param edit_resource  Edit a Resource's schema, structure, attributes or data.
 #' @param delete_resource Delete a Resource (Form or Folder).
 #' @param manage_collection_links  Manage (open/close) collection links for the given form.
+#' @param manage_translations add languages to a database, modify translations
 #' @param audit Access the Audit logs for a database (or a subset).
 #' @param share_reports Allow the user to share reports with other roles in the database.
 #' @param publish_reports Allows the user to publish reports.
 #' @param manage_roles Add, modify and delete roles.
 #' @param manage_reference_data Manage reference data.
-#'
+#' @param reviewer_only Grant add_record and edit_record permissions for fields in the "reviewer" security category
 #' @export
 #'
 permissions <- function(view = TRUE,
@@ -529,14 +531,18 @@ permissions <- function(view = TRUE,
                         add_resource = FALSE,
                         edit_resource = FALSE,
                         delete_resource = FALSE,
+                        bulk_delete = FALSE,
                         manage_collection_links = FALSE,
                         manage_users = FALSE,
                         manage_roles = FALSE,
                         manage_reference_data = FALSE,
+                        manage_translations = FALSE,
                         audit = FALSE,
                         share_reports = FALSE,
-                        publish_reports = FALSE) {
-  operations <- names(formals())
+                        publish_reports = FALSE,
+                        reviewer_only = FALSE) {
+  operations <- setdiff(names(formals()), "reviewer_only")
+  
   permissions <- lapply(operations, function(operation) {
     v <- eval(as.name(operation))
     if (length(v) != 1 || is.na(v) || !(is.logical(v) || is.character(v))) {
@@ -552,6 +558,9 @@ permissions <- function(view = TRUE,
     message(deparse(v), "\n")
     if (is.character(v)) {
       p$filter <- as.character(v)
+    }
+    if (toupper(operation) %in% c("EDIT_RECORD", "ADD_RECORD") && isTRUE(reviewer_only)) {
+      p$securityCategories <- list("reviewer")
     }
     p
   })

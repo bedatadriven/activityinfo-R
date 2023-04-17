@@ -20,7 +20,8 @@ permissions(
   manage_reference_data = FALSE,
   audit = FALSE,
   share_reports = FALSE,
-  publish_reports = FALSE
+  publish_reports = FALSE,
+  reviewer_only = FALSE
 )
 }
 \arguments{
@@ -55,6 +56,8 @@ permissions(
 \item{share_reports}{Allow the user to share reports with other roles in the database.}
 
 \item{publish_reports}{Allows the user to publish reports.}
+
+\item{reviewer_only}{Grant add_record and edit_record permissions for fields in the "reviewer" security category}
 }
 \description{
 Helper method to create a list of permissions for a role or grant.

@@ -14,10 +14,12 @@ permissions(
   add_resource = FALSE,
   edit_resource = FALSE,
   delete_resource = FALSE,
+  bulk_delete = FALSE,
   manage_collection_links = FALSE,
   manage_users = FALSE,
   manage_roles = FALSE,
   manage_reference_data = FALSE,
+  manage_translations = FALSE,
   audit = FALSE,
   share_reports = FALSE,
   publish_reports = FALSE,
@@ -43,6 +45,8 @@ permissions(
 
 \item{delete_resource}{Delete a Resource (Form or Folder).}
 
+\item{bulk_delete}{Delete records in bulk}
+
 \item{manage_collection_links}{Manage (open/close) collection links for the given form.}
 
 \item{manage_users}{Grant permissions to a user to this database, folder, or form.}
@@ -50,6 +54,8 @@ permissions(
 \item{manage_roles}{Add, modify and delete roles.}
 
 \item{manage_reference_data}{Manage reference data.}
+
+\item{manage_translations}{add languages to a database, modify translations}
 
 \item{audit}{Access the Audit logs for a database (or a subset).}
 

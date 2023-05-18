@@ -204,7 +204,7 @@ testthat::test_that("migrateFieldData() works", {
   df <- data.frame(a = 1:10, b = as.character(1:10), c = factor(1:10))
   newForm <- createFormSchemaFromData(df, database$databaseId, label = "Migrate field test", upload = TRUE)
   
-  newSchema <- newForm$schema %>% 
+  newSchema <- newForm %>% 
     addFormField(
       dateFieldSchema(label = "newA")
     ) %>%

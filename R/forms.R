@@ -191,7 +191,7 @@ addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
   request <- list(
     formResource = list(
       id = schema$id,
-      parentId = schema$databaseId,
+      parentId = folderId,
       type = "FORM",
       label = schema$label,
       visibility = "PRIVATE"
@@ -348,7 +348,7 @@ relocateForm <- function(formId, newDatabaseId) {
 #' schema
 #' @param databaseId the id of the database to which the form should belong.
 #' @param label the label of the new form
-#' @param folderId the id of the folder where the form should reside; defaults to the database id
+#' @param folderId the id of the folder where the form should reside; defaults to the database id. This argument only has an effect if upload is TRUE.
 #' @param keyColumns a character vector of the column names of the form fields that should be form keys
 #' @param requiredColumns a character vector of the column names of the form fields that should be required
 #' @param logicalAsSingleSelect by default TRUE and converts logical columns in the data frame to a single select form field; if FALSE then it will convert TRUE to 1 and FALSE to 0
@@ -437,13 +437,13 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId = databaseId
   })
   
   if(upload) {
-    addForm(fmSchema)
+    addForm(fmSchema, folderId = folderId)
     importRecords(formId = fmSchema$id, data = x2)
   }
   
   checkForm(fmSchema, warnDuplicateLabels = TRUE)
   
-  list(schema = fmSchema, data = x2)
+  fmSchema
 }
 
 checkForm <- function(formSchema, df = as.data.frame(formSchema), warnDuplicateLabels = FALSE) {

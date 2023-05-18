@@ -35,9 +35,9 @@ testthat::test_that("recoverRecord() works", {
 testthat::test_that("getRecords() pretty field names are correct with deep reference fields in form trees", {
   # Create a country table
   countryData <- tibble("Code" = paste0(letters[1:2], letters[1:2], letters[1:2]), "Name" = paste0("Country ", 1:2))
-  countrySchemaPackage <- createFormSchemaFromData(countryData, database$databaseId, label = "Country (from Form)", keyColumns = c("Name"), requiredColumns = c("Code", "Name"), codes = c("code", "name"))
-  uploadedCountryForm <- addForm(countrySchemaPackage$schema)
-  countryFormId <- countrySchemaPackage$schema$id
+  countrySchema <- createFormSchemaFromData(countryData, database$databaseId, label = "Country (from Form)", keyColumns = c("Name"), requiredColumns = c("Code", "Name"), codes = c("code", "name"))
+  uploadedCountryForm <- addForm(countrySchema)
+  countryFormId <- countrySchema$id
   importRecords(formId = countryFormId, data = countryData)
   
   countries <- getRecords(countryFormId)
@@ -45,8 +45,8 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
   
   # Create a district table with a country key field
   districtData <- tibble(Code = paste0("D", 1:10), "Name" = paste0("District ", 1:10))
-  districtSchemaPackage <- createFormSchemaFromData(districtData, database$databaseId, label = "District (from form)", keyColumns = c("Name"), requiredColumns = c("Code", "Name"), codes = c("code", "name"))
-  districtSchema <- districtSchemaPackage$schema %>% 
+  districtSchema <- createFormSchemaFromData(districtData, database$databaseId, label = "District (from form)", keyColumns = c("Name"), requiredColumns = c("Code", "Name"), codes = c("code", "name"))
+  districtSchema <- districtSchema %>% 
     addFormField(
       referenceFieldSchema(label = "Country (from Field)", referencedFormId = countryFormId, key = TRUE)
     )
@@ -65,8 +65,8 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
   
   # Create a case table that references districts
   caseData <- tibble("Case number"  = as.character(1:20), "A single select column" = rep(factor(paste0(1:5, "_stuff")), 4))
-  caseSchemaPackage <- createFormSchemaFromData(caseData, database$databaseId, label = "Cases for testing pretty field names", keyColumns = c("Case number"), requiredColumns = c("Case number", "A single select column"))
-  caseSchema <- caseSchemaPackage$schema %>% 
+  caseSchema <- createFormSchemaFromData(caseData, database$databaseId, label = "Cases for testing pretty field names", keyColumns = c("Case number"), requiredColumns = c("Case number", "A single select column"))
+  caseSchema <- caseSchemaPackage %>% 
     addFormField(
       referenceFieldSchema(label = "District (from Field)", referencedFormId = districtFormId, key = TRUE)
     )
@@ -111,10 +111,10 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
 
 testthat::test_that("getRecords() works", {
   testData <- tibble(`Identifier number` = as.character(1:500), "A single select column" = rep(factor(paste0(1:5, "_stuff")), 100), "A logical column" = ((1:500)%%7==(1:500)%%3), "A date column" = rep(seq(as.Date("2021-07-06"),as.Date("2021-07-25"),by = 1),25))
-  schemaPackage <- createFormSchemaFromData(testData, database$databaseId, label = "getRecords() test form", keyColumns = "Identifier number", requiredColumns = "Identifier number")
-  schemaView <- as.data.frame(schemaPackage$schema)
-  uploadedForm <- addForm(schemaPackage$schema)
-  importRecords(formId = schemaPackage$schema$id, data = testData)
+  schema <- createFormSchemaFromData(testData, database$databaseId, label = "getRecords() test form", keyColumns = "Identifier number", requiredColumns = "Identifier number")
+  schemaView <- as.data.frame(schema)
+  uploadedForm <- addForm(schema)
+  importRecords(formId = schema$id, data = testData)
   
   rcrds <- getRecords(uploadedForm$id, style = prettyColumnStyle())
   

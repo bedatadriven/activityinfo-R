@@ -199,18 +199,36 @@ addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
     formClass = schema
   )
 
-  result <- postResource(
-    sprintf("databases/%s/forms", schema$databaseId),
-    request,
-    task = sprintf("Adding a new form '%s' with id %s in database %s", schema$label, schema$id, schema$databaseId)
-  )
-
+  result <- tryCatch({
+    postResource(
+      sprintf("databases/%s/forms", schema$databaseId),
+      request,
+      task = sprintf("Adding a new form '%s' with id %s in database %s", schema$label, schema$id, schema$databaseId)
+    )
+  },
+  error = function(condition) {
+    reportFormValidationErrors(condition)
+    stop(condition)
+  })
+  
   # The API returns all affected forms, as well as the database tree.
   # Extract only the form we added
   schemaResult <- result$forms[[ which(sapply(result$forms, function(f) f$id == schema$id)) ]]$schema
 
   asFormSchema(schemaResult)
 
+}
+
+
+reportFormValidationErrors <- function(condition) {
+  errors <- condition$result$errors
+  for(error in errors) {
+    if(is.null(error$fieldId)) {
+      message(sprintf("Form validation error: %s", error$message))  
+    } else {
+      message(sprintf("Form validation error in field %s: %s", error$fieldId, error$message))  
+    }
+  }
 }
 
 #' @export
@@ -280,12 +298,17 @@ updateFormSchema <- function(schema) {
   
   schema <- prepFormSchemaForUpload(schema)
 
-  result <- postResource(
-    sprintf("form/%s/schema", schema$id),
-    body = schema,
-    task = sprintf("Update of form schema for form %s (%s)", schema$label, schema$id),
-    requireStatus = 200
-  )
+  result <- tryCatch({
+    postResource(
+      sprintf("form/%s/schema", schema$id),
+      body = schema,
+      task = sprintf("Update of form schema for form %s (%s)", schema$label, schema$id),
+      requireStatus = 200)
+  },
+  error = function(condition) {
+    reportFormValidationErrors(condition)
+    stop(condition)
+  })
 
   asFormSchema(result$forms[[1]]$schema)
 }

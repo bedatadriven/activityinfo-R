@@ -13,7 +13,6 @@ calculatedFieldSchema(
   hideFromEntry = FALSE,
   hideInTable = FALSE,
   relevanceRule = "",
-  validationRule = "",
   reviewerOnly = FALSE
 )
 }
@@ -33,8 +32,6 @@ calculatedFieldSchema(
 \item{hideInTable}{Whether the form field is hidden during data display; default is FALSE}
 
 \item{relevanceRule}{Relevance rules for the form field given as a single character string; default is ""}
-
-\item{validationRule}{Validation rules for the form field given as a single character string; default is ""}
 
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }

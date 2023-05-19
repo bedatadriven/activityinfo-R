@@ -11,6 +11,7 @@ referenceFieldSchema(
   code = NULL,
   id = cuid(),
   key = FALSE,
+  required = key,
   hideFromEntry = FALSE,
   hideInTable = FALSE,
   relevanceRule = "",
@@ -30,6 +31,8 @@ referenceFieldSchema(
 \item{id}{The id of the form Field; default is to generate a new cuid}
 
 \item{key}{Whether the form field is a key field; default is FALSE}
+
+\item{required}{Whether the form field is required; default is FALSE}
 
 \item{hideFromEntry}{Whether the form field is hidden during data entry; default is FALSE}
 

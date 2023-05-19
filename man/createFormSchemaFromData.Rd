@@ -25,7 +25,7 @@ schema}
 
 \item{label}{the label of the new form}
 
-\item{folderId}{the id of the folder where the form should reside; defaults to the database id}
+\item{folderId}{the id of the folder where the form should reside; defaults to the database id. This argument only has an effect if upload is TRUE.}
 
 \item{keyColumns}{a character vector of the column names of the form fields that should be form keys}
 

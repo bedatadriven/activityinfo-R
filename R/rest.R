@@ -48,6 +48,7 @@ activityInfoAPICondition <- function(result, type = NULL, task = NULL, call = sy
     taskMessage <- "%s returned"
   }
   condition$message <- activityInfoAPIConditionMessage(result, type, task, taskMessage)
+  condition$result <- content(result)
   class(condition) <- c("activityinfo_api", class(condition))
   condition
 }

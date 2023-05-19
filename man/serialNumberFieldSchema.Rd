@@ -11,12 +11,8 @@ serialNumberFieldSchema(
   prefixFormula = NULL,
   code = NULL,
   id = cuid(),
-  key = FALSE,
-  required = FALSE,
   hideFromEntry = FALSE,
   hideInTable = FALSE,
-  relevanceRule = "",
-  validationRule = "",
   reviewerOnly = FALSE
 )
 }
@@ -34,17 +30,9 @@ the serial number}
 
 \item{id}{The id of the form Field; default is to generate a new cuid}
 
-\item{key}{Whether the form field is a key field; default is FALSE}
-
-\item{required}{Whether the form field is required; default is FALSE}
-
 \item{hideFromEntry}{Whether the form field is hidden during data entry; default is FALSE}
 
 \item{hideInTable}{Whether the form field is hidden during data display; default is FALSE}
-
-\item{relevanceRule}{Relevance rules for the form field given as a single character string; default is ""}
-
-\item{validationRule}{Validation rules for the form field given as a single character string; default is ""}
 
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 }

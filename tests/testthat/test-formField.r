@@ -21,16 +21,16 @@ test_that("Test deleteFormField()", {
   fmSchm <- formSchema(databaseId = database$databaseId, label = "R form with multiple fields to delete")
   
   fmSchm <- fmSchm %>% 
-    addFormField(textFieldSchema(label = "Text field 1", code = "txt1", id = "Text1")) %>%
-    addFormField(textFieldSchema(label = "Text field 2", code = "txt2", id = "Text2")) %>%
-    addFormField(textFieldSchema(label = "Text field 3", code = "txt3", id = "Text3")) %>%
-    addFormField(textFieldSchema(label = "Text field 4", code = "txt4", id = "Text4")) %>%
-    addFormField(textFieldSchema(label = "Text field 5", code = "txt5", id = "Text5"))
+    addFormField(textFieldSchema(label = "Text field 1", code = "txt1", id = "text1")) %>%
+    addFormField(textFieldSchema(label = "Text field 2", code = "txt2", id = "text2")) %>%
+    addFormField(textFieldSchema(label = "Text field 3", code = "txt3", id = "text3")) %>%
+    addFormField(textFieldSchema(label = "Text field 4", code = "txt4", id = "text4")) %>%
+    addFormField(textFieldSchema(label = "Text field 5", code = "txt5", id = "text5"))
     
   test1 <- fmSchm %>% deleteFormField(code = c("txt1", "txt3"))
   expectActivityInfoSnapshot(test1)
   
-  test2 <- fmSchm %>% deleteFormField(id = c("Text4"))
+  test2 <- fmSchm %>% deleteFormField(id = c("text4"))
   expectActivityInfoSnapshot(test2)
   
   test3 <- fmSchm %>% deleteFormField(label = c("Text field 1", "Text field 5"))
@@ -44,7 +44,7 @@ test_that("Test deleteFormField()", {
     fmSchm2 <- fmSchm
     fmSchm2$elements[length(fmSchm2$elements)+1] <- fmSchm2$elements[length(fmSchm2$elements)]
     testthat::expect_error({
-      fmSchm2 %>% deleteFormField(id = "Text5")
+      fmSchm2 %>% deleteFormField(id = "text5")
     })
   })
   

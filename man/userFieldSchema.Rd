@@ -11,7 +11,7 @@ userFieldSchema(
   code = NULL,
   id = cuid(),
   key = FALSE,
-  required = FALSE,
+  required = key,
   hideFromEntry = FALSE,
   hideInTable = FALSE,
   relevanceRule = "",

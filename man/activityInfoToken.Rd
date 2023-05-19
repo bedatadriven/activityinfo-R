@@ -5,10 +5,12 @@
 \title{Store personal token to authorize requests for the
 ActivityInfo API}
 \usage{
-activityInfoToken(token)
+activityInfoToken(token, prompt = TRUE)
 }
 \arguments{
 \item{token}{The personal token used to authenticate with to ActivityInfo.org}
+
+\item{prompt}{TRUE if to prompt the user to save the token}
 }
 \description{
 Configures the current session to use a personal token for authentication to
@@ -19,7 +21,10 @@ Users can generate a personal API token from the \href{https://www.activityinfo.
 page of ActivityInfo's user interface. This token is used instead of a password
 when connecting to the ActivityInfo API.
 
-When run interactively, you will be prompted to store the token locally on
+Note, in general, you \href{https://blog.gitguardian.com/secrets-api-management/}{\emph{never} include your API token}
+in an R source file or check such sources with tokens into version control.
+
+When run interactively and prompt = TRUE, you will be prompted to store the token locally on
 your device. This avoids the need to provide the token each time you run
 a script. The token is stored in plaintext, however, so you should only
 agree to store your token when your device is properly secured with a screenlock

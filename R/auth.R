@@ -118,17 +118,22 @@ interactive2 <- function() {
 #' the ActivityInfo Server. 
 #'
 #' @param token The personal token used to authenticate with to ActivityInfo.org
+#' @param prompt TRUE if to prompt the user to save the token
 #'
 #' @details 
 #' Users can generate a personal API token from the [Profile Settings](https://www.activityinfo.org/support/docs/m/84880/l/1333305.html)
 #' page of ActivityInfo's user interface. This token is used instead of a password
 #' when connecting to the ActivityInfo API.
 #' 
-#' When run interactively, you will be prompted to store the token locally on 
+#' Note, in general, you [*never* include your API token](https://blog.gitguardian.com/secrets-api-management/)
+#' in an R source file or check such sources with tokens into version control.
+#' 
+#' When run interactively and prompt = TRUE, you will be prompted to store the token locally on 
 #' your device. This avoids the need to provide the token each time you run
 #' a script. The token is stored in plaintext, however, so you should only 
 #' agree to store your token when your device is properly secured with a screenlock
 #' and not shared with others.
+#' 
 #' 
 #' 
 #' @examples 
@@ -136,14 +141,14 @@ interactive2 <- function() {
 #' activityInfoToken("<API TOKEN>")
 #' }
 #' @export
-activityInfoToken <- function(token) {
+activityInfoToken <- function(token, prompt = TRUE) {
   if (interactive2() && missing(token)) {
     token <- readline2("Enter your token: ")
   }
   
   activityInfoAuthentication(token)
   
-  if (interactive2()) {
+  if (interactive2() && prompt) {
     cat("Do you want to save your token for future R sessions?\n")
     cat("WARNING: If you choose yes, your token will be stored plain text in your home\n")
     cat("directory. Don't choose this option on an insecure or public machine! (Y/n)\n")

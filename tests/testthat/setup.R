@@ -117,9 +117,9 @@ setupBlankDatabase <- function(label) {
 
 ##### Setup code #####
 
-preprodRootUrl <- Sys.getenv("PREPROD_ROOT_URL")
+preprodRootUrl <- Sys.getenv("TEST_URL")
 
-if (preprodRootUrl == "") stop("PREPROD_ROOT_URL environment variable is not set.")
+if (preprodRootUrl == "") stop("TEST_URL environment variable is not set.")
 
 preprodEndpoint <- sprintf("%s/resources/testing", preprodRootUrl)
 

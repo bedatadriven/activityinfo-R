@@ -12,8 +12,7 @@ on:
 name: tic
 
 env: 
-  PREPROD_TESTING_ENDPOINT: ${{ secrets.PREPROD_TESTING_ENDPOINT }}
-  PREPROD_ROOT_URL: ${{ secrets.PREPROD_ROOT_URL }}
+  TEST_URL: ${{ secrets.TEST_URL }}
 
 jobs:
   all:
@@ -79,8 +78,7 @@ jobs:
 
       - name: "[Stage] Script"
         env:
-          PREPROD_TESTING_ENDPOINT: ${{ secrets.PREPROD_TESTING_ENDPOINT }}
-          PREPROD_ROOT_URL: ${{ secrets.PREPROD_ROOT_URL }}
+          TEST_URL: ${{ secrets.TEST_URL }}
         run: Rscript -e 'tic::script()'
 
       - name: "[Stage] After Success"

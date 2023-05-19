@@ -66,7 +66,7 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
   # Create a case table that references districts
   caseData <- tibble("Case number"  = as.character(1:20), "A single select column" = rep(factor(paste0(1:5, "_stuff")), 4))
   caseSchema <- createFormSchemaFromData(caseData, database$databaseId, label = "Cases for testing pretty field names", keyColumns = c("Case number"), requiredColumns = c("Case number", "A single select column"))
-  caseSchema <- caseSchemaPackage %>% 
+  caseSchema <- caseSchema %>% 
     addFormField(
       referenceFieldSchema(label = "District (from Field)", referencedFormId = districtFormId, key = TRUE)
     )

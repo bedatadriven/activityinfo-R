@@ -4,11 +4,10 @@
       databases
     Output
       # A tibble: 2 x 6
-        billingAccountId databaseId description label              ownerId    suspen~1
-      * <chr>            <chr>      <chr>       <chr>              <chr>      <lgl>   
-      1 <id value>       <id value> <NA>        My first database  <id value> FALSE   
-      2 <id value>       <id value> <NA>        My second database <id value> FALSE   
-      # ... with abbreviated variable name 1: suspended
+        billingAccountId databaseId description label              ownerId   suspended
+      * <chr>            <chr>      <chr>       <chr>              <chr>     <lgl>    
+      1 <id value>       <id value> <NA>        My first database  <id valu~ FALSE    
+      2 <id value>       <id value> <NA>        My second database <id valu~ FALSE    
 
 # getDatabaseTree() works
 

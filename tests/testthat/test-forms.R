@@ -94,11 +94,11 @@ testthat::test_that("Creating a form schema with formSchemaFromData() from data 
     keyColumns = "b", 
     logicalAsSingleSelect = FALSE) 
   
-  upform_res1 <- addForm(larlarschm$schema)
+  upform_res1 <- addForm(larlarschm)
   
-  importRecords(formId = larlarschm$schema$id, data = larlar)
+  importRecords(formId = larlarschm$id, data = larlar)
   
-  larlar2 <- queryTable(form = larlarschm$schema$id, makeNames = FALSE)
+  larlar2 <- queryTable(form = larlarschm$id, makeNames = FALSE)
   
   larlar2 <- larlar2[names(larlar)]
   

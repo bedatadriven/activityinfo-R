@@ -91,42 +91,34 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
 
   expectActivityInfoSnapshot(returnedUsers)
 
-  testGetUsers <- function(database, tree, nUsers = 1) {
+  nUsers <- 2
+  
+  testthat::expect_no_error({
+    users <- getDatabaseUsers(databaseId = database$databaseId, asDataFrame=FALSE)
+  })
+    
+  testthat::expect_gte(length(users), expected = nUsers)
+
+  if (length(users) == 0) stop("No users available to test.")
+
+  lapply(1:nUsers, function(x) {
     testthat::expect_no_error({
-      users <- getDatabaseUsers(databaseId = database$databaseId, asDataFrame=FALSE)
+      user <- getDatabaseUser(databaseId = database$databaseId, userId = users[[x]]$userId)
     })
-    
-    testthat::expect_gte(length(users), expected = nUsers)
 
-    if (length(users) == 0) stop("No users available to test.")
+    testthat::expect_identical(user$userId, users[[x]]$userId)
+    testthat::expect_identical(user$databaseId, database$databaseId)
+    testthat::expect_identical(user$name, users[[x]]$name)
+    testthat::expect_identical(user$email, users[[x]]$email)
+  })
+  
+  testthat::expect_no_error({
+    users2 <- getDatabaseUsers(databaseId = database$databaseId, asDataFrame=TRUE)
+  })
+  
+  testthat::expect_equal(class(users2), "data.frame")
 
-    lapply(1:nUsers, function(x) {
-      testthat::expect_no_error({
-        user <- getDatabaseUser(databaseId = database$databaseId, userId = users[[x]]$userId)
-      })
-
-      testthat::expect_identical(user$userId, users[[x]]$userId)
-      testthat::expect_identical(user$databaseId, database$databaseId)
-      testthat::expect_identical(user$name, users[[x]]$name)
-      testthat::expect_identical(user$email, users[[x]]$email)
-
-      # test new variant returns correctly
-      user2 <- getDatabaseUser2(databaseId = database$databaseId, userId = users[[x]]$userId)
-      testthat::expect_identical(user, user2)
-    })
-    
-    testthat::expect_no_error({
-      users2 <- getDatabaseUsers(databaseId = database$databaseId, asDataFrame=TRUE)
-    })
-    
-    testthat::expect_equal(class(users2), "data.frame")
-
-    expectActivityInfoSnapshot(users)
-
-    length(users)
-  }
-
-  nDatabaseUsers <- testGetUsers(database, tree, nUsers = 2)
+  expectActivityInfoSnapshot(users)
 
   deleteTestUsers(database, returnedUsers)
 })

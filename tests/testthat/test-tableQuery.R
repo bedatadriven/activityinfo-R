@@ -23,7 +23,6 @@ testthat::test_that("queryTable() returns a valid data.frame with the same colum
   output <- suppressWarnings(suppressMessages((do.call(activityinfo::queryTable, input_parameters))))
 
   testthat::expect_true(inherits(output, "data.frame"))
-  message("Expected: ", paste(names_valid, collapse = ", "), "\nFound: ", paste(colnames(output), collapse = ", "))
 
   testthat::expect_true(all(names_valid %in% colnames(output)))
 })

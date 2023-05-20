@@ -177,7 +177,9 @@ putResource <- function(path, body, task = NULL, requireStatus = NULL, silent = 
 deleteResource <- function(path, body = NULL, task = NULL, requireStatus = NULL, silent = FALSE, encode = "json", ...) {
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
   
-  if (getOption("activityinfo.verbose.requests")) message("Sending DELETE request to ", url)
+  if (getOption("activityinfo.verbose.requests")) {
+    message("Sending DELETE request to ", url)
+  }
   
   result <- DELETE(url, body = body, encode = encode, activityInfoAuthentication(), accept_json(), ...)
   

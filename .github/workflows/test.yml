@@ -16,5 +16,6 @@ jobs:
     container:
       image: rocker/tidyverse:4
     steps:
+      - uses: actions/checkout@v3
       - name: Test
         run: Rscript -e "devtools::test()"

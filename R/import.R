@@ -372,7 +372,6 @@ formatImport <- function(data, recordId, parentId, fieldIds, fieldValues) {
 stageImport <- function(text, direct = TRUE) {
   
   if(direct && !grepl(activityInfoRootUrl(), pattern = "www\\.activityinfo\\.org|appspot\\.com")) {
-    warning("Disabling direct import staging for self-managed server")
     direct <- FALSE
   }
   

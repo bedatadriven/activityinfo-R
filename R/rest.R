@@ -60,8 +60,12 @@ activityInfoAPIConditionMessage <- function(result, type = "message", task = NUL
   # resultContent <- content(result, as = "text", encoding = "UTF-8")
   resultContent <- content(result)
   if (is.list(resultContent) && !is.null(resultContent$code)) {
-    messageString <- ifelse(is.null(resultContent$message), sprintf("See ActivityInfo %s code).", type), resultContent$message)
-    return(sprintf(paste0(taskMessage, " with code %s and http status %s: %s\n"), task, status_code(result), resultContent$code, messageString))
+    messageString <- ifelse(is.null(resultContent$message), "", sprintf(": %s", resultContent$message))
+    return(sprintf(paste0(taskMessage, " with http status code %s and application error code %s%s\n"), 
+                   task, 
+                   status_code(result), 
+                   resultContent$code, 
+                   messageString))
   } else {
     return(sprintf(paste0(taskMessage, " with status %d: %s\n"), task, status_code(result), ifelse(type == "message", "success", deparse(resultContent))))
   }
@@ -182,7 +186,7 @@ deleteResource <- function(path, body = NULL, task = NULL, requireStatus = NULL,
   # also display (short) success message:
   if (getOption("activityinfo.verbose.tasks")) message(condition)
   
-  fromActivityInfoJson(result)
+  invisible(fromActivityInfoJson(result))
 }
 
 #' Wraps jsonlite::fromJSON to match the style of JSON produced

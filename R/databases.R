@@ -158,7 +158,7 @@ deleteDatabase <- function(databaseId) {
   )
   if (is.list(result)&&!is.null(result$code)&&result$code=="DELETED") {
     # "Deletion of database confirmed
-    return(result)
+    return(invisible(result))
   }
   stop(sprintf("Error while deleting database %s: %s", databaseId, deparse(result)))
 }

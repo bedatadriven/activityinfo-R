@@ -6,7 +6,11 @@ withr::local_options(list(
   warnPartialMatchAttr = TRUE
 ))
 
+# Hide import progress bar which makes a mess of test output
 options(activityinfo.import.progress = FALSE)
+
+# Avoid warning message when calling grSoftVersion on first call
+suppressWarnings(grSoftVersion())
 
 ##### Testing functions #####
 

@@ -114,14 +114,6 @@ expectActivityInfoSnapshot <- function(x, replaceId = TRUE, replaceDate = TRUE, 
   testthat::expect_snapshot_value(x, style = "deparse")
 }
 
-setAuthentication <- function() {
-  activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
-
-  # get a personal API token
-  activityInfoToken(
-    token = activityinfo:::postResource("accounts/tokens/generate", body = list(label = sprintf("read write testing token %s", cuid()), scope = "READ_WRITE"), task = "Creating test user token")$token
-  )
-}
 
 setupBlankDatabase <- function(label) {
   activityinfo:::postResource("databases", body = list(id = cuid(), label = label, templateId = "blank"), task = sprintf("Creating test database '%s' post request", label))
@@ -161,12 +153,14 @@ tryCatch(
 
 # Now we can connect to this server using this account
 # Point the Package to the Pre-production server. This URL is always
-# running the latest release candidate, not neccessarily the same as
+# running the latest release candidate, not necessarily the same as
 
 # www.activityinfo.org
 activityInfoRootUrl(preprodRootUrl)
 
-tokenRequest <- setAuthentication()
+# Use these credentials for the rest of the tests
+activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
+
 
 # Add a new database for this user
 database <- setupBlankDatabase("My first database")

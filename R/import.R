@@ -371,7 +371,7 @@ formatImport <- function(data, recordId, parentId, fieldIds, fieldValues) {
 #' @param direct Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.
 stageImport <- function(text, direct = TRUE) {
   
-  if(direct && !grepl(activityInfoRootUrl(), pattern = "www\\.activityinfo\\.org||appspot\\.com")) {
+  if(direct && !grepl(activityInfoRootUrl(), pattern = "www\\.activityinfo\\.org|appspot\\.com")) {
     warning("Disabling direct import staging for self-managed server")
     direct <- FALSE
   }

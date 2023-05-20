@@ -7,6 +7,9 @@ ActivityInfo server}
 \usage{
 toActivityInfoJson(x)
 }
+\arguments{
+\item{x}{an R object to convert to JSON}
+}
 \description{
 Wraps jsonlite::toJSON to match the conventions expected by the
 ActivityInfo server

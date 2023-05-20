@@ -7,6 +7,9 @@ by the ActivityInfo server.}
 \usage{
 fromActivityInfoJson(x)
 }
+\arguments{
+\item{x}{a json string or a httr response object to convert to an R object}
+}
 \description{
 Wraps jsonlite::fromJSON to match the style of JSON produced
 by the ActivityInfo server.

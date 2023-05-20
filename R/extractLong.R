@@ -42,7 +42,7 @@ getQuantityTable <- function(databaseId = NA, folderId, includeBlanks = FALSE) {
              header = TRUE)
 }
 
-executeJob <- function(type, descriptor) {
+executeJob <- function(type, descriptor, progress = FALSE) {
   
   request <- list(type = type,
                   locale = "en",
@@ -56,7 +56,9 @@ executeJob <- function(type, descriptor) {
     if(is.na(pct) || length(pct) != 1) {
       pct <- 0L
     }
-    message(sprintf("Waiting for %s job to complete: %d%%", type, pct))
+    if(progress) {
+      message(sprintf("Waiting for %s job to complete: %d%%", type, pct))
+    }
     if(identical(status$state, "completed")) {
       break
     }
@@ -68,5 +70,5 @@ executeJob <- function(type, descriptor) {
     }
     Sys.sleep(2)
   }
-  status
+  invisible(status)
 }

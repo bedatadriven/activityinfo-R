@@ -1102,7 +1102,8 @@ addFilter <- function(x, formulaFilter) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
   stopifnot("ActivityInfo formula filter must be a character vector" = is.character(formulaFilter))
 
-  message(sprintf("Adding filter: %s", formulaFilter))
+  if(getOption("activityinfo.verbose.requests"))
+    message(sprintf("Adding filter: %s", formulaFilter))
   
   x$step <- newStep(x$step, filter = formulaFilter)
 

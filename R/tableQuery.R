@@ -115,12 +115,8 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
     query$window <- window
   }
   
-  jsonPayload <- jsonlite::toJSON(query, auto_unbox = TRUE)
+  jsonPayload <- toActivityInfoJson(query)
   
-  #response <- POST(url, body = jsonPayload, encode = "raw", activityInfoAuthentication(), accept_json(), httr::content_type_json())
-  
-
-  #columnSet <- postResource("query/columns", query, task = sprintf("Getting form %s data for specified columns.", formId))
   columnSet <- postResource(
     path = "query/columns", 
     body = jsonPayload, 

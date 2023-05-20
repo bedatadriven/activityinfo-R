@@ -235,7 +235,7 @@ barcodeFieldSchema <- function(label, description = NULL, code = NULL, id = cuid
 #' @inheritParams formFieldSchema
 #' @family field schemas
 #' @export
-serialNumberFieldSchema <- function(label, description = NULL, digits = 5, prefixFormula = NULL, code = NULL, id = cuid(), hideFromEntry = FALSE, hideInTable = FALSE, reviewerOnly = FALSE) {
+serialNumberFieldSchema <- function(label, description = NULL, digits = 5L, prefixFormula = NULL, code = NULL, id = cuid(), hideFromEntry = FALSE, hideInTable = FALSE, reviewerOnly = FALSE) {
   stopifnot("The prefix formula must be NULL or a character string" = is.null(prefixFormula)||(is.character(prefixFormula)&&length(prefixFormula)==1&&nchar(prefixFormula)>0))
   stopifnot("The digits must be an integer" = is.numeric(digits)&&as.integer(digits)==digits)
   

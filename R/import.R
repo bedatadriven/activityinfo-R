@@ -11,10 +11,11 @@
 #' @param recordIdColumn The record ID column
 #' @param parentIdColumn The parent ID column required when importing a subform
 #' @param stageDirect Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.
+#' @param progress Show import progress while waiting for import job to complete
 #'
 #' @importFrom utils head
 #' @export
-importRecords <- function(formId, data, recordIdColumn, parentIdColumn, stageDirect = TRUE) { 
+importRecords <- function(formId, data, recordIdColumn, parentIdColumn, stageDirect = TRUE, progress = getOption("activityinfo.import.progress", default = TRUE)) { 
   parentId <- NULL
 
   schema <- activityinfo::getFormSchema(formId)
@@ -63,7 +64,7 @@ importRecords <- function(formId, data, recordIdColumn, parentIdColumn, stageDir
   lines <- formatImport(data, recordId, parentId, fieldIds, fieldValues)
   importId <- stageImport(paste(lines, collapse = "\n"), direct = stageDirect)
   
-  executeJob("importRecords", descriptor =
+  executeJob("importRecords", progress = progress, descriptor =
                               list(formId = formId,
                                    importId = importId))
   
@@ -328,6 +329,8 @@ queryLookupTable <- function(formId, keyFieldIds) {
   queryTable(formId, columns, truncateStrings = FALSE)
 }
 
+#'
+#' @importFrom jsonlite toJSON
 formatImport <- function(data, recordId, parentId, fieldIds, fieldValues) {
 
 
@@ -351,12 +354,12 @@ formatImport <- function(data, recordId, parentId, fieldIds, fieldValues) {
       v <- fieldValues[[fieldIndex]][[recordIndex]]
       if(length(v) == 1 && is.na(v)) NULL else v
     })
-    recordLines[recordIndex] <- rjson::toJSON(record)
+    recordLines[recordIndex] <- toActivityInfoJson(record)
   }
 
   c("LINE DELIMITED JSON RECORDS",
     as.character(nrow(data)),
-    rjson::toJSON(as.list(fieldIds)),
+    toActivityInfoJson(as.list(fieldIds)),
     recordLines)
 }
 
@@ -387,7 +390,7 @@ stageImport <- function(text, direct = TRUE) {
                  content(result, as = "text", encoding = "UTF-8")))
   }
   
-  response <- fromJSON(content(result, as = "text", encoding = "UTF-8"))
+  response <- fromActivityInfoJson(result)
   
   uploadUrl <- response$uploadUrl
   if(!grepl(uploadUrl, pattern = "^https://")) {

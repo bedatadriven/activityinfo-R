@@ -26,7 +26,6 @@ Imports:
     stats,
     utils,
     httr (>= 1.4.5),
-    rjson,
     jsonlite,
     stringr (>= 1.5.0),
     pillar (>= 1.8.1),

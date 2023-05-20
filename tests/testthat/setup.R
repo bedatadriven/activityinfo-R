@@ -6,6 +6,8 @@ withr::local_options(list(
   warnPartialMatchAttr = TRUE
 ))
 
+options(activityinfo.import.progress = FALSE)
+
 ##### Testing functions #####
 
 # creating a cuid that artificially enforces a sort order on IDs for snapshotting of API objects
@@ -20,6 +22,12 @@ cuid <- local({
 
 canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate = TRUE, replaceResource = TRUE) {
   recursiveCanonicalize <- function(x, path = "") {
+    # jsonlite converts an empty json object to an empty named list
+    # which seems to throw testthat's snapshots
+    if (identical(x, structure(list(), names = character(0)))) {
+      return(list())
+    }
+    
     if (is.list(x)) {
       savedAttributes <- attributes(x)
 

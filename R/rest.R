@@ -32,7 +32,7 @@ message_for_status <- function(x, task = NULL) {
 #' @param call The call stack
 #'
 #' @importFrom httr http_condition http_error
-#' @importFrom rjson fromJSON
+#' @importFrom jsonlite fromJSON
 activityInfoAPICondition <- function(result, type = NULL, task = NULL, call = sys.call(-1)) {
   if ((http_error(result) && is.null(type)) || (!is.null(type) && type == "error")) {
     condition <- http_condition(result, type = "error", task = task, call = call)
@@ -93,7 +93,7 @@ checkForError <- function(result, task = NULL, requireStatus = NULL, call = sys.
 #' and must be named
 #'
 #' @importFrom httr GET accept_json content http_status modify_url
-#' @importFrom rjson fromJSON
+#' @importFrom jsonlite fromJSON
 #' @noRd
 getResource <- function(path, queryParams = list(), task = NULL, requireStatus = 200, ...) {
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
@@ -111,9 +111,7 @@ getResource <- function(path, queryParams = list(), task = NULL, requireStatus =
 
   if (getOption("activityinfo.verbose.tasks")) message(condition)
 
-  json <- content(result, as = "text", encoding = "UTF-8")
-
-  fromJSON(json)
+  fromActivityInfoJson(result)
 }
 
 #' postResource
@@ -122,7 +120,7 @@ getResource <- function(path, queryParams = list(), task = NULL, requireStatus =
 #' @param body body
 #'
 #' @importFrom httr POST accept_json content stop_for_status status_code modify_url
-#' @importFrom rjson fromJSON
+#' @importFrom jsonlite fromJSON
 #' @noRd
 postResource <- function(path, body, task = NULL, requireStatus = NULL, encode = "json", ...) {
   
@@ -136,11 +134,7 @@ postResource <- function(path, body, task = NULL, requireStatus = NULL, encode =
 
   if (getOption("activityinfo.verbose.tasks")) message(condition)
   
-  json <- content(result, as = "text", encoding = "UTF-8")
-  if (!nzchar(json)) {
-    return(invisible())
-  }
-  fromJSON(json)
+  fromActivityInfoJson(result)
 }
 
 #' putResource
@@ -150,7 +144,7 @@ postResource <- function(path, body, task = NULL, requireStatus = NULL, encode =
 #' @param task A string to explain what task is being performed. Will be shown if an error occurs.
 #'
 #' @importFrom httr PUT accept_json content stop_for_status modify_url
-#' @importFrom rjson fromJSON
+#' @importFrom jsonlite fromJSON
 #' @noRd
 putResource <- function(path, body, task = NULL, requireStatus = NULL, silent = FALSE, encode = "json", ...) {
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
@@ -164,12 +158,7 @@ putResource <- function(path, body, task = NULL, requireStatus = NULL, silent = 
   # also display (short) success message:
   if (getOption("activityinfo.verbose.tasks")) message(condition)
 
-  json <- content(result, as = "text", encoding = "UTF-8")
-  if (nzchar(json)) {
-    return(fromJSON(json))
-  }
-
-  invisible()
+  fromActivityInfoJson(result)
 }
 
 #' deleteResource
@@ -179,7 +168,7 @@ putResource <- function(path, body, task = NULL, requireStatus = NULL, silent = 
 #' @param task A string to explain what task is being performed. Will be shown if an error occurs.
 #'
 #' @importFrom httr DELETE accept_json content stop_for_status modify_url
-#' @importFrom rjson fromJSON
+#' @importFrom jsonlite fromJSON
 #' @noRd
 deleteResource <- function(path, body = NULL, task = NULL, requireStatus = NULL, silent = FALSE, encode = "json", ...) {
   url <- modify_url(activityInfoRootUrl(), path = c("resources", path))
@@ -188,17 +177,30 @@ deleteResource <- function(path, body = NULL, task = NULL, requireStatus = NULL,
   
   result <- DELETE(url, body = body, encode = encode, activityInfoAuthentication(), accept_json(), ...)
   
-  message(sprintf("DELETE resources task: %s", task))
-  
   condition <- checkForError(result, task = task, requireStatus = requireStatus, call = sys.call(-1))
   
   # also display (short) success message:
   if (getOption("activityinfo.verbose.tasks")) message(condition)
   
-  json <- content(result, as = "text", encoding = "UTF-8")
-  if (nzchar(json)) {
-    return(fromJSON(json))
-  }
-  
-  invisible()
+  fromActivityInfoJson(result)
 }
+
+#' Wraps jsonlite::fromJSON to match the style of JSON produced
+#' by the ActivityInfo server.
+#' @importFrom jsonlite fromJSON
+fromActivityInfoJson <- function(x) {
+  if(inherits(x, "response")) {
+    x <- content(x, as = "text", encoding = "UTF-8")
+    if(!nzchar(x)) {
+      return(invisible())
+    }
+  }
+  fromJSON(txt = x, simplifyDataFrame = FALSE, simplifyMatrix = FALSE)
+}
+
+#' 
+#' Wraps jsonlite::toJSON to match the conventions expected by the 
+#' ActivityInfo server
+#' @importFrom jsonlite toJSON
+toActivityInfoJson <- function(x) 
+  toJSON(x, auto_unbox = TRUE, null = "null")

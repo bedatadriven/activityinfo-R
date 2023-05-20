@@ -7,7 +7,7 @@
 serialNumberFieldSchema(
   label,
   description = NULL,
-  digits = 5,
+  digits = 5L,
   prefixFormula = NULL,
   code = NULL,
   id = cuid(),

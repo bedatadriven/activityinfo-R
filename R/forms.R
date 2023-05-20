@@ -154,7 +154,7 @@ deleteForm <- function(databaseId, formId) {
       stop(sprintf("Failed to delete form %s: it is still on the server.", formId))
     },
     error = function(e) {
-      message(sprintf("Confirmed deletion of form %s", formId))
+      # Confirmed deletion of form
       invisible(TRUE)
     }
     )
@@ -216,9 +216,7 @@ addForm.formSchema <- function(schema, folderId = schema$databaseId, ...) {
   schemaResult <- result$forms[[ which(sapply(result$forms, function(f) f$id == schema$id)) ]]$schema
 
   asFormSchema(schemaResult)
-
 }
-
 
 reportFormValidationErrors <- function(condition) {
   errors <- condition$result$errors

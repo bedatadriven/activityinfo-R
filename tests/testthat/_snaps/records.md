@@ -559,7 +559,7 @@
       filteredRowDf
     Output
         Ref 1 Identifier number Ref 2 Identifier number Ref 3 Identifier number
-      1                     107                    <NA>                    <NA>
+      1                     107                      NA                      NA
         Respondent name
       1           Alice
 

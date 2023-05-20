@@ -10,14 +10,14 @@
 #' 
 #' @export
 submitPending <- function(file.name) {
-  pending <- fromJSON(file = file.name)
+  pending <- fromActivityInfoJson(readLines(con = file.name))
   for(p in pending) {
     if(is.null(p$transaction)) next
     updateSet <- p$transaction
     # fix up object for RJSON :-(
     for(i in seq_along(updateSet$changes)) {
       if(is.null(updateSet$changes[[i]]$parentRecordId)) {
-        # Remove the property, otherwise rjson turns it into {} rather than null
+        # Remove the property, otherwise jsonlite turns it into {} rather than null
         updateSet$changes[[i]]$parentRecordId <- NULL
       }
     }

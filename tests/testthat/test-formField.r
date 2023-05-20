@@ -90,8 +90,8 @@ test_that("Test roundtrip of dateFieldSchema()", {
 
 test_that("Test roundtrip of geopointFieldSchema()", {
   testField(geopointFieldSchema(label = "A geopointFieldSchema field", manualEntryAllowed = FALSE))
-  testField(geopointFieldSchema(label = "A geopointFieldSchema field", requiredAccuracy = 10, manualEntryAllowed = TRUE))
-  testField(geopointFieldSchema(label = "A geopointFieldSchema field", requiredAccuracy = 25, manualEntryAllowed = FALSE))
+  testField(geopointFieldSchema(label = "A geopointFieldSchema field", requiredAccuracy = 10L, manualEntryAllowed = TRUE))
+  testField(geopointFieldSchema(label = "A geopointFieldSchema field", requiredAccuracy = 25L, manualEntryAllowed = FALSE))
 })
 
 test_that("Test roundtrip of monthFieldSchema()", {

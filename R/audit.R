@@ -96,7 +96,9 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
     
     events <- rbind(events, page)
     
-    message(sprintf("Successfully received %d query audit log events (%d total) for database %s...", nrow(page), nrow(events), databaseId))
+    if (getOption("activityinfo.verbose.requests")) {
+      message(sprintf("Successfully received %d query audit log events (%d total) for database %s...", nrow(page), nrow(events), databaseId))
+    }
 
     # attach query metadata to the result:
     attr(events, "databaseId") <- databaseId

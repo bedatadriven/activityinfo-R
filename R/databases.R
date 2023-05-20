@@ -157,7 +157,7 @@ deleteDatabase <- function(databaseId) {
     task = sprintf("Requesting deletion of database %s", databaseId)
   )
   if (is.list(result)&&!is.null(result$code)&&result$code=="DELETED") {
-    message(sprintf("Deletion of database %s confirmed.", databaseId))
+    # "Deletion of database confirmed
     return(result)
   }
   stop(sprintf("Error while deleting database %s: %s", databaseId, deparse(result)))
@@ -229,7 +229,7 @@ getDatabaseUser <- function(databaseId, userId) {
   result <- GET(url, activityInfoAuthentication(), accept_json())
 
   if (result$status_code == 200) {
-    userRes <- fromJSON(content(result, as = "text", encoding = "UTF-8"))
+    userRes <- fromActivityInfoJson(result)
     userDF <- data.frame(
       databaseId = userRes$databaseId,
       userId = userRes$userId,
@@ -336,7 +336,7 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
     locale = locale,
     role = list(
       id = roleId,
-      parameters = roleParameters,
+      parameters = roleParameterList(roleParameters),
       resources = roleResources
     ),
     grants = list()
@@ -349,12 +349,12 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
   if (response$status_code == 200) {
     return(list(
       added = TRUE,
-      user = fromJSON(content(response, as = "text", encoding = "UTF-8"))
+      user = fromActivityInfoJson(response)
     ))
   } else if (response$status_code == 400) {
     return(list(
       added = FALSE,
-      error = fromJSON(content(response, as = "text", encoding = "UTF-8"))
+      error = fromActivityInfoJson(response)
     ))
   } else {
     stop(sprintf(
@@ -363,6 +363,17 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
       content(response, as = "text", encoding = "UTF-8")
     ))
   }
+}
+
+roleParameterList <- function(list) {
+  if(length(list) == 0) {
+    return(structure(list(), names = character(0)))
+  }
+  x <- as.list(list)
+  if(is.null(names(x))) {
+    stop("roleParameters must be a named list.")
+  }
+  x
 }
 
 #' deleteDatabaseUser

@@ -18,7 +18,7 @@ Maintainer: Alex Bertram <alex@bedatadriven.com>
 Description: 
     An interface to ActivityInfo, a web-based information management software 
     used for partner reporting, monitoring and evaluation and case management in
-    humanitarian aid, emergencies and international development.
+    humanitarian aid, emergencies and international development
 License: GPL-3
 Depends:
     dplyr (>= 1.1.1)

@@ -1444,7 +1444,7 @@ group_by.tbl_activityInfoRemoteRecords <- function(.data, ...) {
 
 #' @exportS3Method group_vars tbl_activityInfoRemoteRecords
 #' @importFrom dplyr group_vars
-group_vars.tbl_activityInfoRemoteRecords <- function(.data, ...) {
+group_vars.tbl_activityInfoRemoteRecords <- function(x) {
   character(0)
 }
 

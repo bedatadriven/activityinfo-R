@@ -13,8 +13,8 @@ env:
 jobs:
   test-job:
   runs-on: ubuntu-latest
-   container:
-      image: rocker/tidyverse:4
-   steps:
-      - name: Test
-        run: Rscript -e "devtools::test()"
+  container:
+    image: rocker/tidyverse:4
+  steps:
+    - name: Test
+      run: Rscript -e "devtools::test()"

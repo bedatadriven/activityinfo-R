@@ -187,6 +187,7 @@ deleteResource <- function(path, body = NULL, task = NULL, requireStatus = NULL,
 
 #' Wraps jsonlite::fromJSON to match the style of JSON produced
 #' by the ActivityInfo server.
+#' @param x a json string or a httr response object to convert to an R object
 #' @importFrom jsonlite fromJSON
 fromActivityInfoJson <- function(x) {
   if(inherits(x, "response")) {
@@ -201,6 +202,8 @@ fromActivityInfoJson <- function(x) {
 #' 
 #' Wraps jsonlite::toJSON to match the conventions expected by the 
 #' ActivityInfo server
+#' @param x an R object to convert to JSON
+#' 
 #' @importFrom jsonlite toJSON
 toActivityInfoJson <- function(x) 
   toJSON(x, auto_unbox = TRUE, null = "null")

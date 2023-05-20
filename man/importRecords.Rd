@@ -10,7 +10,7 @@ importRecords(
   recordIdColumn,
   parentIdColumn,
   stageDirect = TRUE,
-  progress = TRUE
+  progress = getOption("activityinfo.import.progress", default = TRUE)
 )
 }
 \arguments{

@@ -1,3 +1,10 @@
+## [4.35]
+- addForm() now respects folderId argument (#93)
+- Add "bulk_delete", "manage_translations", and "reviewer_only" arguments to permissions (#91)
+- createFormSchemaFromData() now returns formSchema object rather than list with formSchema and data
+- updateRecord() fails if the record does not exist, rather than adding it (#43)
+- Dependency on rjson removed
+
 ## [4.34]
 - `dplyr` is loaded onto the search path when `activityinfo` is loaded
 - documentation improvements

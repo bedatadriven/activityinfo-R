@@ -1,4 +1,22 @@
 
+#' Checks whether a record exists
+#' 
+#' @param the id of the form to check
+#' @param the id of the record to check
+recordExists <- function(formId, recordId) {
+  tryCatch({
+    getRecord(formId, recordId)
+    return(TRUE)
+  }, 
+   error = function(e) {
+     if(inherits(e, "http_404")) {
+       return(FALSE)
+     }
+     stop(e)
+   })
+}
+
+
 #' Adds a new record
 #'
 #'
@@ -59,11 +77,12 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
   stopifnot(is.character(formId))
   stopifnot(is.character(parentRecordId))
   stopifnot(is.list(fieldValues))
-
+  
+  recordId <- cuid()
   changes <- list(
     list(
       formId = formId,
-      recordId = cuid(),
+      recordId = recordId,
       parentRecordId = parentRecordId,
       fields = fieldValues
     )
@@ -82,6 +101,8 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
     body = list(changes = changes),
     task = task
     )
+  
+  getRecord(formId, recordId)
 }
 
 
@@ -149,6 +170,10 @@ updateRecord <- function(formId, recordId, fieldValues) {
   stopifnot(is.character(formId))
   stopifnot(is.character(recordId))
   stopifnot(is.list(fieldValues))
+  
+  if(!recordExists(formId, recordId)) {
+    stop(sprintf("Record %s in form %s does not exist or you do not have permission to view it.", formId, recordId))
+  }
 
   changes <- list(
     list(

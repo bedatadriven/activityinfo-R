@@ -1,13 +1,30 @@
-testthat::test_that("updateRecord() works", {
-
-})
-
-testthat::test_that("addRecord() works", {
-
-})
-
-testthat::test_that("deleteRecord() works", {
+testthat::test_that("add, update, and deleteRecord() works", {
   
+  form <- addForm(formSchema(
+    database$databaseId,
+    label = "Test form for records",
+    elements = list(textFieldSchema("Name", code = "NAME", key = TRUE),
+                    quantityFieldSchema("Age", code = "AGE"))))
+  
+  ageField <- form$elements[[2]]
+  
+  alice <- addRecord(formId = form$id, fieldValues = list(NAME = "Alice", AGE = 30))
+  bob <- addRecord(formId = form$id, fieldValues = list(NAME = "Bob", AGE = 24))
+  
+  updateRecord(form$id, alice$recordId, fieldValues = list(AGE = 25))
+  
+  alice <- getRecord(form$id, alice$recordId)
+  assertthat::assert_that(alice$fields[[ageField$id]] == 25)
+  
+  # It shouldn't be possible to update or delete non-existant records
+  expect_error(updateRecord(form$id, recordId = "foobar", fieldValues = list(AGE = 25)))
+  expect_error(deleteRecord(form$id, recordId = "foobar"))
+  
+  
+  # Delete records should work
+  deleteRecord(form$id, recordId = bob$recordId)
+  expect_error(getRecord(form$id, recordId = bob$recordId))
+
 })
 
 testthat::test_that("getRecordHistory() works", {

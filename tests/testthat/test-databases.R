@@ -32,7 +32,19 @@ testthat::test_that("getDatabaseTree() works", {
   testthat::expect_s3_class(tree, "databaseTree")
   testthat::expect_named(tree, c("databaseId", "userId", "version", "label", "description", "ownerRef", "billingAccountId", "language", "originalLanguage", "continuousTranslation", "translationFromDbMemory", "thirdPartyTranslation", "languages", "role", "suspended", "storage", "publishedTemplate", "resources", "grants", "locks", "roles", "securityCategories"))
   testthat::expect_identical(tree$databaseId, database$databaseId)
-  expectActivityInfoSnapshot(tree)
+  if(tree$roles[[1]]$grantBased){
+    expectActivityInfoSnapshot(tree)
+    testthat::expect_error({
+      expectActivityInfoSnapshot(tree)
+    })
+  }else{
+    testthat::expect_error({
+      expectActivityInfoSnapshot(tree)
+    })
+    expectActivityInfoSnapshot(tree)
+  }
+  
+  
 })
 
 testthat::test_that("getDatabaseResources() works", {
@@ -89,9 +101,19 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
 
   returnedUsers <- addTestUsers(database, tree, nUsers = 2)
 
-  expectActivityInfoSnapshot(returnedUsers)
-
-  nUsers <- 2
+  if(tree$roles[[1]]$grantBased){
+    expectActivityInfoSnapshot(returnedUsers)
+    testthat::expect_error({
+      expectActivityInfoSnapshot(returnedUsers)
+    })
+  }else{
+    testthat::expect_error({
+      expectActivityInfoSnapshot(returnedUsers)
+    })
+    expectActivityInfoSnapshot(returnedUsers)
+  }
+  
+nUsers <- 2
   
   testthat::expect_no_error({
     users <- getDatabaseUsers(databaseId = database$databaseId, asDataFrame=FALSE)

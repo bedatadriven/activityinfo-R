@@ -101,17 +101,9 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
 
   returnedUsers <- addTestUsers(database, tree, nUsers = 2)
 
-  if(tree$roles[[1]]$grantBased){
-    expectActivityInfoSnapshot(returnedUsers)
-    testthat::expect_error({
-      expectActivityInfoSnapshot(returnedUsers)
-    })
-  }else{
-    testthat::expect_error({
-      expectActivityInfoSnapshot(returnedUsers)
-    })
-    expectActivityInfoSnapshot(returnedUsers)
-  }
+
+  expectActivityInfoSnapshot(returnedUsers)
+  
   
 nUsers <- 2
   

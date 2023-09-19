@@ -136,21 +136,6 @@
 
     list(list(added = TRUE, user = list(activationStatus = "PENDING", 
         databaseId = "<id value>", deliveryStatus = "UNKNOWN", email = "<id value>", 
-        grantVersion = 2L, grants = list(), inviteTime = "<date or time value>", 
-        lastLoginTime = "<date or time value>", name = "Test database user", 
-        role = list(id = "<id value>", parameters = list(), resources = "Empty resources until we can ensure a sort order in the API."), 
-        userId = "<id value>", version = 1L)), list(added = TRUE, 
-        user = list(activationStatus = "PENDING", databaseId = "<id value>", 
-            deliveryStatus = "UNKNOWN", email = "<id value>", grantVersion = 2L, 
-            grants = list(), inviteTime = "<date or time value>", 
-            lastLoginTime = "<date or time value>", name = "Test database user", 
-            role = list(id = "<id value>", parameters = list(), resources = "Empty resources until we can ensure a sort order in the API."), 
-            userId = "<id value>", version = 1L)))
-
----
-
-    list(list(added = TRUE, user = list(activationStatus = "PENDING", 
-        databaseId = "<id value>", deliveryStatus = "UNKNOWN", email = "<id value>", 
         grants = list(), inviteTime = "<date or time value>", lastLoginTime = "<date or time value>", 
         name = "Test database user", role = list(id = "<id value>", 
             parameters = list(), resources = "Empty resources until we can ensure a sort order in the API."), 

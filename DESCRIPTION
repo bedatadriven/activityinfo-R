@@ -1,7 +1,7 @@
 Package: activityinfo
 Type: Package
 Title: R interface to ActivityInfo.org, an information management software for
-    humanitarian and development operations.
+    humanitarian and development operations
 Version: 4.35
 Date: 2023-05-25
 Authors@R: c(
@@ -18,7 +18,7 @@ Maintainer: Alex Bertram <alex@bedatadriven.com>
 Description: 
     An interface to ActivityInfo, a web-based information management software 
     used for partner reporting, monitoring and evaluation and case management in
-    humanitarian aid, emergencies and international development
+    humanitarian aid, emergencies and international development.
 License: GPL-3
 Depends:
     dplyr (>= 1.1.1)

@@ -1,8 +1,8 @@
 
 #' Checks whether a record exists
 #' 
-#' @param the id of the form to check
-#' @param the id of the record to check
+#' @param formId the id of the form to check
+#' @param recordId the id of the record to check
 recordExists <- function(formId, recordId) {
   tryCatch({
     getRecord(formId, recordId)

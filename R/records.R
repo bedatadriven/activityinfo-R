@@ -23,6 +23,7 @@ recordExists <- function(formId, recordId) {
 #' @param formId the id of the form to which the record should be added
 #' @param parentRecordId the id of this record's parent record, if the form is a subform
 #' @param fieldValues a named list of fields to change.
+#' @param recordId the id of the new record when a custom id is desired. The given id must be in cuid-compatible format.
 #' @export
 #' @family record functions
 #' @examples
@@ -73,12 +74,16 @@ recordExists <- function(formId, recordId) {
 #' ))
 #'
 #' }
-addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
+addRecord <- function(formId, parentRecordId = NA_character_, fieldValues, recordId = NA_character_) {
   stopifnot(is.character(formId))
   stopifnot(is.character(parentRecordId))
   stopifnot(is.list(fieldValues))
-  
-  recordId <- cuid()
+  stopifnot(is.character(recordId))
+
+  if (identical(recordId, NA_character_)) {
+    # generate a record id if not provided
+    recordId <- cuid()
+  }
   changes <- list(
     list(
       formId = formId,

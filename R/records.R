@@ -83,6 +83,11 @@ addRecord <- function(formId, parentRecordId = NA_character_, fieldValues, recor
   if (identical(recordId, NA_character_)) {
     # generate a record id if not provided
     recordId <- cuid()
+  } else {
+    # check provided record id does not exist before continuing
+    if (recordExists(formId, recordId)) {
+      stop(sprintf("Record %s in form %s already exists.", recordId, formId))
+    }
   }
   changes <- list(
     list(

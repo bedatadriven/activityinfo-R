@@ -69,7 +69,7 @@ queryTable <- function(form, columns, ..., truncateStrings = TRUE, asTibble = FA
 
   if (length(columns) == 0) {
     if ((missing(window)||is.null(window))&&(missing(filter)||is.null(filter))&&(missing(sort)||is.null(sort))) {
-      columnSet <- getResource(sprintf("form/%s/query/columns", formId), task = sprintf("Getting form %s data.", formId))
+      columnSet <- getResource(sprintf("form/%s/query/columns", formId), queryParams=list("_truncate" = truncateStrings), task = sprintf("Getting form %s data.", formId))
       df <- parseColumnSet(columnSet, asTibble, makeNames)
       if (makeNames&&asTibble) {
         names(df) <- make.names(names(df), unique = TRUE)

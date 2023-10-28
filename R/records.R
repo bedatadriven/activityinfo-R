@@ -837,13 +837,15 @@ varNames.activityInfoFormTree <- function(x, style = defaultColumnStyle(), addNa
       }))
       parentVarNames <- parentVarNames[lengths(parentVarNames)!=0]
     }
-    
-    if(identical(style$columnNames, "pretty")) {
-      parentVarNames <- paste("Parent", parentVarNames, sep = " ")
-    } else {
-      parentVarNames <- paste("@parent", parentVarNames, sep = ".")
+
+    if (!is.null(parentVarNames)) {
+      if(identical(style$columnNames, "pretty")) {
+        parentVarNames <- paste("Parent", parentVarNames, sep = " ")
+      } else {
+        parentVarNames <- paste("@parent", parentVarNames, sep = ".")
+      }
     }
-    
+
     vrNames <- c(vrNames, "@parent", parentVarNames)
   }
   if (style$recordId) vrNames[length(vrNames)+1] <- "_id"

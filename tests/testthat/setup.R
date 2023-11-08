@@ -73,7 +73,7 @@ canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate =
           }
         })
       } else if (is.vector(x) && is.character(x)) {
-        # reorder vectors (which are not lists) as sort order is not guaranteed by API 
+        # reorder character vectors (which are not lists) as sort order is not guaranteed by API 
         x <- x[order(x)]
       }
 

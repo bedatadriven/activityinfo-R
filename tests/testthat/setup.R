@@ -72,11 +72,7 @@ canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate =
             list("Empty resources until we can ensure a sort order in the API.")
           }
         })
-      } else if (is.vector(x) && is.character(x)) {
-        # reorder character vectors (which are not lists) as sort order is not guaranteed by API 
-        x <- x[order(x)]
       }
-
 
       x <- lapply(x, function(y) {
         recursiveCanonicalize(y, path = paste(c(path, path), collapse = "."))

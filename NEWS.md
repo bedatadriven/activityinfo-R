@@ -1,3 +1,7 @@
+
+## [4.35.1]
+- Fix for `getQuantityTable()` (#115)
+
 ## [4.35]
 - addForm() now respects folderId argument (#93)
 - Add "bulk_delete", "manage_translations", and "reviewer_only" arguments to permissions (#91)

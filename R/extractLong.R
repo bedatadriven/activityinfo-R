@@ -6,7 +6,7 @@
 #' @param folderId (optional) the id of the folder or form to include. If omitted, the whole database will be included in the export.
 #' @param includeBlanks if TRUE, the export will include a row for quantity fields with blank values. Default is FALSE.
 #' @return a single data.frame with quantity values in rows, and dimensions in columns.
-#' @importFrom httr GET write_disk
+#' @importFrom httr GET write_disk modify_url
 #' @importFrom utils read.table
 #' @export
 getQuantityTable <- function(databaseId = NA, folderId, includeBlanks = FALSE) {
@@ -28,7 +28,7 @@ getQuantityTable <- function(databaseId = NA, folderId, includeBlanks = FALSE) {
   ))
   
   tempFile <- tempfile()
-  downloadUrl <- paste(activityInfoRootUrl(), status$result$downloadUrl, sep="/")
+  downloadUrl <- modify_url(activityInfoRootUrl(), path=status$result$downloadUrl)
   
   GET(downloadUrl, write_disk(tempFile, overwrite=TRUE), activityInfoAuthentication())
   

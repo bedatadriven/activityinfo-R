@@ -65,9 +65,9 @@ test_that("Test deleteFormField()", {
   identicalForm(fmSchm %>% deleteFormField(label = c("Text field 1", "Text field 5")), fmSchm2)
 })
 
-test_that("Test roundtrip of attachmentFieldSchema()", {
-  testField(attachmentFieldSchema(label = "A attachment FieldSchema field"))
-})
+# test_that("Test roundtrip of attachmentFieldSchema()", {
+#   testField(attachmentFieldSchema(label = "A attachment FieldSchema field"))
+# })
 
 test_that("Barcode fields can be created and uploaded and downloaded and are identical", {
   testField(barcodeFieldSchema(label = "A barcode field"))

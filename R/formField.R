@@ -528,7 +528,7 @@ attachmentFieldSchema <- function(label, description = NULL, code = NULL, id = c
       list(
         typeParameters = list(
           "cardinality" = "multiple",
-          "kind" = "attachment"
+          "captureMethods" = c("CAMERA", "FILE", "SIGNATURE")
         )
       )
     )

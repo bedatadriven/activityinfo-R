@@ -31,7 +31,7 @@ canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate =
     if (identical(x, structure(list(), names = character(0)))) {
       return(list())
     }
-    
+
     if (is.list(x)) {
       savedAttributes <- attributes(x)
 
@@ -73,7 +73,6 @@ canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate =
           }
         })
       }
-
 
       x <- lapply(x, function(y) {
         recursiveCanonicalize(y, path = paste(c(path, path), collapse = "."))

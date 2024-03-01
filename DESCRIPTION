@@ -1,7 +1,7 @@
 Package: activityinfo
 Type: Package
 Title: R interface to ActivityInfo.org, an information management software for
-    humanitarian and development operations.
+    humanitarian and development operations
 Version: 4.36
 Date: 2023-05-25
 Authors@R: c(
@@ -46,6 +46,7 @@ Suggests:
     markdown,
     withr,
     assertthat,
-    purrr
+    purrr,
+    tinytex
 VignetteBuilder: knitr
 Config/testthat/edition: 3

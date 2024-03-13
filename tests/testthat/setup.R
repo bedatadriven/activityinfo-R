@@ -102,19 +102,25 @@ namesOrIndexes <- function(x) {
 
 compare_recursively <- function(a, b, path = list()) {
   if (is.atomic(a) && is.atomic(b)) {
-    expect_identical(a, b)
+    if (!identical(a,b)) {
+      message(sprintf("Field with name/key '%s' value has changed", paste(path, collapse="'->'")))
+    }
+    expect_identical(object = b, expected = a)
   } else if (is.list(a) && is.list(b)) {
     additionalFields <- names(b)[!names(b) %in% names(a)]
     if (length(additionalFields)>0) {
-      message(sprintf("Additional fields found in %s: '%s'", paste(path, collapse = "->"), paste(additionalFields, collapse = "', '")))
+      message(sprintf("Additional fields found at name/key '%s': '%s'", paste(path, collapse = "'->'"), paste(additionalFields, collapse = "', '")))
     }
     for (name in names(a)) {
       # Check if the name in 'a' exists in 'b', then compare their values recursively
-      testthat::expect_true(name %in% names(b), info = sprintf("Missing field %s", paste(c(path, name), collapse="->")))
+      test <- name %in% names(b)
+      if(!test) message(sprintf("Missing expected field name/key %s", paste(c(path, name), collapse="->")))
+      testthat::expect_true(test)
       compare_recursively(a[[name]], b[[name]], c(path, name))
     }
   } else {
-    stop("Incompatible types or structures in comparison")
+    message(sprintf("Incompatible structures under name/key '%s'", paste(path, collapse="'->'")))
+    expect_identical(object = b, expected = a)
   }
 }
 
@@ -127,7 +133,7 @@ identicalForm <- function(a,b, b_allowed_new_fields = TRUE) {
   if (b_allowed_new_fields) {
     compare_recursively(a, b)
   } else {
-    expect_identical(a, b)
+    expect_identical(object = b, expected = a)
   }
 }
 

@@ -214,6 +214,8 @@ testthat::test_that("getRecords() works", {
   testthat::test_that("Copying of schemas with extractSchemaFromFields()", {
     newSchema <- rcrds %>% select(id = `Identifier number`) %>% extractSchemaFromFields(databaseId = "dbid", label = "new form")
     
+    identicalForm(schema, newSchema)
+    
     expectActivityInfoSnapshot(newSchema)
     
     # no form schema elements to provide - expect warning

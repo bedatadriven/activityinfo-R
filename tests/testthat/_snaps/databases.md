@@ -78,31 +78,25 @@
       1 c10000004 Person form c10000002 FORM     PRIVATE   
       2 c10000005 Children    c10000004 SUB_FORM PRIVATE   
 
-# addDatabaseUser() and deleteDatabaseUser() and getDatabaseUsers() and getDatabaseUser() and getDatabaseUser2() work
+# addDatabaseUser() and deleteDatabaseUser() and getDatabaseUsers() and getDatabaseUser() and getDatabaseUser2() work and expected fields are present
 
-    list(list(added = TRUE, user = list(activationStatus = "PENDING", 
+    list(list(activationStatus = "PENDING", databaseId = "<id value>", 
+        deliveryStatus = "UNKNOWN", email = "<id value>", inviteTime = "<date or time value>", 
+        lastLoginTime = "<date or time value>", name = "Test database user", 
+        userId = "<id value>", version = 1L), list(activationStatus = "PENDING", 
         databaseId = "<id value>", deliveryStatus = "UNKNOWN", email = "<id value>", 
-        grants = list(), inviteTime = "<date or time value>", lastLoginTime = "<date or time value>", 
-        name = "Test database user", role = list(id = "<id value>", 
-            parameters = list(), resources = "Empty resources until we can ensure a sort order in the API."), 
-        userId = "<id value>", version = 1)), list(added = TRUE, 
-        user = list(activationStatus = "PENDING", databaseId = "<id value>", 
-            deliveryStatus = "UNKNOWN", email = "<id value>", grants = list(), 
-            inviteTime = "<date or time value>", lastLoginTime = "<date or time value>", 
-            name = "Test database user", role = list(id = "<id value>", 
-                parameters = list(), resources = "Empty resources until we can ensure a sort order in the API."), 
-            userId = "<id value>", version = 1)))
+        inviteTime = "<date or time value>", lastLoginTime = "<date or time value>", 
+        name = "Test database user", userId = "<id value>", version = 1L))
 
 ---
 
-    list(list(databaseId = "<id value>", deliveryStatus = "UNKNOWN", 
-        email = "<id value>", inviteAccepted = FALSE, inviteDate = "<date or time value>", 
-        name = "Test database user", role = list(id = "<id value>", 
-            parameters = list(), resources = "Empty resources until we can ensure a sort order in the API."), 
-        userId = "<id value>", userLicenseType = "BASIC", version = 1L), 
-        list(databaseId = "<id value>", deliveryStatus = "UNKNOWN", 
-            email = "<id value>", inviteAccepted = FALSE, inviteDate = "<date or time value>", 
-            name = "Test database user", role = list(id = "<id value>", 
-                parameters = list(), resources = "Empty resources until we can ensure a sort order in the API."), 
-            userId = "<id value>", userLicenseType = "BASIC", version = 1L))
+    list(list(activationStatus = "PENDING", databaseId = "<id value>", 
+        deliveryStatus = "UNKNOWN", email = "<id value>", inviteAccepted = FALSE, 
+        inviteDate = "<date or time value>", lastLoginDate = "<date or time value>", 
+        name = "Test database user", userId = "<id value>", userLicenseType = "BASIC", 
+        version = 1L), list(activationStatus = "PENDING", databaseId = "<id value>", 
+        deliveryStatus = "UNKNOWN", email = "<id value>", inviteAccepted = FALSE, 
+        inviteDate = "<date or time value>", lastLoginDate = "<date or time value>", 
+        name = "Test database user", userId = "<id value>", userLicenseType = "BASIC", 
+        version = 1L))
 

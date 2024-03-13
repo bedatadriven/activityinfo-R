@@ -30,8 +30,8 @@ Other record functions:
 \code{\link{addRecord}()},
 \code{\link{deleteRecord}()},
 \code{\link{getAttachment}()},
-\code{\link{getRecordHistory}()},
 \code{\link{getRecord}()},
+\code{\link{getRecordHistory}()},
 \code{\link{updateRecord}()}
 }
 \concept{record functions}

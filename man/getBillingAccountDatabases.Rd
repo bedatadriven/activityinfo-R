@@ -4,12 +4,12 @@
 \alias{getBillingAccountDatabases}
 \title{getBillingAccountDatabases}
 \usage{
-getBillingAccountDatabases(asDataFrame = TRUE, billingId)
+getBillingAccountDatabases(billingId, asDataFrame = TRUE)
 }
 \arguments{
-\item{asDataFrame}{Output as data.frame, Default: TRUE}
-
 \item{billingId}{Billing ID}
+
+\item{asDataFrame}{Output as data.frame, Default: TRUE}
 }
 \value{
 Information on databases under billing account in list or data.frame output

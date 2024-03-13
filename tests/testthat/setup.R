@@ -100,12 +100,35 @@ namesOrIndexes <- function(x) {
   }
 }
 
-identicalForm <- function(a,b) {
+compare_recursively <- function(a, b, path = list()) {
+  if (is.atomic(a) && is.atomic(b)) {
+    expect_identical(a, b)
+  } else if (is.list(a) && is.list(b)) {
+    additionalFields <- names(b)[!names(b) %in% names(a)]
+    if (length(additionalFields)>0) {
+      message(sprintf("Additional fields found in %s: '%s'", paste(path, collapse = "->"), paste(additionalFields, collapse = "', '")))
+    }
+    for (name in names(a)) {
+      # Check if the name in 'a' exists in 'b', then compare their values recursively
+      testthat::expect_true(name %in% names(b), info = sprintf("Missing field %s", paste(c(path, name), collapse="->")))
+      compare_recursively(a[[name]], b[[name]], c(path, name))
+    }
+  } else {
+    stop("Incompatible types or structures in comparison")
+  }
+}
+
+identicalForm <- function(a,b, b_allowed_new_fields = TRUE) {
   a <- a[!(namesOrIndexes(a) %in% c("schemaVersion"))]
   b <- b[!(namesOrIndexes(b) %in% c("schemaVersion"))]
   a <- canonicalizeActivityInfoObject(a, replaceId = FALSE, replaceDate = FALSE, replaceResource = FALSE)
   b <- canonicalizeActivityInfoObject(b, replaceId = FALSE, replaceDate = FALSE, replaceResource = FALSE)
-  testthat::expect_identical(a,b)
+
+  if (b_allowed_new_fields) {
+    compare_recursively(a, b)
+  } else {
+    expect_identical(a, b)
+  }
 }
 
 expectActivityInfoSnapshot <- function(x, replaceId = TRUE, replaceDate = TRUE, replaceResource = TRUE) {
@@ -158,7 +181,10 @@ tryCatch(
 activityInfoRootUrl(preprodRootUrl)
 
 # Use these credentials for the rest of the tests
-activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
+testthat::expect_warning({
+  activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
+}, regexp = "deprecating")
+
 
 
 # Add a new database for this user

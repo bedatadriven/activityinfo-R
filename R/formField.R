@@ -710,12 +710,17 @@ userFieldSchema <- function(label, description = NULL, databaseId, code = NULL, 
 #' @inheritParams formFieldSchema
 #' @family field schemas
 #' @export
-sectionFieldSchema <- function(label, description = NULL) {
+sectionFieldSchema <- function(label, description = NULL, indentationLevel = 1L) {
   schema <- do.call(
     formFieldSchema, 
     args = c(
       list(type = "section"),
-      as.list(environment())
+      formFieldArgs(as.list(environment())),
+      list(
+        typeParameters = list(
+          "indentationLevel" = indentationLevel
+        )
+      )
     )
   )
   

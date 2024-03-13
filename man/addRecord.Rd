@@ -76,8 +76,8 @@ addRecord(formId = "cxy123", fieldValues = list(
 Other record functions: 
 \code{\link{deleteRecord}()},
 \code{\link{getAttachment}()},
-\code{\link{getRecordHistory}()},
 \code{\link{getRecord}()},
+\code{\link{getRecordHistory}()},
 \code{\link{recoverRecord}()},
 \code{\link{updateRecord}()}
 }

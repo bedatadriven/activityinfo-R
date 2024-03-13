@@ -4,14 +4,14 @@
 \alias{getBillingAccountDatabaseUsers}
 \title{getBillingAccountDatabaseUsers}
 \usage{
-getBillingAccountDatabaseUsers(asDataFrame = TRUE, billingId, databaseId)
+getBillingAccountDatabaseUsers(billingId, databaseId, asDataFrame = TRUE)
 }
 \arguments{
-\item{asDataFrame}{Data.frame output, Default: TRUE}
-
 \item{billingId}{Billing ID}
 
 \item{databaseId}{Database ID}
+
+\item{asDataFrame}{Data.frame output, Default: TRUE}
 }
 \value{
 User information from the specified database in list or data.frame output

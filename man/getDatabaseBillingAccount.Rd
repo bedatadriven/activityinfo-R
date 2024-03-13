@@ -4,12 +4,12 @@
 \alias{getDatabaseBillingAccount}
 \title{getDatabaseBillingAccount}
 \usage{
-getDatabaseBillingAccount(asDataFrame = TRUE, databaseId)
+getDatabaseBillingAccount(databaseId, asDataFrame = TRUE)
 }
 \arguments{
-\item{asDataFrame}{Data.frame output, Default: TRUE}
-
 \item{databaseId}{Database ID}
+
+\item{asDataFrame}{Data.frame output, Default: TRUE}
 }
 \value{
 Database owner in list output

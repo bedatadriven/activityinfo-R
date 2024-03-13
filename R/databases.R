@@ -14,8 +14,8 @@ getDatabases <- function(asDataFrame = TRUE) {
       databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
       label = unlist(lapply(databases, function(x) {x$label})),
       description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
-      ownerId = unlist(lapply(databases, function(x) {x$ownerId})),
-      billingAccountId = unlist(lapply(databases, function(x) {x$billingAccountId})),
+      ownerId = as.character(unlist(lapply(databases, function(x) {x$ownerId}))),
+      billingAccountId = as.character(unlist(lapply(databases, function(x) {x$billingAccountId}))),
       suspended = unlist(lapply(databases, function(x) {x$suspended}))
     )
     return(dbDF)

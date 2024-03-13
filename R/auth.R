@@ -34,7 +34,7 @@ activityInfoRootUrl <- local({
   function(newUrl) {
     if (!missing(newUrl)) {
       url <<- newUrl
-      activityInfoAuthentication()
+      activityInfoAuthentication(NULL)
       invisible()
     } else {
       url
@@ -55,17 +55,15 @@ activityInfoAuthentication <- local({
   function(newValue) {
     if (!missing(newValue)) {
       credentials <<- newValue
+      if (!is.null(credentials)&&credentialType(credentials) == "basic") deprecationOfBasicAuthWarning()
     } else {
-      if (file.exists(credentialsFile)) {
-        
+      if (is.null(credentials)&&file.exists(credentialsFile)) {
         authObj = readRDS(file = credentialsFile) %>% filter(server == activityInfoRootUrl())
         
         if (nrow(authObj) == 1) {
           credentials <<- authObj %>% pull(credentials)
           if (credentialType(credentials) == "basic") deprecationOfBasicAuthWarning()
-        } else if (nrow(authObj)==0) {
-          credentials <<- NULL
-        } else {
+        } else if (nrow(authObj) > 1) {
           warning(sprintf("...file exists, but has more than one key. Try saving the key again.\n", path.expand(path = credentialsFile)))
         }
       }

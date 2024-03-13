@@ -202,7 +202,7 @@ fromActivityInfoJson <- function(x) {
       return(invisible())
     }
   }
-  fromJSON(txt = x, simplifyDataFrame = FALSE, simplifyMatrix = FALSE)
+  fromJSON(txt = x, simplifyDataFrame = FALSE, simplifyMatrix = FALSE, bigint_as_char = TRUE)
 }
 
 #' 

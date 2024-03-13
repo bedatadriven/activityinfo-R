@@ -23,8 +23,8 @@ of the temporary file is returned.
 Other record functions: 
 \code{\link{addRecord}()},
 \code{\link{deleteRecord}()},
-\code{\link{getRecordHistory}()},
 \code{\link{getRecord}()},
+\code{\link{getRecordHistory}()},
 \code{\link{recoverRecord}()},
 \code{\link{updateRecord}()}
 }

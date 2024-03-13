@@ -4,12 +4,12 @@
 \alias{getBillingAccount}
 \title{getBillingAccount}
 \usage{
-getBillingAccount(asDataFrame = TRUE, billingId)
+getBillingAccount(billingId, asDataFrame = TRUE)
 }
 \arguments{
-\item{asDataFrame}{Output as data.frame, Default: TRUE}
-
 \item{billingId}{Billing ID}
+
+\item{asDataFrame}{Output as data.frame, Default: TRUE}
 }
 \value{
 Billing account information in list or data.frame output

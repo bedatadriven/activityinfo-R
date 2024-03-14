@@ -103,6 +103,7 @@ getBillingAccountUsers <- function(billingAccountId, asDataFrame = TRUE) {
   billingUsers <- getResource(paste0("/billingAccounts/", billingAccountId, "/users"), task = "Getting billing account users")
   if (asDataFrame == TRUE) {
     billingUsers <- tibble::tibble(
+      userId = unlist(lapply(billingUsers, function(x) {x$userId})),
       billingAccountId = unlist(lapply(billingUsers, function(x) {x$billingAccountId})),
       email = unlist(lapply(billingUsers, function(x) {x$email})),
       name = unlist(lapply(billingUsers, function(x) {x$name})),
@@ -158,6 +159,7 @@ getBillingAccountDatabaseUsers <- function(billingAccountId, databaseId, asDataF
   databaseUsers <- getResource(paste0("billingAccounts/", billingAccountId, "/users?databaseId=", databaseId), task = "Getting database data")
   if (asDataFrame == TRUE) {
     databaseUsers <- tibble::tibble(
+      userId = unlist(lapply(databaseUsers, function(x) {x$userId})),
       billingAccountId = unlist(lapply(databaseUsers, function(x) {x$billingAccountId})),
       email = unlist(lapply(databaseUsers, function(x) {x$email})),
       name = unlist(lapply(databaseUsers, function(x) {x$name})),

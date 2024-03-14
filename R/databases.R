@@ -10,18 +10,22 @@
 getDatabases <- function(asDataFrame = TRUE) {
   databases <- getResource("databases", task = "Getting all databases")
   if (asDataFrame == TRUE) {
-    dbDF <- dplyr::tibble(
-      databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
-      label = unlist(lapply(databases, function(x) {x$label})),
-      description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
-      ownerId = as.character(unlist(lapply(databases, function(x) {x$ownerId}))),
-      billingAccountId = as.character(unlist(lapply(databases, function(x) {x$billingAccountId}))),
-      suspended = unlist(lapply(databases, function(x) {x$suspended}))
-    )
-    return(dbDF)
+    return(databasesListToTibble(databases))
   } else if (asDataFrame == FALSE) {
     return(databases)
   }
+}
+
+databasesListToTibble <- function(databases) {
+  dbDF <- dplyr::tibble(
+    databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
+    label = unlist(lapply(databases, function(x) {x$label})),
+    description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
+    ownerId = as.character(unlist(lapply(databases, function(x) {x$ownerId}))),
+    billingAccountId = as.character(unlist(lapply(databases, function(x) {x$billingAccountId}))),
+    suspended = unlist(lapply(databases, function(x) {x$suspended}))
+  )
+  return(dbDF)
 }
 
 databaseUpdates <- function() {

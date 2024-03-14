@@ -76,6 +76,7 @@ getDatabaseTree <- function(databaseId) {
   )
   class(tree$resources) <- "databaseResources"
   class(tree) <- "databaseTree"
+  tree$billingAccountId <- as.character(tree$billingAccountId)
   tree
 }
 
@@ -128,7 +129,7 @@ getDatabaseResources <- function(database) {
 #' newDb <- addDatabase("Programme information system")
 #' }
 addDatabase <- function(label, databaseId = cuid()) {
-  postResource(
+  x <- postResource(
     "databases",
     body = list(
       id = databaseId,
@@ -137,6 +138,8 @@ addDatabase <- function(label, databaseId = cuid()) {
       ),
     task = sprintf("Creating new database '%s' with id %s", label, databaseId)
   )
+  x$billingAccountId <- as.character(x$billingAccountId)
+  x
 }
 
 #' deleteDatabase

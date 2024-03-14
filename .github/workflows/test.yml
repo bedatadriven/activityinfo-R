@@ -1,4 +1,4 @@
-name: Test
+name: activityinfo-R-package-tests
 on:
   push:
     branches:
@@ -6,6 +6,8 @@ on:
     - master
     - cran-*
     - version-*
+  pull_request:
+    branches: [main, master]
     
 env: 
   TEST_URL: ${{ secrets.TEST_URL }}

@@ -12,7 +12,11 @@ getDatabases <- function(asDataFrame = TRUE) {
   if (asDataFrame == TRUE) {
     return(databasesListToTibble(databases))
   } else if (asDataFrame == FALSE) {
-    return(databases)
+    return(lapply(databases, function(x) {
+      x$ownerId <- as.character(x$ownerId)
+      x$billingAccountId <- as.character(x$billingAccountId)
+      x
+    }))
   }
 }
 

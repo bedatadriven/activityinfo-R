@@ -4,10 +4,10 @@
 \alias{getBillingAccountDomains}
 \title{getBillingAccountDomains}
 \usage{
-getBillingAccountDomains(billingId)
+getBillingAccountDomains(billingAccountId)
 }
 \arguments{
-\item{billingId}{Billing ID}
+\item{billingAccountId}{Billing ID}
 }
 \value{
 Information on billing account email domain in list output

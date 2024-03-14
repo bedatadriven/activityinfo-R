@@ -4,12 +4,14 @@
 \alias{sectionFieldSchema}
 \title{Create a section header form field schema}
 \usage{
-sectionFieldSchema(label, description = NULL)
+sectionFieldSchema(label, description = NULL, indentationLevel = 1L)
 }
 \arguments{
 \item{label}{The label of the form field}
 
 \item{description}{The description of the form field}
+
+\item{indentationLevel}{section indentation level; default is 1}
 }
 \description{
 A special form field to define a section header for the form.

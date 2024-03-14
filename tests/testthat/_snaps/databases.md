@@ -9,64 +9,6 @@
       1 <id value>       <id value> <NA>        My first database  <id valu~ FALSE    
       2 <id value>       <id value> <NA>        My second database <id valu~ FALSE    
 
-# getDatabaseTree() works
-
-    structure(list(billingAccountId = "<id value>", continuousTranslation = FALSE, 
-        databaseId = "<id value>", description = "", grants = list(), 
-        label = "My first database", language = "", languages = list(), 
-        locks = list(), originalLanguage = "", ownerRef = list(email = "<id value>", 
-            id = "<id value>", name = "Bob"), publishedTemplate = FALSE, 
-        resources = list("Empty resources until we can ensure a sort order in the API."), 
-        role = list(id = "<id value>", parameters = list(), resources = list()), 
-        roles = list(list(filters = list(), grantBased = TRUE, grants = list(
-            list(operations = list(list(filter = NULL, operation = "VIEW", 
-                securityCategories = list()), list(filter = NULL, 
-                operation = "DISCOVER", securityCategories = list()), 
-                list(filter = NULL, operation = "EDIT_RECORD", securityCategories = list()), 
-                list(filter = NULL, operation = "ADD_RECORD", securityCategories = list()), 
-                list(filter = NULL, operation = "DELETE_RECORD", 
-                    securityCategories = list()), list(filter = NULL, 
-                    operation = "EXPORT_RECORDS", securityCategories = list())), 
-                optional = FALSE, resourceId = "<id value>")), id = "<id value>", 
-            label = "Data Entry", parameters = list(), permissions = list(), 
-            version = 0L), list(filters = list(), grantBased = TRUE, 
-            grants = list(list(operations = list(list(filter = NULL, 
-                operation = "VIEW", securityCategories = list()), 
-                list(filter = NULL, operation = "DISCOVER", securityCategories = list())), 
-                optional = FALSE, resourceId = "<id value>")), id = "<id value>", 
-            label = "Read only", parameters = list(), permissions = list(), 
-            version = 0L), list(filters = list(), grantBased = TRUE, 
-            grants = list(list(operations = list(list(filter = NULL, 
-                operation = "VIEW", securityCategories = list()), 
-                list(filter = NULL, operation = "DISCOVER", securityCategories = list()), 
-                list(filter = NULL, operation = "ADD_RECORD", securityCategories = list()), 
-                list(filter = NULL, operation = "EDIT_RECORD", securityCategories = "reviewer"), 
-                list(filter = NULL, operation = "DELETE_RECORD", 
-                    securityCategories = list()), list(filter = NULL, 
-                    operation = "BULK_DELETE", securityCategories = list()), 
-                list(filter = NULL, operation = "EXPORT_RECORDS", 
-                    securityCategories = list()), list(filter = NULL, 
-                    operation = "LOCK_RECORDS", securityCategories = list()), 
-                list(filter = NULL, operation = "ADD_RESOURCE", securityCategories = list()), 
-                list(filter = NULL, operation = "EDIT_RESOURCE", 
-                    securityCategories = list()), list(filter = NULL, 
-                    operation = "DELETE_RESOURCE", securityCategories = list()), 
-                list(filter = NULL, operation = "MANAGE_COLLECTION_LINKS", 
-                    securityCategories = list()), list(filter = NULL, 
-                    operation = "AUDIT", securityCategories = list()), 
-                 list(filter = NULL, 
-                    operation = "PUBLISH_REPORTS", securityCategories = list()), 
-                list(filter = NULL, operation = "MANAGE_TRANSLATIONS", 
-                    securityCategories = list())), optional = FALSE, 
-                resourceId = "<id value>")), id = "<id value>", label = "Administrator", 
-            parameters = list(), permissions = list(list(filter = NULL, 
-                operation = "MANAGE_USERS", securityCategories = list()), 
-                list(filter = NULL, operation = "MANAGE_ROLES", securityCategories = list())), 
-            version = 0L)), securityCategories = list(list(id = "<id value>", 
-            label = "Reviewer only")), storage = "", suspended = FALSE, 
-        thirdPartyTranslation = FALSE, translationFromDbMemory = FALSE, 
-        userId = "<id value>", version = "3"), class = "databaseTree")
-
 # getDatabaseResources() works
 
     Code
@@ -83,20 +25,19 @@
     list(list(activationStatus = "PENDING", databaseId = "<id value>", 
         deliveryStatus = "UNKNOWN", email = "<id value>", inviteTime = "<date or time value>", 
         lastLoginTime = "<date or time value>", name = "Test database user", 
-        userId = "<id value>", version = 1L), list(activationStatus = "PENDING", 
+        userId = "<id value>"), list(activationStatus = "PENDING", 
         databaseId = "<id value>", deliveryStatus = "UNKNOWN", email = "<id value>", 
         inviteTime = "<date or time value>", lastLoginTime = "<date or time value>", 
-        name = "Test database user", userId = "<id value>", version = 1L))
+        name = "Test database user", userId = "<id value>"))
 
 ---
 
     list(list(activationStatus = "PENDING", databaseId = "<id value>", 
         deliveryStatus = "UNKNOWN", email = "<id value>", inviteAccepted = FALSE, 
         inviteDate = "<date or time value>", lastLoginDate = "<date or time value>", 
-        name = "Test database user", userId = "<id value>", userLicenseType = "BASIC", 
-        version = 1L), list(activationStatus = "PENDING", databaseId = "<id value>", 
-        deliveryStatus = "UNKNOWN", email = "<id value>", inviteAccepted = FALSE, 
-        inviteDate = "<date or time value>", lastLoginDate = "<date or time value>", 
-        name = "Test database user", userId = "<id value>", userLicenseType = "BASIC", 
-        version = 1L))
+        name = "Test database user", userId = "<id value>", userLicenseType = "BASIC"), 
+        list(activationStatus = "PENDING", databaseId = "<id value>", 
+            deliveryStatus = "UNKNOWN", email = "<id value>", inviteAccepted = FALSE, 
+            inviteDate = "<date or time value>", lastLoginDate = "<date or time value>", 
+            name = "Test database user", userId = "<id value>", userLicenseType = "BASIC"))
 

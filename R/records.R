@@ -1444,12 +1444,15 @@ tbl_sum.activityInfo_tbl_df <- function(x, ...) {
 
 # ---- Source ----
 
+
 src_activityInfo <- function(x) {
   UseMethod("src_activityInfo")
 }
+#' @exportS3Method src_activityInfo formTree
 src_activityInfo.formTree <- function(x) {
   dplyr::src(subclass = c("activityInfoFormTree", "activityInfo"), formTree = x, url <- activityInfoRootUrl())
 }
+#' @exportS3Method src_activityInfo databaseTree
 src_activityInfo.databaseTree <- function(x) {
   dplyr::src(subclass = c("activityInfoDatabaseTree", "activityInfo"), databaseTree = x, url <- activityInfoRootUrl())
 }

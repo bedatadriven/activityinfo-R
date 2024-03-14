@@ -4,10 +4,14 @@
 \alias{getBillingAccountDatabaseUsers}
 \title{getBillingAccountDatabaseUsers}
 \usage{
-getBillingAccountDatabaseUsers(billingId, databaseId, asDataFrame = TRUE)
+getBillingAccountDatabaseUsers(
+  billingAccountId,
+  databaseId,
+  asDataFrame = TRUE
+)
 }
 \arguments{
-\item{billingId}{Billing ID}
+\item{billingAccountId}{Billing ID}
 
 \item{databaseId}{Database ID}
 

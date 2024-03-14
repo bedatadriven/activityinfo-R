@@ -48,6 +48,7 @@ activityInfoRootUrl <- local({
 #' from the user's home directory at ~/.activityinfo.server.credentials
 #'
 #' @importFrom httr authenticate add_headers
+#' @importFrom rlang .data
 #' @noRd
 activityInfoAuthentication <- local({
   credentials <- NULL
@@ -58,7 +59,7 @@ activityInfoAuthentication <- local({
       if (!is.null(credentials)&&credentialType(credentials) == "basic") deprecationOfBasicAuthWarning()
     } else {
       if (is.null(credentials)&&file.exists(credentialsFile)) {
-        authObj = readRDS(file = credentialsFile) %>% filter(server == activityInfoRootUrl())
+        authObj = readRDS(file = credentialsFile) %>% filter(.data$server == activityInfoRootUrl())
         
         if (nrow(authObj) == 1) {
           credentials <<- authObj %>% pull(credentials)
@@ -128,6 +129,7 @@ credentialType <- function(credentials) {
 #' activityInfoToken("<API TOKEN>")
 #' }
 #' @export
+#' @importFrom rlang .data
 activityInfoToken <- function(token, prompt = TRUE) {
   
   if (interactive() && missing(token)) {
@@ -136,7 +138,7 @@ activityInfoToken <- function(token, prompt = TRUE) {
   
   saveToAuthFile <- function(authObj) {
     authObj <- authObj %>% 
-      filter(server != activityInfoRootUrl()) %>%
+      filter(.data$server != activityInfoRootUrl()) %>%
       add_row(server = activityInfoRootUrl(), credentials = token)
     saveRDS(object = authObj, file = credentialsFile)
   }
@@ -153,7 +155,7 @@ activityInfoToken <- function(token, prompt = TRUE) {
       
       if (file.exists(credentialsFile)) {
         authObj <- readRDS(file = credentialsFile) 
-        existingAuthObj <- authObj %>% filter(server == activityInfoRootUrl())
+        existingAuthObj <- authObj %>% filter(.data$server == activityInfoRootUrl())
         
         if (nrow(existingAuthObj)==1) {
           cat(sprintf("You already have a saved token. Do you want to replace existing token for %s?\n", activityInfoRootUrl()))

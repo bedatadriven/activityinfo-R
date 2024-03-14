@@ -28,7 +28,32 @@ testthat::test_that("add, update, and deleteRecord() works", {
 })
 
 testthat::test_that("getRecordHistory() works", {
+  firstFormId <- getDatabaseResources(getDatabases(FALSE)[[1]]$databaseId)$id[[1]]
+  firstRecordId <- (getRecords(form = firstFormId) |> collect() |> pull(`_id`))[[1]]
+  recordHistory <- getRecordHistory(formId = firstFormId, recordId = firstRecordId)
   
+  testthat::expect_true(nrow(recordHistory)>0)
+  
+  list_columns = c("user", "values")
+  character_columns = c("formId", "recordId", "time", "subFieldId", "subFieldLabel", "subRecordKey", "changeType")
+  
+  invisible(sapply(list_columns, function(x) {
+    testthat::expect_identical(class(recordHistory[[x]]), "list")
+  }))
+  
+  invisible(sapply(character_columns, function(x) {
+    testthat::expect_identical(typeof(recordHistory[[x]]), "character")
+  }))
+  
+  recordHistory2 <- getRecordHistory(formId = firstFormId, recordId = firstRecordId, asDataFrame = FALSE)
+  recordHistoryNames <- names(recordHistory2$entries[[1]])
+  
+  testthat::expect_true(all(c(list_columns, character_columns) %in% recordHistoryNames))
+  
+  additionalColumns <- recordHistoryNames[!(recordHistoryNames %in% c(list_columns, character_columns))]
+  if (length(additionalColumns)>0) {
+    message(sprintf("There are additional names in getRecordHistory() to be added as columns: '%s'", paste(additionalColumns, collapse = "', '")))
+  }
 })
 
 testthat::test_that("getRecord() works", {
@@ -214,7 +239,12 @@ testthat::test_that("getRecords() works", {
   testthat::test_that("Copying of schemas with extractSchemaFromFields()", {
     newSchema <- rcrds %>% select(id = `Identifier number`) %>% extractSchemaFromFields(databaseId = "dbid", label = "new form")
     
-    identicalForm(schema, newSchema)
+    schemaToCompare <- schema
+    schemaToCompare$label <- "new form"
+    schemaToCompare$id <- newSchema$id
+    schemaToCompare$databaseId <- "dbid"
+    
+    identicalForm(schemaToCompare, newSchema)
     
     expectActivityInfoSnapshot(newSchema)
     

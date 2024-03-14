@@ -133,8 +133,8 @@ testthat::test_that("getBillingAccountDatabaseUsers with valid inputs returns co
   testthat::expect_true("tbl_df" %in% class(billingAccountDatabaseUsers))
   testthat::expect_true(nrow(billingAccountDatabaseUsers)>0)
   
-  invisible(sapply(names(billingAccountUsers), function(x) {
-    testthat::expect_identical(typeof(billingAccountUsers[[x]]), "character")
+  invisible(sapply(names(billingAccountDatabaseUsers), function(x) {
+    testthat::expect_identical(typeof(billingAccountDatabaseUsers[[x]]), "character")
   }))
   
   billingAccountDatabaseUsers2 <- getBillingAccountDatabaseUsers(database$billingAccountId, database$databaseId, asDataFrame = FALSE)

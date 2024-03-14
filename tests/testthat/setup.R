@@ -137,6 +137,29 @@ identicalForm <- function(a,b, b_allowed_new_fields = TRUE) {
   }
 }
 
+expectActivityInfoSnapshotCompare <- function(x, snapshotName, replaceId = TRUE, replaceDate = TRUE, replaceResource = TRUE, allowed_new_fields = TRUE) {
+  if (missing(snapshotName)) stop("You must give the snapshot a name")
+  stopifnot("The snapshotName must be a character string" = is.character(snapshotName)&&length(snapshotName)==1)
+  
+  x <- canonicalizeActivityInfoObject(x, replaceId, replaceDate, replaceResource)
+  
+  path <- sprintf("%s/_activityInfoSnaps/%s.RDS", getwd(), snapshotName)
+  
+  if (file.exists(path)) {
+    y <- readRDS(file = path)
+  } else {
+    message("Adding activityInfo snapshot: ", snapshotName, ".RDS")
+    saveRDS(x, file = path)
+    return(invisible(NULL))
+  }
+  
+  if (allowed_new_fields) {
+    compare_recursively(y, x)
+  } else {
+    expect_identical(object = x, expected = y)
+  }
+}
+
 expectActivityInfoSnapshot <- function(x, replaceId = TRUE, replaceDate = TRUE, replaceResource = TRUE) {
   x <- canonicalizeActivityInfoObject(x, replaceId, replaceDate, replaceResource)
   testthat::expect_snapshot_value(x, style = "deparse")

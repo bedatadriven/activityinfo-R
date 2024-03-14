@@ -33,7 +33,7 @@ testthat::test_that("getDatabaseTree() works", {
   testthat::expect_s3_class(tree, "databaseTree")
   testthat::expect_named(tree, c("databaseId", "userId", "version", "label", "description", "ownerRef", "billingAccountId", "language", "originalLanguage", "continuousTranslation", "translationFromDbMemory", "thirdPartyTranslation", "languages", "role", "suspended", "storage", "publishedTemplate", "resources", "grants", "locks", "roles", "securityCategories"))
   testthat::expect_identical(tree$databaseId, database$databaseId)
-  expectActivityInfoSnapshot(tree)
+  expectActivityInfoSnapshotCompare(tree, snapshotName = "databases-databaseTree", allowed_new_fields = TRUE)
 })
 
 testthat::test_that("getDatabaseResources() works", {

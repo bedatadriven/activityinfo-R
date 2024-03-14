@@ -142,9 +142,10 @@ expectActivityInfoSnapshot <- function(x, replaceId = TRUE, replaceDate = TRUE, 
   testthat::expect_snapshot_value(x, style = "deparse")
 }
 
-
 setupBlankDatabase <- function(label) {
-  activityinfo:::postResource("databases", body = list(id = cuid(), label = label, templateId = "blank"), task = sprintf("Creating test database '%s' post request", label))
+  db <- activityinfo:::postResource("databases", body = list(id = cuid(), label = label, templateId = "blank"), task = sprintf("Creating test database '%s' post request", label))
+  db$billingAccountId <- as.character(db$billingAccountId)
+  db
 }
 
 ##### Setup code #####

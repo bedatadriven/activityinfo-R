@@ -1,13 +1,6 @@
 name: activityinfo-R-package-tests
 on:
-  push:
-    branches:
-    - main
-    - master
-    - cran-*
-    - version-*
-  pull_request:
-    branches: [main, master]
+  workflow_dispatch:
     
 env: 
   TEST_URL: ${{ secrets.TEST_URL }}

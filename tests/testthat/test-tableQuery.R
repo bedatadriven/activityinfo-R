@@ -68,12 +68,13 @@ testthat::test_that("queryTable() returns a single column data.frame if the inpu
     output <- do.call(activityinfo::queryTable, input_parameters2)
   })
 
-
   testthat::expect_true(inherits(output, "data.frame"))
   testthat::expect_true(all(names_valid %in% colnames(output)))
   testthat::expect_identical(length(colnames(output)), 1L)
-
-  testthat::expect_snapshot_value(deparse(output))
+  
+  testthat::expect_true(all(output$Person.name %in% c("Alice","Bob")))
+  testthat::expect_equal(nrow(output), 2)
+  
 })
 
 

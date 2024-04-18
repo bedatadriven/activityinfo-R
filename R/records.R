@@ -514,6 +514,7 @@ getRecords.default <- getRecords.character
 #' @param allReferenceFields include all the fields in referenced records; the 
 #' default is FALSE
 #' @param columnNames Can be "pretty", "label", "id", c("code", "id), or c("code", "label"); default is "pretty".
+#' @param .names_repair Treatment of problematic column names following the approach used in tibbles / vctrs. Default is "unique".
 #' @param style a style to modify with one or more parameters
 #' 
 #' @export
@@ -524,6 +525,7 @@ columnStyle <- function(
     columnNames = "pretty",
     recordId = TRUE,
     lastEditedTime = TRUE,
+    .names_repair = "unique",
     style) {
   stopifnot(is.logical(referencedId))
   stopifnot(is.logical(referencedKey))
@@ -547,7 +549,8 @@ columnStyle <- function(
       "allReferenceFields" = allReferenceFields,
       "columnNames" = columnNames,
       "recordId" = recordId,
-      "lastEditedTime" = lastEditedTime
+      "lastEditedTime" = lastEditedTime,
+      ".names_repair" = .names_repair
     )
     class(style) <- c("activityInfoColumnStyle", class(style))
   }
@@ -819,6 +822,7 @@ varNames <- function(x, style, addNames) {
   UseMethod("varNames")
 }
 
+#' @importFrom vctrs vec_as_names
 #' @exportS3Method varNames activityInfoFormTree
 varNames.activityInfoFormTree <- function(x, style = defaultColumnStyle(), addNames = FALSE) {
   fmSchema <- x$forms[[x$root]]
@@ -855,6 +859,8 @@ varNames.activityInfoFormTree <- function(x, style = defaultColumnStyle(), addNa
     elementVars(element = y, formTree = x, style = style, namedElement = FALSE)
   })))
 
+  vrNames <- vctrs::vec_as_names(vrNames, repair = style[[".names_repair"]])
+  
   if(addNames) {
     names(vrNames) <- vrNames
   }

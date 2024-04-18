@@ -26,7 +26,8 @@ test_that("Test deleteFormField()", {
     addFormField(textFieldSchema(label = "Text field 3", code = "txt3", id = "text3")) %>%
     addFormField(textFieldSchema(label = "Text field 4", code = "txt4", id = "text4")) %>%
     addFormField(textFieldSchema(label = "Text field 5", code = "txt5", id = "text5"))
-    
+  
+  ## Safe snapshots because made from R  
   test1 <- fmSchm %>% deleteFormField(code = c("txt1", "txt3"))
   expectActivityInfoSnapshot(test1)
   
@@ -35,6 +36,7 @@ test_that("Test deleteFormField()", {
   
   test3 <- fmSchm %>% deleteFormField(label = c("Text field 1", "Text field 5"))
   expectActivityInfoSnapshot(test3)
+  ##
 
   testthat::expect_warning({
     fmSchm %>% deleteFormField(id = c("Text field 1", "Text field 5"))
@@ -245,6 +247,7 @@ testthat::test_that("migrateFieldData() works", {
   
   recordsMinimal <- getRecords(newSchema, minimalColumnStyle()) %>% collect() %>% as.data.frame()
   
+  # should be a safe snapshot with minimalColumnStyle
   testthat::expect_snapshot(recordsMinimal)
 })
 

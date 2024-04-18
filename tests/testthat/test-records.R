@@ -16,6 +16,14 @@ testthat::test_that("add, update, and deleteRecord() works", {
   alice <- getRecord(form$id, alice$recordId)
   assertthat::assert_that(alice$fields[[ageField$id]] == 25)
   
+  # It shouldn't be possible to add a record with an existing id
+  expect_error(
+    alice2 <- addRecord(formId = form$id, fieldValues = list(NAME = "Alice Duplicate", AGE = 25), recordId = alice$recordId)
+  )
+  
+  # It is possible to add a record with a user provided id
+  eliza <- addRecord(formId = form$id, fieldValues = list(NAME = "Eliza", AGE = as.integer(format(Sys.Date(), "%Y")) - 1964), recordId = cuid())
+  
   # It shouldn't be possible to update or delete non-existant records
   expect_error(updateRecord(form$id, recordId = "foobar", fieldValues = list(AGE = 25)))
   expect_error(deleteRecord(form$id, recordId = "foobar"))
@@ -246,7 +254,9 @@ testthat::test_that("getRecords() works", {
     
     identicalForm(schemaToCompare, newSchema)
     
-    expectActivityInfoSnapshot(newSchema)
+    # removing newSchema snapshot - not per se safe - should use new snapshot function
+    expectActivityInfoSnapshotCompare(newSchema, "extractSchemaFromFields")
+    #expectActivityInfoSnapshot(newSchema)
     
     # no form schema elements to provide - expect warning
     testthat::expect_warning({

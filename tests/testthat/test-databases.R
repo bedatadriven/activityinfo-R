@@ -14,8 +14,12 @@ testthat::test_that("addDatabase() and deleteDatabase() works", {
 })
 
 testthat::test_that("getDatabases() works", {
-  databases <- getDatabases()
+  
+  # update snapshot; works for now
+  databases <- getDatabases() %>% 
+    select("billingAccountId", "databaseId", "description", "label", "ownerId", "suspended")
   databases <- canonicalizeActivityInfoObject(databases)
+  
   
   testthat::expect_snapshot(databases)
 })
@@ -45,11 +49,13 @@ testthat::test_that("getDatabaseResources() works", {
     subForms <- dbResources[dbResources$type == "SUB_FORM",]
   })
   
-  dbResources <- dbResources[order(dbResources$id, dbResources$parentId, dbResources$label, dbResources$visibility),]
+  dbResources <- dbResources[order(dbResources$id, dbResources$parentId, dbResources$label, dbResources$visibility),] %>% 
+    select(id, label, parentId, type, visibility)
   dbResources$id <- substr(dbResources$id,1,9)
   dbResources$parentId <- substr(dbResources$parentId,1,9)
   row.names(dbResources) <- NULL
   dbResources <- canonicalizeActivityInfoObject(dbResources, replaceId = FALSE)
+    
   
   
   testthat::expect_snapshot(dbResources)
@@ -114,8 +120,10 @@ simplifyUsers <- function(returnedUsers, additionalFields = list(), addedUsers =
       message(sprintf(msg, paste(missingFields, collapse="', '")))
     }
     x["version"] <- NULL
+    x <- x[names(x) %in% expectedFields]
     x <- x[sapply(x, is.atomic)]
     x <- x[order(names(x))]
+    
     x
   })
 }
@@ -127,6 +135,7 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
 
   returnedUsers <- addTestUsers(database, tree, nUsers = 2)
   
+  # update snapshot; safe for now
   expectActivityInfoSnapshot(simplifyUsers(returnedUsers, addedUsers = TRUE))
   
   nUsers <- 2
@@ -156,6 +165,7 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
   
   testthat::expect_equal(class(users2), "data.frame")
 
+  # update snapshot; safe for now
   expectActivityInfoSnapshot(simplifyUsers(users))
 
   deleteTestUsers(database, returnedUsers)

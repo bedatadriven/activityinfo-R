@@ -11,6 +11,7 @@ columnStyle(
   columnNames = "pretty",
   recordId = TRUE,
   lastEditedTime = TRUE,
+  .names_repair = "unique",
   style
 )
 }
@@ -30,6 +31,8 @@ default is FALSE}
 default is TRUE to make it easier to join data in R}
 
 \item{lastEditedTime}{the time the record was last edited; default is TRUE}
+
+\item{.names_repair}{Treatment of problematic column names following the approach used in tibbles / vctrs. Default is "unique".}
 
 \item{style}{a style to modify with one or more parameters}
 }

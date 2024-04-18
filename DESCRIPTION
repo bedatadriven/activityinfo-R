@@ -31,6 +31,7 @@ Imports:
     pillar (>= 1.8.1),
     rlang (>= 1.1.0),
     tibble (>= 3.2.1),
+    vctrs,
     tidyselect (>= 1.2.0),
     magrittr
 Encoding: UTF-8

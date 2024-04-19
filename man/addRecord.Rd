@@ -4,7 +4,12 @@
 \alias{addRecord}
 \title{Adds a new record}
 \usage{
-addRecord(formId, parentRecordId = NA_character_, fieldValues)
+addRecord(
+  formId,
+  parentRecordId = NA_character_,
+  fieldValues,
+  recordId = NA_character_
+)
 }
 \arguments{
 \item{formId}{the id of the form to which the record should be added}
@@ -12,6 +17,8 @@ addRecord(formId, parentRecordId = NA_character_, fieldValues)
 \item{parentRecordId}{the id of this record's parent record, if the form is a subform}
 
 \item{fieldValues}{a named list of fields to change.}
+
+\item{recordId}{the id of the new record when a custom id is desired. The given id must be in cuid-compatible format.}
 }
 \description{
 Adds a new record
@@ -69,8 +76,8 @@ addRecord(formId = "cxy123", fieldValues = list(
 Other record functions: 
 \code{\link{deleteRecord}()},
 \code{\link{getAttachment}()},
-\code{\link{getRecordHistory}()},
 \code{\link{getRecord}()},
+\code{\link{getRecordHistory}()},
 \code{\link{recoverRecord}()},
 \code{\link{updateRecord}()}
 }

@@ -7,7 +7,9 @@
 recordExists(formId, recordId)
 }
 \arguments{
-\item{the}{id of the record to check}
+\item{formId}{the id of the form to check}
+
+\item{recordId}{the id of the record to check}
 }
 \description{
 Checks whether a record exists

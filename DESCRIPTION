@@ -1,8 +1,8 @@
 Package: activityinfo
 Type: Package
 Title: R interface to ActivityInfo.org, an information management software for
-    humanitarian and development operations.
-Version: 4.35.1
+    humanitarian and development operations
+Version: 4.36
 Date: 2023-05-25
 Authors@R: c(
     person("Alex", "Bertram", email = "alex@bedatadriven.com", 
@@ -18,7 +18,7 @@ Maintainer: Alex Bertram <alex@bedatadriven.com>
 Description: 
     An interface to ActivityInfo, a web-based information management software 
     used for partner reporting, monitoring and evaluation and case management in
-    humanitarian aid, emergencies and international development
+    humanitarian aid, emergencies and international development.
 License: GPL-3
 Depends:
     dplyr (>= 1.1.1)
@@ -31,10 +31,11 @@ Imports:
     pillar (>= 1.8.1),
     rlang (>= 1.1.0),
     tibble (>= 3.2.1),
+    vctrs,
     tidyselect (>= 1.2.0),
     magrittr
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
 Suggests:
     ggplot2,
@@ -46,6 +47,7 @@ Suggests:
     markdown,
     withr,
     assertthat,
-    purrr
+    purrr,
+    tinytex
 VignetteBuilder: knitr
 Config/testthat/edition: 3

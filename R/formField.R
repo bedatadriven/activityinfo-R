@@ -708,14 +708,20 @@ userFieldSchema <- function(label, description = NULL, databaseId, code = NULL, 
 #' A special form field to define a section header for the form.
 #' 
 #' @inheritParams formFieldSchema
+#' @param indentationLevel section indentation level; default is 1
 #' @family field schemas
 #' @export
-sectionFieldSchema <- function(label, description = NULL) {
+sectionFieldSchema <- function(label, description = NULL, indentationLevel = 1L) {
   schema <- do.call(
     formFieldSchema, 
     args = c(
       list(type = "section"),
-      as.list(environment())
+      formFieldArgs(as.list(environment())),
+      list(
+        typeParameters = list(
+          "indentationLevel" = indentationLevel
+        )
+      )
     )
   )
   

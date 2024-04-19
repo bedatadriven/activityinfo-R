@@ -1,8 +1,8 @@
 
 #' Checks whether a record exists
 #' 
-#' @param the id of the form to check
-#' @param the id of the record to check
+#' @param formId the id of the form to check
+#' @param recordId the id of the record to check
 recordExists <- function(formId, recordId) {
   tryCatch({
     getRecord(formId, recordId)
@@ -23,6 +23,7 @@ recordExists <- function(formId, recordId) {
 #' @param formId the id of the form to which the record should be added
 #' @param parentRecordId the id of this record's parent record, if the form is a subform
 #' @param fieldValues a named list of fields to change.
+#' @param recordId the id of the new record when a custom id is desired. The given id must be in cuid-compatible format.
 #' @export
 #' @family record functions
 #' @examples
@@ -73,12 +74,21 @@ recordExists <- function(formId, recordId) {
 #' ))
 #'
 #' }
-addRecord <- function(formId, parentRecordId = NA_character_, fieldValues) {
+addRecord <- function(formId, parentRecordId = NA_character_, fieldValues, recordId = NA_character_) {
   stopifnot(is.character(formId))
   stopifnot(is.character(parentRecordId))
   stopifnot(is.list(fieldValues))
-  
-  recordId <- cuid()
+  stopifnot(is.character(recordId))
+
+  if (identical(recordId, NA_character_)) {
+    # generate a record id if not provided
+    recordId <- cuid()
+  } else {
+    # check provided record id does not exist before continuing
+    if (recordExists(formId, recordId)) {
+      stop(sprintf("Record %s in form %s already exists.", recordId, formId))
+    }
+  }
   changes <- list(
     list(
       formId = formId,
@@ -504,6 +514,7 @@ getRecords.default <- getRecords.character
 #' @param allReferenceFields include all the fields in referenced records; the 
 #' default is FALSE
 #' @param columnNames Can be "pretty", "label", "id", c("code", "id), or c("code", "label"); default is "pretty".
+#' @param .names_repair Treatment of problematic column names following the approach used in tibbles / vctrs. Default is "unique".
 #' @param style a style to modify with one or more parameters
 #' 
 #' @export
@@ -514,6 +525,7 @@ columnStyle <- function(
     columnNames = "pretty",
     recordId = TRUE,
     lastEditedTime = TRUE,
+    .names_repair = "unique",
     style) {
   stopifnot(is.logical(referencedId))
   stopifnot(is.logical(referencedKey))
@@ -537,7 +549,8 @@ columnStyle <- function(
       "allReferenceFields" = allReferenceFields,
       "columnNames" = columnNames,
       "recordId" = recordId,
-      "lastEditedTime" = lastEditedTime
+      "lastEditedTime" = lastEditedTime,
+      ".names_repair" = .names_repair
     )
     class(style) <- c("activityInfoColumnStyle", class(style))
   }
@@ -809,6 +822,7 @@ varNames <- function(x, style, addNames) {
   UseMethod("varNames")
 }
 
+#' @importFrom vctrs vec_as_names
 #' @exportS3Method varNames activityInfoFormTree
 varNames.activityInfoFormTree <- function(x, style = defaultColumnStyle(), addNames = FALSE) {
   fmSchema <- x$forms[[x$root]]
@@ -827,13 +841,15 @@ varNames.activityInfoFormTree <- function(x, style = defaultColumnStyle(), addNa
       }))
       parentVarNames <- parentVarNames[lengths(parentVarNames)!=0]
     }
-    
-    if(identical(style$columnNames, "pretty")) {
-      parentVarNames <- paste("Parent", parentVarNames, sep = " ")
-    } else {
-      parentVarNames <- paste("@parent", parentVarNames, sep = ".")
+
+    if (!is.null(parentVarNames)) {
+      if(identical(style$columnNames, "pretty")) {
+        parentVarNames <- paste("Parent", parentVarNames, sep = " ")
+      } else {
+        parentVarNames <- paste("@parent", parentVarNames, sep = ".")
+      }
     }
-    
+
     vrNames <- c(vrNames, "@parent", parentVarNames)
   }
   if (style$recordId) vrNames[length(vrNames)+1] <- "_id"
@@ -843,6 +859,8 @@ varNames.activityInfoFormTree <- function(x, style = defaultColumnStyle(), addNa
     elementVars(element = y, formTree = x, style = style, namedElement = FALSE)
   })))
 
+  vrNames <- vctrs::vec_as_names(vrNames, repair = style[[".names_repair"]])
+  
   if(addNames) {
     names(vrNames) <- vrNames
   }
@@ -1432,12 +1450,15 @@ tbl_sum.activityInfo_tbl_df <- function(x, ...) {
 
 # ---- Source ----
 
+
 src_activityInfo <- function(x) {
   UseMethod("src_activityInfo")
 }
+#' @exportS3Method src_activityInfo formTree
 src_activityInfo.formTree <- function(x) {
   dplyr::src(subclass = c("activityInfoFormTree", "activityInfo"), formTree = x, url <- activityInfoRootUrl())
 }
+#' @exportS3Method src_activityInfo databaseTree
 src_activityInfo.databaseTree <- function(x) {
   dplyr::src(subclass = c("activityInfoDatabaseTree", "activityInfo"), databaseTree = x, url <- activityInfoRootUrl())
 }

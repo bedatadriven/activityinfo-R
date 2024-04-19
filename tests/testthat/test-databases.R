@@ -1,3 +1,4 @@
+
 testthat::test_that("addDatabase() and deleteDatabase() works", {
   testthat::expect_no_error({
     dbTest <- addDatabase("Another test database on the fly!")
@@ -13,8 +14,12 @@ testthat::test_that("addDatabase() and deleteDatabase() works", {
 })
 
 testthat::test_that("getDatabases() works", {
-  databases <- getDatabases()
+  
+  # update snapshot; works for now
+  databases <- getDatabases() %>% 
+    select("billingAccountId", "databaseId", "description", "label", "ownerId", "suspended")
   databases <- canonicalizeActivityInfoObject(databases)
+  
   
   testthat::expect_snapshot(databases)
 })
@@ -32,7 +37,7 @@ testthat::test_that("getDatabaseTree() works", {
   testthat::expect_s3_class(tree, "databaseTree")
   testthat::expect_named(tree, c("databaseId", "userId", "version", "label", "description", "ownerRef", "billingAccountId", "language", "originalLanguage", "continuousTranslation", "translationFromDbMemory", "thirdPartyTranslation", "languages", "role", "suspended", "storage", "publishedTemplate", "resources", "grants", "locks", "roles", "securityCategories"))
   testthat::expect_identical(tree$databaseId, database$databaseId)
-  expectActivityInfoSnapshot(tree)
+  expectActivityInfoSnapshotCompare(tree, snapshotName = "databases-databaseTree", allowed_new_fields = TRUE)
 })
 
 testthat::test_that("getDatabaseResources() works", {
@@ -44,11 +49,13 @@ testthat::test_that("getDatabaseResources() works", {
     subForms <- dbResources[dbResources$type == "SUB_FORM",]
   })
   
-  dbResources <- dbResources[order(dbResources$id, dbResources$parentId, dbResources$label, dbResources$visibility),]
+  dbResources <- dbResources[order(dbResources$id, dbResources$parentId, dbResources$label, dbResources$visibility),] %>% 
+    select(id, label, parentId, type, visibility)
   dbResources$id <- substr(dbResources$id,1,9)
   dbResources$parentId <- substr(dbResources$parentId,1,9)
   row.names(dbResources) <- NULL
   dbResources <- canonicalizeActivityInfoObject(dbResources, replaceId = FALSE)
+    
   
   
   testthat::expect_snapshot(dbResources)
@@ -82,23 +89,61 @@ deleteTestUsers <- function(database, returnedUsers) {
   })
 }
 
-testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseUsers() and getDatabaseUser() and getDatabaseUser2() work", {
+# Simplifies the user object for snapshots and warns when expected fields are missing and provides an informative message when there are new fields
+simplifyUsers <- function(returnedUsers, additionalFields = list(), addedUsers = FALSE, expectAdded = TRUE) {
+  expectedFields <- c(additionalFields, "databaseId","deliveryStatus","email", "name", "role", "userId")
+  
+  if (addedUsers) {
+    expectedFields <- c("inviteTime",'version', 'activationStatus', 'lastLoginTime', 'grants', expectedFields)
+    returnedUsers <- lapply(returnedUsers, function(x) {
+      if (expectAdded) testthat::expect_true(x$added)
+      x$user
+    })
+  } else {
+    expectedFields <- c("inviteDate", "inviteAccepted", "version", "activationStatus",'userLicenseType', 'lastLoginDate', expectedFields) #, "lastLoginTime", "grants"
+  }
+  
+  lapply(returnedUsers, function(x) {
+    allExpectedNamesPresent <- all(expectedFields %in% names(x))
+    if(!allExpectedNamesPresent) {
+      warning("Expected fields/names missing in user: ", paste(expectedFields[!(expectedFields %in% names(x))], collapse = ", "))
+    }
+    testthat::expect_true(allExpectedNamesPresent)
+    
+    if (!all(names(x) %in% expectedFields)) {
+      missingFields <- names(x)[!names(x) %in% expectedFields]
+      if (addedUsers) {
+        msg <- "The following additional names were found in after adding a user and inspecting returned user: '%s'"
+      } else {
+        msg <- "The following additional names were found in user: '%s'"
+      }
+      message(sprintf(msg, paste(missingFields, collapse="', '")))
+    }
+    x["version"] <- NULL
+    x <- x[names(x) %in% expectedFields]
+    x <- x[sapply(x, is.atomic)]
+    x <- x[order(names(x))]
+    
+    x
+  })
+}
+
+testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseUsers() and getDatabaseUser() and getDatabaseUser2() work and expected fields are present", {
   databases <- getDatabases()
   database <- databases[1,]
   tree <- getDatabaseTree(databaseId = database$databaseId)
 
   returnedUsers <- addTestUsers(database, tree, nUsers = 2)
-
-
-  expectActivityInfoSnapshot(returnedUsers)
   
+  # update snapshot; safe for now
+  expectActivityInfoSnapshot(simplifyUsers(returnedUsers, addedUsers = TRUE))
   
-nUsers <- 2
+  nUsers <- 2
   
   testthat::expect_no_error({
     users <- getDatabaseUsers(databaseId = database$databaseId, asDataFrame=FALSE)
   })
-    
+  
   testthat::expect_gte(length(users), expected = nUsers)
 
   if (length(users) == 0) stop("No users available to test.")
@@ -120,7 +165,8 @@ nUsers <- 2
   
   testthat::expect_equal(class(users2), "data.frame")
 
-  expectActivityInfoSnapshot(users)
+  # update snapshot; safe for now
+  expectActivityInfoSnapshot(simplifyUsers(users))
 
   deleteTestUsers(database, returnedUsers)
 })

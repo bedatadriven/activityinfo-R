@@ -5,7 +5,8 @@
   options(activityinfo.verbose.tasks = FALSE)
 }
 
-credentialsFile <- "~/.activityinfo.credentials"
+# the legacy credentials file was "~/.activityinfo.credentials", changing the name to ensure we don't overwrite the old key file accidentally
+credentialsFile <- "~/.activityinfo.server.credentials"
 
 credentials <- environment()
 
@@ -33,6 +34,7 @@ activityInfoRootUrl <- local({
   function(newUrl) {
     if (!missing(newUrl)) {
       url <<- newUrl
+      activityInfoAuthentication(NULL)
       invisible()
     } else {
       url
@@ -43,9 +45,10 @@ activityInfoRootUrl <- local({
 # ---- ActivityInfoAuthentication() ----
 
 #' Constructs a httr::authentication object from saved credentials
-#' from the user's home directory at ~/.activityinfo.credentials
+#' from the user's home directory at ~/.activityinfo.server.credentials
 #'
 #' @importFrom httr authenticate add_headers
+#' @importFrom rlang .data
 #' @noRd
 activityInfoAuthentication <- local({
   credentials <- NULL
@@ -53,16 +56,16 @@ activityInfoAuthentication <- local({
   function(newValue) {
     if (!missing(newValue)) {
       credentials <<- newValue
+      if (!is.null(credentials)&&credentialType(credentials) == "basic") deprecationOfBasicAuthWarning()
     } else {
-      # Look for credentials first in ~/.activityinfo.credentials
-      if (is.null(credentials) && file.exists(credentialsFile)) {
-        # message(sprintf("Reading credentials from %s...\n", path.expand(path = credentialsFile)))
-        line <- readLines("~/.activityinfo.credentials", warn = FALSE)[1]
-        if (nchar(line) <= 2) {
-          warning(sprintf("...file exists, but is empty or improperly formatted.\n", path.expand(path = credentialsFile)))
-        } else {
-          if (credentialType(line) == "basic") deprecationOfBasicAuthWarning()
-          credentials <<- line
+      if (is.null(credentials)&&file.exists(credentialsFile)) {
+        authObj = readRDS(file = credentialsFile) %>% filter(.data$server == activityInfoRootUrl())
+        
+        if (nrow(authObj) == 1) {
+          credentials <<- authObj %>% pull(credentials)
+          if (credentialType(credentials) == "basic") deprecationOfBasicAuthWarning()
+        } else if (nrow(authObj) > 1) {
+          warning(sprintf("...file exists, but has more than one key. Try saving the key again.\n", path.expand(path = credentialsFile)))
         }
       }
       
@@ -126,9 +129,18 @@ credentialType <- function(credentials) {
 #' activityInfoToken("<API TOKEN>")
 #' }
 #' @export
+#' @importFrom rlang .data
 activityInfoToken <- function(token, prompt = TRUE) {
+  
   if (interactive() && missing(token)) {
     token <- readline("Enter your token: ")
+  }
+  
+  saveToAuthFile <- function(authObj) {
+    authObj <- authObj %>% 
+      filter(.data$server != activityInfoRootUrl()) %>%
+      add_row(server = activityInfoRootUrl(), credentials = token)
+    saveRDS(object = authObj, file = credentialsFile)
   }
   
   activityInfoAuthentication(token)
@@ -140,7 +152,24 @@ activityInfoToken <- function(token, prompt = TRUE) {
     
     save <- readline("Save token? ")
     if (substr(tolower(save), 1, 1) == "y") {
-      cat(token, file = credentialsFile)
+      
+      if (file.exists(credentialsFile)) {
+        authObj <- readRDS(file = credentialsFile) 
+        existingAuthObj <- authObj %>% filter(.data$server == activityInfoRootUrl())
+        
+        if (nrow(existingAuthObj)==1) {
+          cat(sprintf("You already have a saved token. Do you want to replace existing token for %s?\n", activityInfoRootUrl()))
+          save2 <- readline("Save token? ")
+          if (substr(tolower(save2), 1, 1) == "y") {
+            saveToAuthFile(authObj)
+          }
+        } else {
+          saveToAuthFile(authObj)
+        }
+      } else {
+        authObj <- tibble(server = activityInfoRootUrl(), credentials = token)
+        saveToAuthFile(authObj)
+      }
     }
   }
 }

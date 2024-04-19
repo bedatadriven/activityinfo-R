@@ -1,3 +1,12 @@
+## [4.36]
+- API tokens are now stored per root URL of the server. The token will need to be added again using activityInfoToken(token). The location of the token file has changed from "~/.activityinfo.credentials" to "~/.activityinfo.server.credentials" to avoid accidentally overwriting and losing the old tokens. (#101)
+- Column name de-duplication in getRecords() (#118)
+- Updated GitHub Action checks (#116)
+- Snapshot tests allow new properties
+- Allow custom IDs in addRecord (#111, #104)
+- Billing account info functions (#97)
+- API Token now stored per root URL (#101)
+- Only add parent columns to query if there are fields defined on parentVarNames (#103)
 
 ## [4.35.1]
 - Fix for `getQuantityTable()` (#115)

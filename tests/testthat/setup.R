@@ -100,12 +100,64 @@ namesOrIndexes <- function(x) {
   }
 }
 
-identicalForm <- function(a,b) {
+compare_recursively <- function(a, b, path = list()) {
+  if (is.atomic(a) && is.atomic(b)) {
+    if (!identical(a,b)) {
+      message(sprintf("Field with name/key '%s' value has changed", paste(path, collapse="'->'")))
+    }
+    expect_identical(object = b, expected = a)
+  } else if (is.list(a) && is.list(b)) {
+    additionalFields <- names(b)[!names(b) %in% names(a)]
+    if (length(additionalFields)>0) {
+      message(sprintf("Additional fields found at name/key '%s': '%s'", paste(path, collapse = "'->'"), paste(additionalFields, collapse = "', '")))
+    }
+    for (name in names(a)) {
+      # Check if the name in 'a' exists in 'b', then compare their values recursively
+      test <- name %in% names(b)
+      if(!test) message(sprintf("Missing expected field name/key %s", paste(c(path, name), collapse="->")))
+      testthat::expect_true(test)
+      compare_recursively(a[[name]], b[[name]], c(path, name))
+    }
+  } else {
+    message(sprintf("Incompatible structures under name/key '%s'", paste(path, collapse="'->'")))
+    expect_identical(object = b, expected = a)
+  }
+}
+
+identicalForm <- function(a,b, b_allowed_new_fields = TRUE) {
   a <- a[!(namesOrIndexes(a) %in% c("schemaVersion"))]
   b <- b[!(namesOrIndexes(b) %in% c("schemaVersion"))]
   a <- canonicalizeActivityInfoObject(a, replaceId = FALSE, replaceDate = FALSE, replaceResource = FALSE)
   b <- canonicalizeActivityInfoObject(b, replaceId = FALSE, replaceDate = FALSE, replaceResource = FALSE)
-  testthat::expect_identical(a,b)
+
+  if (b_allowed_new_fields) {
+    compare_recursively(a, b)
+  } else {
+    expect_identical(object = b, expected = a)
+  }
+}
+
+expectActivityInfoSnapshotCompare <- function(x, snapshotName, replaceId = TRUE, replaceDate = TRUE, replaceResource = TRUE, allowed_new_fields = TRUE) {
+  if (missing(snapshotName)) stop("You must give the snapshot a name")
+  stopifnot("The snapshotName must be a character string" = is.character(snapshotName)&&length(snapshotName)==1)
+  
+  x <- canonicalizeActivityInfoObject(x, replaceId, replaceDate, replaceResource)
+  
+  path <- sprintf("%s/_activityInfoSnaps/%s.RDS", getwd(), snapshotName)
+  
+  if (file.exists(path)) {
+    y <- readRDS(file = path)
+  } else {
+    message("Adding activityInfo snapshot: ", snapshotName, ".RDS")
+    saveRDS(x, file = path)
+    return(invisible(NULL))
+  }
+  
+  if (allowed_new_fields) {
+    compare_recursively(y, x)
+  } else {
+    expect_identical(object = x, expected = y)
+  }
 }
 
 expectActivityInfoSnapshot <- function(x, replaceId = TRUE, replaceDate = TRUE, replaceResource = TRUE) {
@@ -113,9 +165,10 @@ expectActivityInfoSnapshot <- function(x, replaceId = TRUE, replaceDate = TRUE, 
   testthat::expect_snapshot_value(x, style = "deparse")
 }
 
-
 setupBlankDatabase <- function(label) {
-  activityinfo:::postResource("databases", body = list(id = cuid(), label = label, templateId = "blank"), task = sprintf("Creating test database '%s' post request", label))
+  db <- activityinfo:::postResource("databases", body = list(id = cuid(), label = label, templateId = "blank"), task = sprintf("Creating test database '%s' post request", label))
+  db$billingAccountId <- as.character(db$billingAccountId)
+  db
 }
 
 ##### Setup code #####
@@ -158,7 +211,10 @@ tryCatch(
 activityInfoRootUrl(preprodRootUrl)
 
 # Use these credentials for the rest of the tests
-activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
+testthat::expect_warning({
+  activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
+}, regexp = "deprecating")
+
 
 
 # Add a new database for this user

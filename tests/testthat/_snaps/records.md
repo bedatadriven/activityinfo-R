@@ -533,17 +533,6 @@
       499               499                4_stuff            False    2021-07-24
       500               500                5_stuff            False    2021-07-25
 
-# Copying of schemas with extractSchemaFromFields()
-
-    structure(list(databaseId = "<id value>", elements = list(structure(list(
-        code = NULL, description = NULL, id = "<id value>", key = TRUE, 
-        label = "Identifier number", relevanceCondition = "", required = TRUE, 
-        tableVisible = TRUE, type = "FREE_TEXT", typeParameters = list(
-            barcode = FALSE), validationCondition = ""), class = c("activityInfoTextFieldSchema", 
-    "activityInfoFormFieldSchema", "formField", "list"))), id = "<id value>", 
-        label = "new form"), class = c("activityInfoFormSchema", 
-    "formSchema", "list"))
-
 # Reference field with shallow reference table should provide field based names
 
     Code

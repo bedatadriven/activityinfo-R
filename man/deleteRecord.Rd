@@ -29,8 +29,8 @@ recoverRecord(formId = "cyx123", recordId = "c23g322j432")
 Other record functions: 
 \code{\link{addRecord}()},
 \code{\link{getAttachment}()},
-\code{\link{getRecordHistory}()},
 \code{\link{getRecord}()},
+\code{\link{getRecordHistory}()},
 \code{\link{recoverRecord}()},
 \code{\link{updateRecord}()}
 }

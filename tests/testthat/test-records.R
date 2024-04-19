@@ -16,6 +16,14 @@ testthat::test_that("add, update, and deleteRecord() works", {
   alice <- getRecord(form$id, alice$recordId)
   assertthat::assert_that(alice$fields[[ageField$id]] == 25)
   
+  # It shouldn't be possible to add a record with an existing id
+  expect_error(
+    alice2 <- addRecord(formId = form$id, fieldValues = list(NAME = "Alice Duplicate", AGE = 25), recordId = alice$recordId)
+  )
+  
+  # It is possible to add a record with a user provided id
+  eliza <- addRecord(formId = form$id, fieldValues = list(NAME = "Eliza", AGE = as.integer(format(Sys.Date(), "%Y")) - 1964), recordId = cuid())
+  
   # It shouldn't be possible to update or delete non-existant records
   expect_error(updateRecord(form$id, recordId = "foobar", fieldValues = list(AGE = 25)))
   expect_error(deleteRecord(form$id, recordId = "foobar"))
@@ -28,7 +36,32 @@ testthat::test_that("add, update, and deleteRecord() works", {
 })
 
 testthat::test_that("getRecordHistory() works", {
+  firstFormId <- getDatabaseResources(getDatabases(FALSE)[[1]]$databaseId)$id[[1]]
+  firstRecordId <- (getRecords(form = firstFormId) |> collect() |> pull(`_id`))[[1]]
+  recordHistory <- getRecordHistory(formId = firstFormId, recordId = firstRecordId)
   
+  testthat::expect_true(nrow(recordHistory)>0)
+  
+  list_columns = c("user", "values")
+  character_columns = c("formId", "recordId", "time", "subFieldId", "subFieldLabel", "subRecordKey", "changeType")
+  
+  invisible(sapply(list_columns, function(x) {
+    testthat::expect_identical(class(recordHistory[[x]]), "list")
+  }))
+  
+  invisible(sapply(character_columns, function(x) {
+    testthat::expect_identical(typeof(recordHistory[[x]]), "character")
+  }))
+  
+  recordHistory2 <- getRecordHistory(formId = firstFormId, recordId = firstRecordId, asDataFrame = FALSE)
+  recordHistoryNames <- names(recordHistory2$entries[[1]])
+  
+  testthat::expect_true(all(c(list_columns, character_columns) %in% recordHistoryNames))
+  
+  additionalColumns <- recordHistoryNames[!(recordHistoryNames %in% c(list_columns, character_columns))]
+  if (length(additionalColumns)>0) {
+    message(sprintf("There are additional names in getRecordHistory() to be added as columns: '%s'", paste(additionalColumns, collapse = "', '")))
+  }
 })
 
 testthat::test_that("getRecord() works", {
@@ -214,7 +247,16 @@ testthat::test_that("getRecords() works", {
   testthat::test_that("Copying of schemas with extractSchemaFromFields()", {
     newSchema <- rcrds %>% select(id = `Identifier number`) %>% extractSchemaFromFields(databaseId = "dbid", label = "new form")
     
-    expectActivityInfoSnapshot(newSchema)
+    schemaToCompare <- schema
+    schemaToCompare$label <- "new form"
+    schemaToCompare$id <- newSchema$id
+    schemaToCompare$databaseId <- "dbid"
+    
+    identicalForm(schemaToCompare, newSchema)
+    
+    # removing newSchema snapshot - not per se safe - should use new snapshot function
+    expectActivityInfoSnapshotCompare(newSchema, "extractSchemaFromFields")
+    #expectActivityInfoSnapshot(newSchema)
     
     # no form schema elements to provide - expect warning
     testthat::expect_warning({

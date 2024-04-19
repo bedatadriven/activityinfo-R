@@ -10,18 +10,26 @@
 getDatabases <- function(asDataFrame = TRUE) {
   databases <- getResource("databases", task = "Getting all databases")
   if (asDataFrame == TRUE) {
-    dbDF <- dplyr::tibble(
-      databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
-      label = unlist(lapply(databases, function(x) {x$label})),
-      description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
-      ownerId = unlist(lapply(databases, function(x) {x$ownerId})),
-      billingAccountId = unlist(lapply(databases, function(x) {x$billingAccountId})),
-      suspended = unlist(lapply(databases, function(x) {x$suspended}))
-    )
-    return(dbDF)
+    return(databasesListToTibble(databases))
   } else if (asDataFrame == FALSE) {
-    return(databases)
+    return(lapply(databases, function(x) {
+      x$ownerId <- as.character(x$ownerId)
+      x$billingAccountId <- as.character(x$billingAccountId)
+      x
+    }))
   }
+}
+
+databasesListToTibble <- function(databases) {
+  dbDF <- dplyr::tibble(
+    databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
+    label = unlist(lapply(databases, function(x) {x$label})),
+    description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
+    ownerId = as.character(unlist(lapply(databases, function(x) {x$ownerId}))),
+    billingAccountId = as.character(unlist(lapply(databases, function(x) {x$billingAccountId}))),
+    suspended = unlist(lapply(databases, function(x) {x$suspended}))
+  )
+  return(dbDF)
 }
 
 databaseUpdates <- function() {
@@ -76,6 +84,7 @@ getDatabaseTree <- function(databaseId) {
   )
   class(tree$resources) <- "databaseResources"
   class(tree) <- "databaseTree"
+  tree$billingAccountId <- as.character(tree$billingAccountId)
   tree
 }
 
@@ -128,7 +137,7 @@ getDatabaseResources <- function(database) {
 #' newDb <- addDatabase("Programme information system")
 #' }
 addDatabase <- function(label, databaseId = cuid()) {
-  postResource(
+  x <- postResource(
     "databases",
     body = list(
       id = databaseId,
@@ -137,6 +146,8 @@ addDatabase <- function(label, databaseId = cuid()) {
       ),
     task = sprintf("Creating new database '%s' with id %s", label, databaseId)
   )
+  x$billingAccountId <- as.character(x$billingAccountId)
+  x
 }
 
 #' deleteDatabase

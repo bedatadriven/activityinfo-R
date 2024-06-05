@@ -23,7 +23,8 @@ permissions(
   audit = FALSE,
   share_reports = FALSE,
   publish_reports = FALSE,
-  reviewer_only = FALSE
+  reviewer_only = FALSE,
+  discover = FALSE
 )
 }
 \arguments{
@@ -64,6 +65,8 @@ permissions(
 \item{publish_reports}{Allows the user to publish reports.}
 
 \item{reviewer_only}{Grant add_record and edit_record permissions for fields in the "reviewer" security category}
+
+\item{discover}{Discover and display forms}
 }
 \description{
 Helper method to create a list of permissions for a role or grant.

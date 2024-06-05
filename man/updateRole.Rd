@@ -2,8 +2,7 @@
 % Please edit documentation in R/databases.R
 \name{updateRole}
 \alias{updateRole}
-\title{Updates a role's definition in the database
-See \link{permissions} for more details.}
+\title{Updates a role's definition in the database}
 \usage{
 updateRole(databaseId, role)
 }
@@ -13,34 +12,73 @@ updateRole(databaseId, role)
 \item{role}{the role definition}
 }
 \description{
-Updates a role's definition in the database
-See \link{permissions} for more details.
+Updates the role definition in the database. A role is defined with the
+\link{role} function, which implements the grant-based role system of
+ActivityInfo.
+}
+\details{
+Older style non-grant roles are deprecated. See \link{permissions} for more
+details for old roles without grants. These will be phased out of use and
+should be avoided.
 }
 \examples{
 \dontrun{
-updateRole("cxy123", list(
-  id = "rp",
-  label = "Reporting partner",
-  permissions = permissions(
-    view = "ck5dxt1712 == @user.partner",
-    edit_record = "ck5dxt1712 == @user.partner",
-    export_records = TRUE
-  ),
-  parameters = list(
-    list(
-      parameterId = "partner",
-      label = "Partner",
-      range = "ck5dxt1712"
-    )
-  ),
-  filters = list(
-    list(
-      id = "partner",
-      label = "partner is user's partner",
-      filter = "ck5dxt1712 == @user.partner"
+
+# Use the current recommended grant-based roles 
+grantBased = TRUE
+
+if (grantBased) {
+  currentGrantBasedRole <- 
+    role(id = "rp",
+        label = "Reporting Partner",
+        parameters = list(
+         parameter(id = "partner", label = "Partner", range = "ck5dxt1712")),
+        grants = list(
+          grant(resourceId = "cq9xyz1552",
+            permissions = permissions(
+              view = "ck5dxt1712 == @user.partner",
+             edit_record = "ck5dxt1712 == @user.partner",
+              discover = TRUE,
+              export_records = TRUE)),
+          grant(resourceId = "cz55555555",
+            permissions = permissions(
+             view = TRUE,
+              discover = TRUE,
+              add_record = TRUE),
+            optional = TRUE)),
+        filters = list(
+         roleFilter(
+            id = "partner", 
+            label = "Partner is user's partner", 
+            filter = "ck5dxt1712 == @user.partner"))
+        )
+  updateRole("cxy123", currentGrantBasedRole) 
+} else {
+  # These older-style roles will be phased out.
+  deprecatedNonGrantRole <- list(
+    id = "rp",
+    label = "Reporting partner",
+    permissions = permissions(
+      view = "ck5dxt1712 == @user.partner",
+      edit_record = "ck5dxt1712 == @user.partner",
+      export_records = TRUE
+    ),
+    parameters = list(
+      list(
+        parameterId = "partner",
+        label = "Partner",
+        range = "ck5dxt1712"
+      )
+    ),
+    filters = list(
+      list(
+        id = "partner",
+        label = "partner is user's partner",
+        filter = "ck5dxt1712 == @user.partner"
+       )
     )
   )
-))
+  updateRole("cxy123", deprecatedNonGrantRole)
 }
-
+}
 }

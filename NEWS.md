@@ -1,3 +1,6 @@
+## [4.37]
+- New functions for new role and permissions system (#114)
+
 ## [4.36]
 - API tokens are now stored per root URL of the server. The token will need to be added again using activityInfoToken(token). The location of the token file has changed from "~/.activityinfo.credentials" to "~/.activityinfo.server.credentials" to avoid accidentally overwriting and losing the old tokens. (#101)
 - Column name de-duplication in getRecords() (#118)

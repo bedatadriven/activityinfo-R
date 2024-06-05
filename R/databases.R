@@ -567,38 +567,38 @@ permissions <- function(view = TRUE,
                         discover = FALSE) {
   operations <- setdiff(names(formals()), "reviewer_only")
   
-  permissions <- lapply(operations, function(operation) {
+  permissionList <- lapply(operations, function(operation) {
     v <- eval(as.name(operation))
     if (length(v) != 1 || is.na(v) || !(is.logical(v) || is.character(v))) {
       stop(sprintf("Invalid value for operation '%s': %s", operation, deparse(v)))
     }
     v
   })
-  names(permissions) <- operations
-  granted <- sapply(permissions, function(p) p == TRUE || is.character(p))
+  names(permissionList) <- operations
+  granted <- sapply(permissionList, function(p) p == TRUE || is.character(p))
   
-  result <- lapply(operations[granted], operationList)
+  result <- lapply(operations[granted], function(x) {operationList(x, permissionList, reviewerOnly = reviewer_only)})
   
   class(result) <- c("activityInfoPermissions", class(result))
   
   result
 }
 
-operationList = function(operation, reviewer_only = FALSE) {
+operationList = function(operation, permissionList, reviewerOnly = FALSE) {
   p <- list(operation = toupper(operation))
-  v <- permissions[[operation]]
+  v <- permissionList[[operation]]
   message(deparse(v), "\n")
   if (is.character(v)) {
     p$filter <- as.character(v)
   }
-  if (toupper(operation) %in% c("EDIT_RECORD", "ADD_RECORD") && isTRUE(reviewer_only)) {
+  if (toupper(operation) %in% c("EDIT_RECORD", "ADD_RECORD") && isTRUE(reviewerOnly)) {
     p$securityCategories <- list("reviewer")
   }
   p
 }
 
 #'
-#' managementPermissions
+#' adminPermissions
 #'
 #' Helper method to create a list of database permissions for an administrative role.
 #'
@@ -609,7 +609,7 @@ operationList = function(operation, reviewer_only = FALSE) {
 #' @param manage_roles Assign roles to users.
 #' @export
 #'
-managementPermissions <- function(manage_automations = FALSE, manage_users = FALSE, manage_roles = FALSE) {
+adminPermissions <- function(manage_automations = FALSE, manage_users = FALSE, manage_roles = FALSE) {
   if (manage_automations&&manage_users&&manage_roles==FALSE) {
     result = list()
     class(result) <- c("activityInfoManagementPermissions", class(result))
@@ -735,7 +735,7 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #'     ),
 #'     parameters = list(
 #'       list(
-#'         parameterId = "partner",
+#'         id = "partner",
 #'         label = "Partner",
 #'         range = "ck5dxt1712"
 #'       )
@@ -755,15 +755,21 @@ updateRole <- function(databaseId, role) {
   stopifnot("databaseId must be a string" = is.character(databaseId)&&length(databaseId)==1)
   stopifnot("The role must be defined" = is.list(role))
   if (
-    !("activityInfoRoleFilter" %in% class(role)) || 
+    !("activityInfoRole" %in% class(role)) || 
     (is.null(role$grantBased)||!role$grantBased)
     ) {
     warning("Old style roles are deprecated. Please update your scripts to use the new grant-based roles.", call. = FALSE, noBreaks. = TRUE)
+    path <- paste("databases", databaseId, sep = "/")
+    request <- databaseUpdates()
+    request$roleUpdates = list(role)
+    x <- postResource(path, request, task = "updateRole")
+    invisible()
+  } else {
+    path <- paste("databases", databaseId, sep = "/")
+    request$roleUpdates = list(role)
+    x <- postResource(path, request, task = "updateRole")
+    invisible()    
   }
-  path <- paste("databases", databaseId, sep = "/")
-  request <- list(roleUpdates = list(role))
-  postResource(path, request, task = "updateRole")
-  invisible()
 }
 
 #' Create a role parameter to add to a user role definition
@@ -904,7 +910,7 @@ roleFilter <- function(id, label, filter) {
 #' resources (database, folder, forms).
 #'  
 #' Some administrative permissions are defined at the level of the role rather 
-#' than within grants. See \link{managementPermissions}.
+#' than within grants. See \link{adminPermissions}.
 #'
 #' @param id the id of the role
 #' @param label the label or name of the role, e.g. "Viewer" or "Administrator" 
@@ -912,7 +918,7 @@ roleFilter <- function(id, label, filter) {
 #' @param grants a list of \link{grant} items for each resources and their 
 #' respective permissions
 #' @param filters a list of \link{roleFilter} items
-#' @param managementPermissions \link{managementPermissions} under this role
+#' @param managementPermissions \link{adminPermissions} under this role
 #'
 #' @export
 #'
@@ -950,7 +956,7 @@ roleFilter <- function(id, label, filter) {
 #'       )
 #'       
 #' }
-role <- function(id, label, parameters = list(), grants, managementPermissions = managementPermissions(), filters = list()) {
+role <- function(id, label, parameters = list(), grants, managementPermissions = adminPermissions(), filters = list()) {
   stopifnot("The id must be a character string" = is.null(id)||(is.character(id)&&length(id)==1&&nchar(id)>0))
   stopifnot("The id must start with a letter, must be made of letters and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", id))
   
@@ -958,16 +964,17 @@ role <- function(id, label, parameters = list(), grants, managementPermissions =
   
   stopifnot("parameters must be a list" = is.list(parameters))
   stopifnot("grants must be a list of grants, for example, grants = list(grant(...))" = is.list(grants)&&length(grants)>=1)
-  stopifnot("Define management permissions using the managementPermissions() function" = "activityInfoManagementPermissions" %in% class(param))
+  
+  stopifnot("Define management permissions using the adminPermissions() function" = "activityInfoManagementPermissions" %in% class(managementPermissions))
   
   for(grant in grants) {
     stopifnot("Define each grant using the grant() function" = "activityInfoGrant" %in% class(grant))
   }
   for(param in parameters) {
-    stopifnot("Define each parameter using the parameter() function" = "activityInfoParameters" %in% class(param))
+    stopifnot("Define each parameter using the parameter() function" = "activityInfoParameter" %in% class(param))
   }
   for(fltr in filters) {
-    stopifnot("Define each parameter using the roleFilter() function" = "activityInfoRoleFilter" %in% class(param))
+    stopifnot("Define each parameter using the roleFilter() function" = "activityInfoRoleFilter" %in% class(fltr))
   }
   
   result <- list(

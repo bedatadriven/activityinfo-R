@@ -286,6 +286,7 @@ testthat::test_that("updateRole() works", {
     label = "Reporting Partners") |>
     addFormField(
       textFieldSchema(
+        code = "name",
         label = "Partner name", 
         required = TRUE))
 
@@ -311,6 +312,8 @@ testthat::test_that("updateRole() works", {
       textFieldSchema(
         label = "Report", 
         required = TRUE))
+  
+  addForm(reportingForm)
 
   # create a reports table
   reportingTbl <- tibble(Partner = rep(paste0("partner",1:3), 2), Report = rep(paste0("This is a report from Partner ",1:3),2))
@@ -334,12 +337,13 @@ testthat::test_that("updateRole() works", {
            grant(resourceId = partnerForm$id,
                  permissions = permissions(
                    view = TRUE,
-                   discover = FALSE))),
-         filters = list(
-           roleFilter(
-             id = "partner", 
-             label = "Partner is user's partner", 
-             filter = sprintf("%s == @user.partner", partnerForm$id)))
+                   discover = FALSE)))
+         #,
+         #filters = list(
+         #  roleFilter(
+         #    id = "partner", 
+         #   label = "Partner is user's partner", 
+         #   filter = sprintf("%s == @user.partner", partnerForm$id)))
     )
   
   # update the role

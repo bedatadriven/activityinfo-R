@@ -35,11 +35,11 @@ See \link{role} for the creation of roles.
 \examples{
 \dontrun{
 
-optional_grant <- 
+optionalGrant <- 
   grant(resourceId = "ck5dxt1552",
       permissions = permissions(
         view = TRUE,
-        add_record = TRUE
+        add_record = TRUE,
         edit_record = TRUE
         ),
       optional = TRUE

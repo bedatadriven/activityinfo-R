@@ -65,7 +65,7 @@ if (grantBased) {
     ),
     parameters = list(
       list(
-        parameterId = "partner",
+        id = "partner",
         label = "Partner",
         range = "ck5dxt1712"
       )

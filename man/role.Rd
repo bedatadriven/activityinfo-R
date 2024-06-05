@@ -9,7 +9,7 @@ role(
   label,
   parameters = list(),
   grants,
-  managementPermissions = managementPermissions(),
+  managementPermissions = adminPermissions(),
   filters = list()
 )
 }
@@ -23,7 +23,7 @@ role(
 \item{grants}{a list of \link{grant} items for each resources and their
 respective permissions}
 
-\item{managementPermissions}{\link{managementPermissions} under this role}
+\item{managementPermissions}{\link{adminPermissions} under this role}
 
 \item{filters}{a list of \link{roleFilter} items}
 }
@@ -35,7 +35,7 @@ A role contains one or more \link{grant} items that define access to
 resources (database, folder, forms).
 
 Some administrative permissions are defined at the level of the role rather
-than within grants. See \link{managementPermissions}.
+than within grants. See \link{adminPermissions}.
 }
 \examples{
 \dontrun{

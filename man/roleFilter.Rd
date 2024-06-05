@@ -29,6 +29,6 @@ newRoleLevelFilter <-
           id = "partner", 
           label = "Partner is user's partner", 
           filter = "ck5dxt1712 == @user.partner"
-          ))
+          )
 }
 }

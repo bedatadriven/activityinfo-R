@@ -211,9 +211,9 @@ testthat::test_that("parameter() works", {
   testthat::expect_snapshot(param)
 })
 
-testthat::test_that("managementPermissions() works", {
-  defaultAdminPermissions <- managementPermissions()
-  enhancedAdminPermissions <- managementPermissions(
+testthat::test_that("adminPermissions() works", {
+  defaultAdminPermissions <- adminPermissions()
+  enhancedAdminPermissions <- adminPermissions(
     manage_automations = TRUE, 
     manage_users = TRUE, 
     manage_roles = TRUE
@@ -354,7 +354,37 @@ testthat::test_that("updateRole() works", {
   
   roleIdentical <- sapply(tree$roles, function(x) {
     if (x$id == roleId) {
-      testthat::expect_identical(newRole, x)
+      testthat::expect_identical(x$label, roleLabel)
+      testthat::expect_length(object = x$parameters, n = 1)
+      testthat::expect_identical(x$parameters[[1]]$parameterId,"partner")
+      testthat::expect_identical(x$parameters[[1]]$range,partnerForm$id)
+      
+      testthat::expect_length(object = x$permissions, n = 0)
+      
+      testthat::expect_length(object = x$grants, n = 2)
+      
+      grant1 <- x$grants[[which(sapply(x$grants, function(g) g$resourceId == reportingForm$id))]]
+      testthat::expect_identical(grant1$resourceId, reportingForm$id)
+      testthat::expect_length(object = grant1$operations, n = 4)
+      testthat::expect_identical(grant1$operations[[1]]$operation, "VIEW")
+      testthat::expect_identical(grant1$operations[[1]]$filter, sprintf("%s == @user.partner", partnerForm$id))
+      testthat::expect_identical(grant1$operations[[2]]$operation, "EDIT_RECORD")
+      testthat::expect_identical(grant1$operations[[2]]$filter, sprintf("%s == @user.partner", partnerForm$id))
+      testthat::expect_identical(grant1$operations[[3]]$operation, "EXPORT_RECORDS")
+      testthat::expect_identical(grant1$operations[[4]]$operation, "DISCOVER")
+      
+      grant2 <- x$grants[[which(sapply(x$grants, function(g) g$resourceId == partnerForm$id))]]
+      testthat::expect_identical(grant2$resourceId, partnerForm$id)
+      testthat::expect_length(object = grant2$operations, n = 1)
+      testthat::expect_identical(grant2$operations[[1]]$operation, "VIEW")
+      
+      #testthat::expect_length(object = x$filters, n = 1)
+      #testthat::expect_identical(x$filters[[1]]$id, "partner")
+      #testthat::expect_identical(x$filters[[1]]$label, "Partner is user's partner")
+      #testthat::expect_identical(x$filters[[1]]$filter, "cwjcaculx3axxgxo == @user.partner")
+      
+      testthat::expect_true(x$grantBased)
+      
       TRUE
     } else {
       FALSE

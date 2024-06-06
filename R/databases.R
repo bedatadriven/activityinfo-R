@@ -587,7 +587,6 @@ permissions <- function(view = TRUE,
 operationList = function(operation, permissionList, reviewerOnly = FALSE) {
   p <- list(operation = toupper(operation))
   v <- permissionList[[operation]]
-  message(deparse(v), "\n")
   if (is.character(v)) {
     p$filter <- as.character(v)
   }
@@ -618,17 +617,17 @@ adminPermissions <- function(manage_automations = FALSE, manage_users = FALSE, m
   
   operations <- names(formals())
   
-  permissions <- lapply(operations, function(operation) {
+  permissionList <- lapply(operations, function(operation) {
     v <- eval(as.name(operation))
     if (length(v) != 1 || is.na(v) || !(is.logical(v))) {
       stop(sprintf("Invalid value for operation '%s': %s", operation, deparse(v)))
     }
     v
   })
-  names(permissions) <- operations
-  granted <- sapply(permissions, function(p) p == TRUE)
-  
-  result <- lapply(operations[granted], operationList)
+  names(permissionList) <- operations
+  granted <- sapply(permissionList, function(p) p == TRUE)
+
+  result <- lapply(operations[granted], function(x) {operationList(x, permissionList)})
   
   class(result) <- c("activityInfoManagementPermissions", class(result))
   
@@ -766,7 +765,7 @@ updateRole <- function(databaseId, role) {
     invisible()
   } else {
     path <- paste("databases", databaseId, sep = "/")
-    request$roleUpdates = list(role)
+    request = list(roleUpdates = list(role))
     x <- postResource(path, request, task = "updateRole")
     invisible()    
   }
@@ -988,5 +987,5 @@ role <- function(id, label, parameters = list(), grants, managementPermissions =
   )
     
   class(result) <- c("activityInfoRole", class(result))
-  result
+  invisible(result)
 }

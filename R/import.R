@@ -295,6 +295,9 @@ matchRecordIdsByKey <- function(schema, data, fieldIds, fieldValues) {
   keys <- which(fieldIds %in% keyFieldIds)
 
   provided <- as.data.frame(fieldValues[keys])
+  if(ncol(provided) != length(keyFieldIds)) {
+    stop("One or more key fields are missing")
+  }
   names(provided) <- sprintf("k%d", seq_along(keyFieldIds))
 
   # Check that our input does not include duplicates according to the key
@@ -316,7 +319,7 @@ matchRecordIdsByKey <- function(schema, data, fieldIds, fieldValues) {
 
 findKeyFieldIds <- function(schema) {
   fieldIds <- sapply(schema$elements, function(e) e$id)
-  keys <- sapply(schema$elements, function(e) identical(e$key, TRUE))
+  keys <- sapply(schema$elements, function(e) identical(e$key, TRUE) && e$type != "serial")
 
   return(fieldIds[keys])
 }

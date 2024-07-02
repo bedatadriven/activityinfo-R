@@ -1,3 +1,6 @@
+## [4.36.2]
+- Fix for failing tests when new user fields are added (#126)
+
 ## [4.36.1]
 - Fix for `importRecords()` when the form has a serial number (#124)
 

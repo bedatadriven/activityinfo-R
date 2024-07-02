@@ -135,8 +135,7 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
 
   returnedUsers <- addTestUsers(database, tree, nUsers = 2)
   
-  # update snapshot; safe for now
-  expectActivityInfoSnapshot(simplifyUsers(returnedUsers, addedUsers = TRUE))
+  expectActivityInfoSnapshotCompare(simplifyUsers(returnedUsers, addedUsers = TRUE), snapshotName = "returnedUsers1")
   
   nUsers <- 2
   
@@ -166,7 +165,7 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
   testthat::expect_equal(class(users2), "data.frame")
 
   # update snapshot; safe for now
-  expectActivityInfoSnapshot(simplifyUsers(users))
+  expectActivityInfoSnapshotCompare(simplifyUsers(users), , snapshotName = "dbUsers1")
 
   deleteTestUsers(database, returnedUsers)
 })

@@ -20,24 +20,3 @@
       1 c10000004 Person form c10000002 FORM     PRIVATE   
       2 c10000005 Children    c10000004 SUB_FORM PRIVATE   
 
-# addDatabaseUser() and deleteDatabaseUser() and getDatabaseUsers() and getDatabaseUser() and getDatabaseUser2() work and expected fields are present
-
-    list(list(activationStatus = "PENDING", databaseId = "<id value>", 
-        deliveryStatus = "UNKNOWN", email = "<id value>", inviteTime = "<date or time value>", 
-        lastLoginTime = "<date or time value>", name = "Test database user", 
-        userId = "<id value>"), list(activationStatus = "PENDING", 
-        databaseId = "<id value>", deliveryStatus = "UNKNOWN", email = "<id value>", 
-        inviteTime = "<date or time value>", lastLoginTime = "<date or time value>", 
-        name = "Test database user", userId = "<id value>"))
-
----
-
-    list(list(activationStatus = "PENDING", databaseId = "<id value>", 
-        deliveryStatus = "UNKNOWN", email = "<id value>", inviteAccepted = FALSE, 
-        inviteDate = "<date or time value>", lastLoginDate = "<date or time value>", 
-        name = "Test database user", userId = "<id value>", userLicenseType = "BASIC"), 
-        list(activationStatus = "PENDING", databaseId = "<id value>", 
-            deliveryStatus = "UNKNOWN", email = "<id value>", inviteAccepted = FALSE, 
-            inviteDate = "<date or time value>", lastLoginDate = "<date or time value>", 
-            name = "Test database user", userId = "<id value>", userLicenseType = "BASIC"))
-

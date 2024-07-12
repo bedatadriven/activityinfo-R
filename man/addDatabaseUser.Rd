@@ -11,7 +11,7 @@ addDatabaseUser(
   locale = NA_character_,
   roleId,
   roleParameters = list(),
-  roleResources = list(databaseId)
+  roleResources = c(databaseId)
 )
 }
 \arguments{

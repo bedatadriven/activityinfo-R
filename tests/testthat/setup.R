@@ -53,25 +53,27 @@ canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate =
       }
 
       if (replaceResource) {
-        n <- grepl(pattern = "resources", names(x)) & lengths(x) == 1
-        x[n] <- list("Empty resources until we can ensure a sort order in the API.")
 
         n <- grepl(pattern = "resources", names(x)) & lengths(x) > 1
-
         # replace a list or vector of resource ids
         x[n] <- lapply(x[n], function(y) {
           if (is.recursive(y)) {
             # y
-            list("Empty resources until we can ensure a sort order in the API.")
+            list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API."))
           } else if (is.list(y)) {
             # yReturn <- list(rep("<resource id>", length(y)))
             # names(yReturn) <- names(y)
-            list("Empty resources until we can ensure a sort order in the API.")
+            list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API."))
           } else {
             # rep("<resource id>", length(y))
-            list("Empty resources until we can ensure a sort order in the API.")
+            list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API."))
           }
         })
+        
+        n <- grepl(pattern = "resources", names(x)) & lengths(x) == 1
+        x[n] <- list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API."))
+        
+        
       }
 
       x <- lapply(x, function(y) {
@@ -143,7 +145,7 @@ expectActivityInfoSnapshotCompare <- function(x, snapshotName, replaceId = TRUE,
   
   x <- canonicalizeActivityInfoObject(x, replaceId, replaceDate, replaceResource)
   
-  path <- sprintf("%s/_activityInfoSnaps/%s.RDS", getwd(), snapshotName)
+  path <- testthat::test_path("_activityInfoSnaps", sprintf("%s.RDS", snapshotName))
   
   if (file.exists(path)) {
     y <- readRDS(file = path)

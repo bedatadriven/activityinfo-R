@@ -9,8 +9,7 @@ role(
   label,
   parameters = list(),
   grants,
-  managementPermissions = adminPermissions(),
-  filters = list()
+  permissions = managementPermissions()
 )
 }
 \arguments{
@@ -23,9 +22,9 @@ role(
 \item{grants}{a list of \link{grant} items for each resources and their
 respective permissions}
 
-\item{managementPermissions}{\link{adminPermissions} under this role}
-
 \item{filters}{a list of \link{roleFilter} items}
+
+\item{managementPermissions}{\link{adminPermissions} under this role}
 }
 \description{
 Returns a role that can be added to a database and assigned to users.
@@ -62,12 +61,7 @@ grantBasedRole <-
             view = TRUE,
             discover = TRUE,
             add_record = TRUE),
-          optional = TRUE)),
-      filters = list(
-        roleFilter(
-          id = "partner", 
-          label = "Partner is user's partner", 
-          filter = "ck5dxt1712 == @user.partner"))
+          optional = TRUE))
       )
       
 }

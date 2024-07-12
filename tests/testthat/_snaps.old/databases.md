@@ -1,7 +1,7 @@
 # getDatabases() works
 
     Code
-      databasesDf
+      databases
     Output
       # A tibble: 2 x 6
         billingAccountId databaseId description label              ownerId   suspended
@@ -331,37 +331,24 @@
       [1] "activityInfoGrant" "list"             
       
       
+      $filters
+      $filters[[1]]
+      $id
+      [1] "partner"
+      
+      $label
+      [1] "Partner is user's partner"
+      
+      $filter
+      [1] "ck5dxt1712 == @user.partner"
+      
+      attr(,"class")
+      [1] "activityInfoRoleFilter" "list"                  
+      
+      
       $grantBased
       [1] TRUE
       
       attr(,"class")
       [1] "activityInfoRole" "list"            
-
-# roleAssignment() works
-
-    Code
-      roleAssignment(roleId = "rp", roleParameter = list(partner = "test:test"),
-      roleResources = list("resource1", "resource2", "resource3"))
-    Output
-      $id
-      [1] "rp"
-      
-      $parameters
-      $parameters$partner
-      [1] "test:test"
-      
-      
-      $resources
-      $resources[[1]]
-      [1] "resource1"
-      
-      $resources[[2]]
-      [1] "resource2"
-      
-      $resources[[3]]
-      [1] "resource3"
-      
-      
-      attr(,"class")
-      [1] "activityInfoRoleAssignment" "list"                      
 

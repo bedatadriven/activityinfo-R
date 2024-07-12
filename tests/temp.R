@@ -69,65 +69,33 @@ newRole <-
 
 updateRole(databaseId = database$databaseId, role = newRole)
 
-newRoleAbridged <- 
-  role(id = roleId,
-       label = roleLabel,
-       parameters = list(
-         parameter(id = "partner", label = "Partner", range = partnerForm$id)),
-       grants = list(
-         grant(resourceId = reportingForm$id,
-               permissions = permissions(
-                 view = sprintf("%s == @user.partner", partnerForm$id),
-                 edit_record = sprintf("%s == @user.partner", partnerForm$id),
-                 discover = TRUE,
-                 export_records = TRUE)),
-         grant(resourceId = partnerForm$id,
-               permissions = permissions(
-                 view = TRUE,
-                 discover = FALSE))))
-
-updateRole(databaseId = database$databaseId, role = newRoleAbridged)
 
 deprecatedNonGrantRole <- list(
   id = "rpold",
   label = "Reporting partner",
   permissions = permissions(
-    view = sprintf("%s == @user.partner", partnerForm$id),
-    edit_record = sprintf("%s == @user.partner", partnerForm$id),
+    view = sprintf("%s == @user.partner2", partnerForm$id),
+    edit_record = sprintf("%s == @user.partner2", partnerForm$id),
+    add_record = sprintf("%s == @user.partner2", partnerForm$id),
+    delete_record = sprintf("%s == @user.partner2", partnerForm$id),
     export_records = TRUE
   ),
   parameters = list(
-    list(
-      id = "partner",
+    parameter(
+      id = "partner2",
       label = "Partner",
       range = partnerForm$id
     )
   ),
   filters = list(
-    list(
-      id = "partner",
-      label = "partner is user's partner",
-      filter = sprintf("%s == @user.partner", partnerForm$id)
+    roleFilter(
+      id = "partner2",
+      label = "partner is user's partner2",
+      filter = sprintf("%s == @user.partner2", partnerForm$id)
     )
-  ))
+  ),
+  grantBased = FALSE
+  )
 
 
 updateRole(databaseId = database$databaseId, role = deprecatedNonGrantRole)
-
-deprecatedNonGrantRoleNoFilter <- list(
-  id = "rpold",
-  label = "Reporting partner",
-  permissions = permissions(
-    view = sprintf("%s == @user.partner", partnerForm$id),
-    edit_record = sprintf("%s == @user.partner", partnerForm$id),
-    export_records = TRUE
-  ),
-  parameters = list(
-    list(
-      id = "partner",
-      label = "Partner",
-      range = partnerForm$id
-    )
-  ), grantBased = FALSE)
-
-updateRole(databaseId = database$databaseId, role = deprecatedNonGrantRoleNoFilter)

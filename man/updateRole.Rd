@@ -45,12 +45,7 @@ if (grantBased) {
              view = TRUE,
               discover = TRUE,
               add_record = TRUE),
-            optional = TRUE)),
-        filters = list(
-         roleFilter(
-            id = "partner", 
-            label = "Partner is user's partner", 
-            filter = "ck5dxt1712 == @user.partner"))
+            optional = TRUE))
         )
   updateRole("cxy123", currentGrantBasedRole) 
 } else {
@@ -71,7 +66,7 @@ if (grantBased) {
       )
     ),
     filters = list(
-      list(
+      roleFilter(
         id = "partner",
         label = "partner is user's partner",
         filter = "ck5dxt1712 == @user.partner"

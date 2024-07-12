@@ -15,16 +15,16 @@ roleFilter(id, label, filter)
 }
 \description{
 Pre-defined filters. Role filters allow other users to choose filters for
-permissions without having to write formulas themselves.
+permissions without having to write formulas themselves. This is a feature of
+legacy roles.
 }
 \details{
-See \link{role} for the creation of roles. See \link{permissions} for the
-creation of permissions.
+See \link{permissions} for the creation of permissions.
 }
 \examples{
 \dontrun{
 
-newRoleLevelFilter <- 
+legacyRoleFilter <- 
   roleFilter(
           id = "partner", 
           label = "Partner is user's partner", 

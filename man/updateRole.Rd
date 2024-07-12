@@ -17,9 +17,9 @@ Updates the role definition in the database. A role is defined with the
 ActivityInfo.
 }
 \details{
-Older style non-grant roles are deprecated. See \link{permissions} for more
-details for old roles without grants. These will be phased out of use and
-should be avoided.
+Older style non-grant roles are deprecated. See \link{resourcePermissions}
+for more details for old roles without grants. These will be phased out of
+use and should be avoided.
 }
 \examples{
 \dontrun{

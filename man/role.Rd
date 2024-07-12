@@ -19,12 +19,10 @@ role(
 
 \item{parameters}{a list of \link{parameter} items defining role parameters}
 
-\item{grants}{a list of \link{grant} items for each resources and their
+\item{grants}{a list of \link{grant} items for each resource and their
 respective permissions}
 
-\item{filters}{a list of \link{roleFilter} items}
-
-\item{managementPermissions}{\link{adminPermissions} under this role}
+\item{permissions}{\link{managementPermissions} under this role}
 }
 \description{
 Returns a role that can be added to a database and assigned to users.
@@ -34,7 +32,7 @@ A role contains one or more \link{grant} items that define access to
 resources (database, folder, forms).
 
 Some administrative permissions are defined at the level of the role rather
-than within grants. See \link{adminPermissions}.
+than within grants. See \link{managementPermissions}.
 }
 \examples{
 \dontrun{

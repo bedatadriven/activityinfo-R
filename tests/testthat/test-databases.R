@@ -320,7 +320,7 @@ testthat::test_that("updateRole() works for both legacy and new roles", {
   partnerForm <- formSchema(
     databaseId = database$databaseId, 
     label = "Reporting Partners") |>
-    addFormField(
+    activityinfo::addFormField(
       textFieldSchema(
         code = "name",
         label = "Partner name", 

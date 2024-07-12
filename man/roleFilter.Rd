@@ -2,7 +2,7 @@
 % Please edit documentation in R/databases.R
 \name{roleFilter}
 \alias{roleFilter}
-\title{Create a pre-defined role filter}
+\title{Create a pre-defined legacy role filter}
 \usage{
 roleFilter(id, label, filter)
 }
@@ -19,7 +19,7 @@ permissions without having to write formulas themselves. This is a feature of
 legacy roles.
 }
 \details{
-See \link{permissions} for the creation of permissions.
+See \link{resourcePermissions} for the creation of resource permissions.
 }
 \examples{
 \dontrun{

@@ -9,14 +9,16 @@ getDatabaseRole(database, roleId)
 \arguments{
 \item{database}{database tree using \link{getDatabaseTree} or the databaseId}
 
-\item{roleId}{the id of the role.
-
+\item{roleId}{the id of the role.}
+}
+\description{
+Helper method to fetch a role based on its id using the database tree or database id.
+}
+\examples{
 \dontrun{
 # Get the reporting partner role
 dbTree <- getDatabaseTree(databaseId = "ck3pqrp9a1z") # fetch the database tree
 role <- getDatabaseRole(dbTree, roleId = "rp") # extract the reporting partner role
-}}
 }
-\description{
-Helper method to fetch a role based on its id using the database tree or database id.
+
 }

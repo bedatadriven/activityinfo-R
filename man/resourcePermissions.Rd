@@ -2,9 +2,33 @@
 % Please edit documentation in R/databases.R
 \name{resourcePermissions}
 \alias{resourcePermissions}
+\alias{permissions}
 \title{resourcePermissions}
 \usage{
 resourcePermissions(
+  view = TRUE,
+  add_record = FALSE,
+  edit_record = FALSE,
+  delete_record = FALSE,
+  export_records = FALSE,
+  lock_records = FALSE,
+  add_resource = FALSE,
+  edit_resource = FALSE,
+  delete_resource = FALSE,
+  bulk_delete = FALSE,
+  manage_collection_links = FALSE,
+  manage_users = FALSE,
+  manage_roles = FALSE,
+  manage_reference_data = FALSE,
+  manage_translations = FALSE,
+  audit = FALSE,
+  share_reports = FALSE,
+  publish_reports = FALSE,
+  reviewer_only = FALSE,
+  discover = FALSE
+)
+
+permissions(
   view = TRUE,
   add_record = FALSE,
   edit_record = FALSE,

@@ -17,7 +17,8 @@ updateGrant(databaseId, userId, resourceId, permissions)
 }
 \description{
 Adds or updates a grant for a user to a specific resource.
-See \link{permissions} for how to set permissions for a grant.
+See \link{resourcePermissions} for how to set resource-level permissions for
+a grant.
 }
 \examples{
 \dontrun{

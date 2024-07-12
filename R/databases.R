@@ -422,6 +422,7 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
 #' @param database database tree using \link{getDatabaseTree} or the databaseId
 #' @param roleId the id of the role.
 #'
+#' @examples
 #' \dontrun{
 #' # Get the reporting partner role
 #' dbTree <- getDatabaseTree(databaseId = "ck3pqrp9a1z") # fetch the database tree
@@ -628,6 +629,8 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
 #' @param manage_reference_data Manage reference data.
 #' @param reviewer_only Grant add_record and edit_record permissions for fields in the "reviewer" security category
 #' @param discover Discover and display forms 
+#' @rdname resourcePermissions
+#' @order 1
 #' @export
 #'
 resourcePermissions <- function(view = TRUE,
@@ -669,6 +672,8 @@ resourcePermissions <- function(view = TRUE,
   result
 }
 
+#' @rdname resourcePermissions
+#' @order 2
 #' @export
 permissions <- resourcePermissions
 
@@ -728,7 +733,8 @@ managementPermissions <- function(manage_automations = FALSE, manage_users = FAL
 #' updateGrant
 #'
 #' Adds or updates a grant for a user to a specific resource. 
-#' See \link{permissions} for how to set permissions for a grant.
+#' See \link{resourcePermissions} for how to set resource-level permissions for 
+#' a grant.
 #'
 #' @param databaseId the id of the database
 #' @param userId the (numeric) id of the user to update
@@ -771,9 +777,9 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #' \link{role} function, which implements the grant-based role system of 
 #' ActivityInfo. 
 #' 
-#' Older style non-grant roles are deprecated. See \link{permissions} for more 
-#' details for old roles without grants. These will be phased out of use and 
-#' should be avoided.
+#' Older style non-grant roles are deprecated. See \link{resourcePermissions} 
+#' for more details for old roles without grants. These will be phased out of 
+#' use and should be avoided.
 #'
 #' @param databaseId the id of the database
 #' @param role the role definition
@@ -904,7 +910,7 @@ parameter <- function(id, label, range) {
 #' 
 #' Grants define access to resources such as databases, folders, or forms. The
 #' permissions include operations such as view, read or edit and are defined per 
-#' resource. See \link{permissions}.
+#' resource. See \link{resourcePermissions}.
 #'  
 #' Adding grants to a role enables the administrator to define 
 #' permissions that vary per grant and, if desired, override grants inherited 
@@ -917,7 +923,7 @@ parameter <- function(id, label, range) {
 #'
 #' @param resourceId the id of the resource, for example a database, folder or 
 #' (sub-)form 
-#' @param permissions a permission list; see \link{permissions}
+#' @param permissions a permission list; see \link{resourcePermissions}
 #' @param optional whether the grant is optional, by default it is not optional 
 #' (=FALSE)
 #'
@@ -951,13 +957,13 @@ grant <- function(resourceId, permissions = permissions(), optional = FALSE) {
   result
 }
 
-#' Create a pre-defined role filter
+#' Create a pre-defined legacy role filter
 #' 
 #' Pre-defined filters. Role filters allow other users to choose filters for 
 #' permissions without having to write formulas themselves. This is a feature of
 #' legacy roles.
 #' 
-#' See \link{permissions} for the creation of permissions.
+#' See \link{resourcePermissions} for the creation of resource permissions.
 #'
 #' @param id the id of the pre-defined filter
 #' @param label A human-readable label
@@ -994,15 +1000,14 @@ roleFilter <- function(id, label, filter) {
 #' resources (database, folder, forms).
 #'  
 #' Some administrative permissions are defined at the level of the role rather 
-#' than within grants. See \link{adminPermissions}.
+#' than within grants. See \link{managementPermissions}.
 #'
 #' @param id the id of the role
 #' @param label the label or name of the role, e.g. "Viewer" or "Administrator" 
 #' @param parameters a list of \link{parameter} items defining role parameters
-#' @param grants a list of \link{grant} items for each resources and their 
+#' @param grants a list of \link{grant} items for each resource and their 
 #' respective permissions
-#' @param filters a list of \link{roleFilter} items
-#' @param managementPermissions \link{adminPermissions} under this role
+#' @param permissions \link{managementPermissions} under this role
 #'
 #' @export
 #'

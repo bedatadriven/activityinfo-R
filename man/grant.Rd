@@ -10,7 +10,7 @@ grant(resourceId, permissions = permissions(), optional = FALSE)
 \item{resourceId}{the id of the resource, for example a database, folder or
 (sub-)form}
 
-\item{permissions}{a permission list; see \link{permissions}}
+\item{permissions}{a permission list; see \link{resourcePermissions}}
 
 \item{optional}{whether the grant is optional, by default it is not optional
 (=FALSE)}
@@ -21,7 +21,7 @@ Returns a grant that can be added to a \link{role}.
 \details{
 Grants define access to resources such as databases, folders, or forms. The
 permissions include operations such as view, read or edit and are defined per
-resource. See \link{permissions}.
+resource. See \link{resourcePermissions}.
 
 Adding grants to a role enables the administrator to define
 permissions that vary per grant and, if desired, override grants inherited

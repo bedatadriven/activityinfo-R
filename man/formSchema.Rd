@@ -9,7 +9,8 @@ formSchema(
   label,
   id = cuid(),
   elements = list(),
-  folderId = databaseId
+  parentFormId = NULL,
+  folderId = NULL
 )
 }
 \arguments{
@@ -21,11 +22,14 @@ formSchema(
 
 \item{elements}{The elements/form fields of the form}
 
-\item{folderId}{The identifier of the folder containing the form}
+\item{parentFormId}{The identifier of the parent form of the new sub-form.}
+
+\item{folderId}{The identifier of the folder containing the new form.}
 }
 \description{
-Generates a new form schema object which can be used to add a new form
-to ActivityInfo.
+Generates a new form schema object which can be used to add a new form to
+ActivityInfo with an optional folder specified or in the case of a  new sub-
+form with a parent form specified.
 }
 \examples{
 survey <- formSchema(

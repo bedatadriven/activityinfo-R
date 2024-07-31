@@ -1326,7 +1326,7 @@ tblWindow <- function(x, limit) {
 #' @export
 extractSchemaFromFields <- function(x, databaseId, label, useColumnNames = FALSE, ...) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
-  fmSchema <- formSchema(databaseId, label, ...)
+  fmSchema <- formSchema(databaseId = databaseId, label = label, ...)
 
   codes <- character(0)
   

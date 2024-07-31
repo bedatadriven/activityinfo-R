@@ -8,7 +8,7 @@ createFormSchemaFromData(
   x,
   databaseId,
   label,
-  folderId = databaseId,
+  folderId,
   keyColumns = character(),
   requiredColumns = keyColumns,
   logicalAsSingleSelect = TRUE,

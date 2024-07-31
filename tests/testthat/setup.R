@@ -111,7 +111,7 @@ compare_recursively <- function(a, b, path = list()) {
   } else if (is.list(a) && is.list(b)) {
     additionalFields <- names(b)[!names(b) %in% names(a)]
     if (length(additionalFields)>0) {
-      message(sprintf("Additional fields found at name/key '%s': '%s'", paste(path, collapse = "'->'"), paste(additionalFields, collapse = "', '")))
+      message(sprintf("Additional fields found at name/key %s: '%s'", paste(path, collapse = "'->'"), paste(additionalFields, collapse = "', '")))
     }
     for (name in names(a)) {
       # Check if the name in 'a' exists in 'b', then compare their values recursively

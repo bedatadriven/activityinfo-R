@@ -246,18 +246,16 @@ testthat::test_that("getRecords() works", {
   
   testthat::test_that("Copying of schemas with extractSchemaFromFields()", {
     newSchema <- rcrds %>% select(id = `Identifier number`) %>% extractSchemaFromFields(databaseId = "dbid", label = "new form")
+    newSchema2 <-rcrds %>% select(-`_id`, -`_lastEditTime`) %>% extractSchemaFromFields(databaseId = "dbid", label = "new form")
     
     schemaToCompare <- schema
     schemaToCompare$label <- "new form"
     schemaToCompare$id <- newSchema$id
     schemaToCompare$databaseId <- "dbid"
-    
-    identicalForm(schemaToCompare, newSchema)
-    
-    # removing newSchema snapshot - not per se safe - should use new snapshot function
+
+    identicalForm(canonicalizeActivityInfoObject(schemaToCompare), canonicalizeActivityInfoObject(newSchema2))
     expectActivityInfoSnapshotCompare(newSchema, "extractSchemaFromFields")
-    #expectActivityInfoSnapshot(newSchema)
-    
+
     # no form schema elements to provide - expect warning
     testthat::expect_warning({
       rcrds %>% select(starts_with("_")) %>% extractSchemaFromFields(databaseId = "dbid", label = "new form")

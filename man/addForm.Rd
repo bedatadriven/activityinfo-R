@@ -9,20 +9,22 @@
 \usage{
 addForm(...)
 
-\method{addForm}{formSchema}(schema, folderId = schema$databaseId, ...)
+\method{addForm}{formSchema}(schema, parentId, folderId, ...)
 
-\method{addForm}{character}(databaseId, schema, folderId = databaseId, ...)
+\method{addForm}{character}(databaseId, schema, parentId, folderId, ...)
 
-\method{addForm}{default}(databaseId, schema, folderId = databaseId, ...)
+\method{addForm}{default}(databaseId, schema, parentId, folderId, ...)
 }
 \arguments{
 \item{...}{ignored}
 
 \item{schema}{the schema of the form to add}
 
-\item{folderId}{the id of the folder to which this form should be added}
+\item{parentId}{the id of the database or folder to which this form should be added (optional)}
 
-\item{databaseId}{the id of the database}
+\item{folderId}{this argument is deprecated and superceded by parentId. Use folderId in formSchema().}
+
+\item{databaseId}{the id of the database (optional)}
 }
 \description{
 Adds a new form to a database

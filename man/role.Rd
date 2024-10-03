@@ -9,7 +9,7 @@ role(
   label,
   parameters = list(),
   grants,
-  permissions = managementPermissions()
+  permissions = databasePermissions()
 )
 }
 \arguments{
@@ -22,7 +22,7 @@ role(
 \item{grants}{a list of \link{grant} items for each resource and their
 respective permissions}
 
-\item{permissions}{\link{managementPermissions} under this role}
+\item{permissions}{\link{databasePermissions} under this role}
 }
 \description{
 Returns a role that can be added to a database and assigned to users.
@@ -32,7 +32,7 @@ A role contains one or more \link{grant} items that define access to
 resources (database, folder, forms).
 
 Some administrative permissions are defined at the level of the role rather
-than within grants. See \link{managementPermissions}.
+than within grants. See \link{databasePermissions}.
 }
 \examples{
 \dontrun{
@@ -49,13 +49,13 @@ grantBasedRole <-
         parameter(id = "partner", label = "Partner", range = "ck5dxt1712")),
       grants = list(
         grant(resourceId = "cq9xyz1552",
-          permissions = permissions(
+          permissions = resourcePermissions(
             view = "ck5dxt1712 == @user.partner",
             edit_record = "ck5dxt1712 == @user.partner",
             discover = TRUE,
             export_records = TRUE)),
         grant(resourceId = "cz55555555",
-          permissions = permissions(
+          permissions = resourcePermissions(
             view = TRUE,
             discover = TRUE,
             add_record = TRUE),

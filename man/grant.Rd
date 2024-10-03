@@ -4,7 +4,7 @@
 \alias{grant}
 \title{Create a grant to define resource-level permissions}
 \usage{
-grant(resourceId, permissions = permissions(), optional = FALSE)
+grant(resourceId, permissions = resourcePermissions(), optional = FALSE)
 }
 \arguments{
 \item{resourceId}{the id of the resource, for example a database, folder or
@@ -37,7 +37,7 @@ See \link{role} for the creation of roles.
 
 optionalGrant <- 
   grant(resourceId = "ck5dxt1552",
-      permissions = permissions(
+      permissions = resourcePermissions(
         view = TRUE,
         add_record = TRUE,
         edit_record = TRUE

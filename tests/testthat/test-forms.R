@@ -118,3 +118,9 @@ testthat::test_that("formSchemaFromData() errors with duplicate codes and badly 
     createFormSchemaFromData(data.frame(a = 1:10, a = as.character(1:10), check.names = FALSE), databaseId = "dbid", label = "Label", codes = c("A1", "A2"))
   }, regexp = "label")
 })
+
+testthat::test_that("addForm() modifies a sub-form with parentFormId", {
+  
+  
+  
+})

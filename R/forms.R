@@ -184,28 +184,31 @@ addForm <- function(...) {
 
 #' @export
 #' @rdname addForm
-addForm.formSchema <- function(schema, parentId, folderId, ...) {
-  if (!missing(folderId)&&!is.null(folderId)) {
+addForm.formSchema <- function(schema, parentId=schema$databaseId, folderId=NULL, ...) {
+  if (!is.null(folderId)) {
     warning("folderId is now deprecated in addForm. Please update your code to replace folderId with parentId in addForm() or add the folderId directly to the form schema in formSchema().")
   }
   
-  if (missing(parentId)||is.null(parentId)) {
-    if (!missing(folderId)&&!is.null(folderId)) {
-        if(is.null(schema$parentFormId)) {
-          parentId = folderId
-        } else {
-          warning("The provided folderId will be ignored. Cannot add a folderId to a sub-form.")
-          parentId = schema$parentFormId
-        }
-    } else {
-      if (!is.null(schema$parentFormId)) {
-        parentId = schema$parentFormId
-      } else if (!is.null(schema$folderId)) {
-        parentId = schema$folderId
+  if (!is.null(schema$parentFormId)) {
+    if (!is.null(folderId)) {
+      warning("Cannot add a folderId to a sub-form.")
+    }
+    if (!is.null(parentId)&&parentId!=schema$parentFormId) {
+      warning("Overriding parentId with the sub-form parentFormId provided in the schema.")
+      parentId = schema$parentFormId
+    }
+  } else {
+    if (!is.null(folderId)) {
+      if (!is.null(parentId)) {
+        warning("The provided folderId will be ignored. Using the provided parentId.")
       } else {
-        parentId = schema$databaseId
+        parentId = folderId
       }
     }
+  }
+  
+  if (is.null(parentId)) {
+    stop("A parentId must be provided to addForm().")
   }
   
   checkForm(schema)
@@ -254,22 +257,12 @@ reportFormValidationErrors <- function(condition) {
 
 #' @export
 #' @rdname addForm
-addForm.character <- function(databaseId, schema, parentId, folderId, ...) {
+addForm.character <- function(databaseId, schema, ...) {
   schema$databaseId <- databaseId
-  
-  if (!missing(folderId)&&!is.null(folderId)) {
-    warning("folderId is now deprecated in addForm(). Please use parentId or set the folderId with formSchema().")
-    if (is.null(schema$parentFormId)) {
-      schema$folderId = folderId
-    } else {
-      warning("The provided schema has a parent form with a parentFormId. The provided folderId with be ignored.")
-    }
-  }
-  
   if (!("activityInfoFormSchema" %in% class(schema))) {
     schema <- asFormSchema(schema)
   }
-  addForm(schema, parentId)
+  addForm(schema, ...)
 }
 
 #' @export
@@ -312,14 +305,12 @@ formSchema <- function(databaseId, label, id = cuid(), elements = list(), parent
     elements = elements
   ))
   
-  if (!is.null(parentFormId)&&!is.null(folderId)) {
-    warning("It is not possible to set both a parentFormId for a sub-form and a folderId for a form. The parentFormId will be used and the folderId ignored.")
+  if (!is.null(folderId)) {
+    warning("folderId is now deprecated in formSchema() and will be ignored. Please update your script.")
   }
   
   if (!is.null(parentFormId)) {
     result$parentFormId = parentFormId
-  } else if (!is.null(folderId)) {
-    result$folderId = folderId
   } 
   
   result
@@ -426,7 +417,7 @@ relocateForm <- function(formId, newDatabaseId) {
 #' @param codes a character vector of field codes that must have the same length as the number of columns
 #' @param upload immediately upload the new form
 #' @export
-createFormSchemaFromData <- function(x, databaseId, label, folderId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False"), codes = rep(NA_character_, ncol(x)), upload = FALSE) {
+createFormSchemaFromData <- function(x, databaseId, label, folderId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False"), codes = rep(NA_character_, ncol(x)), upload = FALSE, parentId, parentFormId) {
   stopifnot("A data frame or tibble must be provided to formSchemaFromData()" = is.data.frame(x))
   stopifnot("databaseId must be a singe character string" = is.character(databaseId)&&length(databaseId)==1)
   stopifnot("The label for the new form schema must not be empty" = !missing(label)&&is.character(label)&&length(label)==1&&nchar(label)>0)
@@ -449,10 +440,11 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId, keyColumns 
   stopifnot("Some required columns do not exist in the data.frame provided" = keyColumns %in% providedCols)
   
   if (!missing(folderId)) {
-    fmSchema <- formSchema(databaseId = databaseId, label = label, folderId = folderId)
+    fmSchema <- formSchema(databaseId = databaseId, label = label, folderId = folderId) 
   } else {
     fmSchema <- formSchema(databaseId = databaseId, label = label)
   }
+  
   
   addIt <- function(fieldSchema) fmSchema <<- addFormField(fmSchema, fieldSchema)
   keyStop <- function(type, pCol) stop(sprintf("Column '%s' of type %s cannot be a key column", pCol, type))

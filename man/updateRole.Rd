@@ -35,13 +35,13 @@ if (grantBased) {
          parameter(id = "partner", label = "Partner", range = "ck5dxt1712")),
         grants = list(
           grant(resourceId = "cq9xyz1552",
-            permissions = permissions(
+            permissions = resourcePermissions(
               view = "ck5dxt1712 == @user.partner",
              edit_record = "ck5dxt1712 == @user.partner",
               discover = TRUE,
               export_records = TRUE)),
           grant(resourceId = "cz55555555",
-            permissions = permissions(
+            permissions = resourcePermissions(
              view = TRUE,
               discover = TRUE,
               add_record = TRUE),
@@ -53,7 +53,7 @@ if (grantBased) {
   deprecatedNonGrantRole <- list(
     id = "rp",
     label = "Reporting partner",
-    permissions = permissions(
+    permissions = resourcePermissions(
       view = "ck5dxt1712 == @user.partner",
       edit_record = "ck5dxt1712 == @user.partner",
       export_records = TRUE

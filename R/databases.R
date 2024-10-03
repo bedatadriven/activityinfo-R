@@ -604,7 +604,7 @@ roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
 #'
 #' Helper method to create a list of permissions for a role or grant.
 #'
-#' Each argument may either be TRUE or FALSE.
+#' Each argument represents an operation at the level of a resource and may either be TRUE or FALSE.
 #'
 #' The view, add_record, edit_record, and delete_record permissions may instead
 #' be a formula that conditions the permission on the values of the record.
@@ -667,7 +667,7 @@ resourcePermissions <- function(view = TRUE,
   
   result <- lapply(operations[granted], function(x) {operationList(x, permissionList, reviewerOnly = reviewer_only)})
   
-  class(result) <- c("activityInfoPermissions", class(result))
+  class(result) <- c("activityInfoResourcePermissions", class(result))
   
   result
 }
@@ -692,9 +692,9 @@ operationList = function(operation, permissionList, reviewerOnly = FALSE) {
 }
 
 #'
-#' managementPermissions
+#' databasePermissions
 #'
-#' Helper method to create a list of database permissions for an administrative role.
+#' Helper method to create a list of database permissions permitted in an administrative role.
 #'
 #' Each argument may either be TRUE or FALSE.
 #'
@@ -703,10 +703,10 @@ operationList = function(operation, permissionList, reviewerOnly = FALSE) {
 #' @param manage_roles Assign roles to users.
 #' @export
 #'
-managementPermissions <- function(manage_automations = FALSE, manage_users = FALSE, manage_roles = FALSE) {
+databasePermissions <- function(manage_automations = FALSE, manage_users = FALSE, manage_roles = FALSE) {
   if (manage_automations&&manage_users&&manage_roles==FALSE) {
     result = list()
-    class(result) <- c("activityInfoManagementPermissions", class(result))
+    class(result) <- c("activityInfoDatabasePermissions", class(result))
     return(result)
   }
   
@@ -724,7 +724,7 @@ managementPermissions <- function(manage_automations = FALSE, manage_users = FAL
 
   result <- lapply(operations[granted], function(x) {operationList(x, permissionList)})
   
-  class(result) <- c("activityInfoManagementPermissions", class(result))
+  class(result) <- c("activityInfoDatabasePermissions", class(result))
   
   result
 }
@@ -747,7 +747,7 @@ managementPermissions <- function(manage_automations = FALSE, manage_users = FAL
 #' \dontrun{
 #' updateGrant(
 #'   databaseId = "cxy123", user = 165,
-#'   permissions(
+#'   resourcePermissions(
 #'     add_record = TRUE,
 #'     edit_record = TRUE,
 #'     delete_record = TRUE
@@ -800,13 +800,13 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #'          parameter(id = "partner", label = "Partner", range = "ck5dxt1712")),
 #'         grants = list(
 #'           grant(resourceId = "cq9xyz1552",
-#'             permissions = permissions(
+#'             permissions = resourcePermissions(
 #'               view = "ck5dxt1712 == @user.partner",
 #'              edit_record = "ck5dxt1712 == @user.partner",
 #'               discover = TRUE,
 #'               export_records = TRUE)),
 #'           grant(resourceId = "cz55555555",
-#'             permissions = permissions(
+#'             permissions = resourcePermissions(
 #'              view = TRUE,
 #'               discover = TRUE,
 #'               add_record = TRUE),
@@ -818,7 +818,7 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #'   deprecatedNonGrantRole <- list(
 #'     id = "rp",
 #'     label = "Reporting partner",
-#'     permissions = permissions(
+#'     permissions = resourcePermissions(
 #'       view = "ck5dxt1712 == @user.partner",
 #'       edit_record = "ck5dxt1712 == @user.partner",
 #'       export_records = TRUE
@@ -841,11 +841,11 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #'   updateRole("cxy123", deprecatedNonGrantRole)
 #' }
 #' }
-updateRole <- function(databaseId, role) {
+updateRole <- function(databaseId, role, tree = getDatabaseTree(databaseId)) {
   stopifnot("databaseId must be a string" = is.character(databaseId)&&length(databaseId)==1)
   stopifnot("The role must be defined" = is.list(role))
   if (
-    !("activityInfoRole" %in% class(role)) || 
+    !("activityInfoRole" %in% class(role)) && 
     (is.null(role$grantBased)||!role$grantBased)
     ) {
     warning("Old style roles are deprecated. Please update your scripts to use the new grant-based roles.", call. = FALSE, noBreaks. = TRUE)
@@ -861,6 +861,21 @@ updateRole <- function(databaseId, role) {
     invisible()    
   }
 }
+
+deleteRole <- function(databaseId, roleId) {
+  
+}
+
+addRole <- function(databaseId, role) {
+  tree <- getDatabaseTree(databaseId)
+  if (any(sapply(tree$roles, function(x) {x$id==role$id}))) {
+    updateRole(databaseId, role, tree)
+  } else {
+    stop(sprintf("The role '%s' already exists. Cannot add new role with the same id. Use updateRole().", role$id))
+  }
+}
+
+
 
 #' Create a role parameter to add to a user role definition
 #' 
@@ -934,7 +949,7 @@ parameter <- function(id, label, range) {
 #' 
 #' optionalGrant <- 
 #'   grant(resourceId = "ck5dxt1552",
-#'       permissions = permissions(
+#'       permissions = resourcePermissions(
 #'         view = TRUE,
 #'         add_record = TRUE,
 #'         edit_record = TRUE
@@ -942,10 +957,10 @@ parameter <- function(id, label, range) {
 #'       optional = TRUE
 #' )
 #' }
-grant <- function(resourceId, permissions = permissions(), optional = FALSE) {
+grant <- function(resourceId, permissions = resourcePermissions(), optional = FALSE) {
   stopifnot("resourceId must be a string" = is.character(resourceId)&&length(resourceId)==1)
   stopifnot("optional must be a logical/boolean of length 1" = is.logical(optional)&&length(optional)==1)
-  stopifnot("activityInfoPermissions" %in% class(permissions))
+  stopifnot("activityInfoResourcePermissions" %in% class(permissions))
   
   result = list(
     resourceId = resourceId,
@@ -959,12 +974,13 @@ grant <- function(resourceId, permissions = permissions(), optional = FALSE) {
 
 #' Create a pre-defined legacy role filter
 #' 
+#' This should no longer be used. Please update your code to use grant-based 
+#' roles. This function is deprecated.
+#' 
 #' Pre-defined filters. Role filters allow other users to choose filters for 
 #' permissions without having to write formulas themselves. This is a feature of
 #' legacy roles.
 #' 
-#' See \link{resourcePermissions} for the creation of resource permissions.
-#'
 #' @param id the id of the pre-defined filter
 #' @param label A human-readable label
 #' @param filter A formula that can be used to filter a record-level permission.
@@ -1000,14 +1016,14 @@ roleFilter <- function(id, label, filter) {
 #' resources (database, folder, forms).
 #'  
 #' Some administrative permissions are defined at the level of the role rather 
-#' than within grants. See \link{managementPermissions}.
+#' than within grants. See \link{databasePermissions}.
 #'
 #' @param id the id of the role
 #' @param label the label or name of the role, e.g. "Viewer" or "Administrator" 
 #' @param parameters a list of \link{parameter} items defining role parameters
 #' @param grants a list of \link{grant} items for each resource and their 
 #' respective permissions
-#' @param permissions \link{managementPermissions} under this role
+#' @param permissions \link{databasePermissions} under this role
 #'
 #' @export
 #'
@@ -1026,13 +1042,13 @@ roleFilter <- function(id, label, filter) {
 #'         parameter(id = "partner", label = "Partner", range = "ck5dxt1712")),
 #'       grants = list(
 #'         grant(resourceId = "cq9xyz1552",
-#'           permissions = permissions(
+#'           permissions = resourcePermissions(
 #'             view = "ck5dxt1712 == @user.partner",
 #'             edit_record = "ck5dxt1712 == @user.partner",
 #'             discover = TRUE,
 #'             export_records = TRUE)),
 #'         grant(resourceId = "cz55555555",
-#'           permissions = permissions(
+#'           permissions = resourcePermissions(
 #'             view = TRUE,
 #'             discover = TRUE,
 #'             add_record = TRUE),
@@ -1040,7 +1056,7 @@ roleFilter <- function(id, label, filter) {
 #'       )
 #'       
 #' }
-role <- function(id, label, parameters = list(), grants, permissions = managementPermissions()) {
+role <- function(id, label, parameters = list(), grants, permissions = databasePermissions()) {
   stopifnot("The id must be a character string" = is.null(id)||(is.character(id)&&length(id)==1&&nchar(id)>0))
   stopifnot("The id must start with a letter, must be made of letters and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", id))
   
@@ -1049,7 +1065,7 @@ role <- function(id, label, parameters = list(), grants, permissions = managemen
   stopifnot("parameters must be a list" = is.list(parameters))
   stopifnot("grants must be a list of grants, for example, grants = list(grant(...))" = is.list(grants)&&length(grants)>=1)
   
-  stopifnot("Define management permissions using the managementPermissions() function" = "activityInfoManagementPermissions" %in% class(permissions))
+  stopifnot("Define management permissions using the databasePermissions() function" = "activityInfoDatabasePermissions" %in% class(permissions))
   
   for(grant in grants) {
     stopifnot("Define each grant using the grant() function" = "activityInfoGrant" %in% class(grant))

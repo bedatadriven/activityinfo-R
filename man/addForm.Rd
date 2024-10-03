@@ -9,11 +9,11 @@
 \usage{
 addForm(...)
 
-\method{addForm}{formSchema}(schema, parentId, folderId, ...)
+\method{addForm}{formSchema}(schema, parentId = schema$databaseId, folderId = NULL, ...)
 
-\method{addForm}{character}(databaseId, schema, parentId, folderId, ...)
+\method{addForm}{character}(databaseId, schema, ...)
 
-\method{addForm}{default}(databaseId, schema, parentId, folderId, ...)
+\method{addForm}{default}(databaseId, schema, ...)
 }
 \arguments{
 \item{...}{ignored}

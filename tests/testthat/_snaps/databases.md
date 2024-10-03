@@ -20,7 +20,7 @@
       1 c10000004 Person form c10000002 FORM     PRIVATE   
       2 c10000005 Children    c10000004 SUB_FORM PRIVATE   
 
-# permissions() helper works
+# resourcePermissions() and synonym permissions() helper works
 
     Code
       defaultPermissions
@@ -34,7 +34,7 @@
       
       
       attr(,"class")
-      [1] "activityInfoPermissions" "list"                   
+      [1] "activityInfoResourcePermissions" "list"                           
 
 ---
 
@@ -68,7 +68,7 @@
       
       
       attr(,"class")
-      [1] "activityInfoPermissions" "list"                   
+      [1] "activityInfoResourcePermissions" "list"                           
 
 # parameter() works
 
@@ -87,19 +87,19 @@
       attr(,"class")
       [1] "activityInfoParameter" "list"                 
 
-# managementPermissions() works
+# databasePermissions() works
 
     Code
-      defaultManagementPermissions
+      defaultDatabasePermissions
     Output
       list()
       attr(,"class")
-      [1] "activityInfoManagementPermissions" "list"                             
+      [1] "activityInfoDatabasePermissions" "list"                           
 
 ---
 
     Code
-      enhancedManagementPermissions
+      enhancedDatabasePermissions
     Output
       [[1]]
       [[1]]$operation
@@ -126,7 +126,7 @@
       
       
       attr(,"class")
-      [1] "activityInfoManagementPermissions" "list"                             
+      [1] "activityInfoDatabasePermissions" "list"                           
 
 # grant() works
 
@@ -162,7 +162,7 @@
       
       
       attr(,"class")
-      [1] "activityInfoPermissions" "list"                   
+      [1] "activityInfoResourcePermissions" "list"                           
       
       $optional
       [1] TRUE
@@ -216,7 +216,7 @@
       $permissions
       list()
       attr(,"class")
-      [1] "activityInfoManagementPermissions" "list"                             
+      [1] "activityInfoDatabasePermissions" "list"                           
       
       $grants
       $grants[[1]]
@@ -263,7 +263,7 @@
       
       
       attr(,"class")
-      [1] "activityInfoPermissions" "list"                   
+      [1] "activityInfoResourcePermissions" "list"                           
       
       $optional
       [1] FALSE
@@ -301,7 +301,7 @@
       
       
       attr(,"class")
-      [1] "activityInfoPermissions" "list"                   
+      [1] "activityInfoResourcePermissions" "list"                           
       
       $optional
       [1] TRUE

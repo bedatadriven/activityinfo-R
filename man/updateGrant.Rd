@@ -24,7 +24,7 @@ a grant.
 \dontrun{
 updateGrant(
   databaseId = "cxy123", user = 165,
-  permissions(
+  resourcePermissions(
     add_record = TRUE,
     edit_record = TRUE,
     delete_record = TRUE

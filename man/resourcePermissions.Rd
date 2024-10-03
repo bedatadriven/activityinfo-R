@@ -96,7 +96,7 @@ permissions(
 Helper method to create a list of permissions for a role or grant.
 }
 \details{
-Each argument may either be TRUE or FALSE.
+Each argument represents an operation at the level of a resource and may either be TRUE or FALSE.
 
 The view, add_record, edit_record, and delete_record permissions may instead
 be a formula that conditions the permission on the values of the record.

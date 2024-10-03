@@ -181,9 +181,9 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
   deleteTestUsers(database, returnedUsers)
 })
 
-testthat::test_that("permissions() helper works", {
+testthat::test_that("resourcePermissions() and synonym permissions() helper works", {
   defaultPermissions <- permissions()
-  reviewerPermissions <- permissions(
+  reviewerPermissions <- resourcePermissions(
     view = TRUE,
     add_record = TRUE,
     reviewer_only = TRUE,
@@ -198,22 +198,22 @@ testthat::test_that("parameter() works", {
   testthat::expect_snapshot(param)
 })
 
-testthat::test_that("managementPermissions() works", {
-  defaultManagementPermissions <- managementPermissions()
-  enhancedManagementPermissions <- managementPermissions(
+testthat::test_that("databasePermissions() works", {
+  defaultDatabasePermissions <- databasePermissions()
+  enhancedDatabasePermissions <- databasePermissions(
     manage_automations = TRUE, 
     manage_users = TRUE, 
     manage_roles = TRUE
   )
-  testthat::expect_snapshot(defaultManagementPermissions)
-  testthat::expect_snapshot(enhancedManagementPermissions)
+  testthat::expect_snapshot(defaultDatabasePermissions)
+  testthat::expect_snapshot(enhancedDatabasePermissions)
 })
 
 
 testthat::test_that("grant() works", {
   optionalGrant <- 
     grant(resourceId = "ck5dxt1552",
-          permissions = permissions(
+          permissions = resourcePermissions(
             view = TRUE,
             add_record = TRUE,
             edit_record = TRUE
@@ -241,13 +241,13 @@ testthat::test_that("role() works", {
            parameter(id = "partner", label = "Partner", range = "ck5dxt1712")),
          grants = list(
            grant(resourceId = "cq9xyz1552",
-                 permissions = permissions(
+                 permissions = resourcePermissions(
                    view = "ck5dxt1712 == @user.partner",
                    edit_record = "ck5dxt1712 == @user.partner",
                    discover = TRUE,
                    export_records = TRUE)),
            grant(resourceId = "cz55555555",
-                 permissions = permissions(
+                 permissions = resourcePermissions(
                    view = TRUE,
                    discover = TRUE,
                    add_record = TRUE),
@@ -263,18 +263,18 @@ createReportingPartnerGrantBasedRole <- function(roleLabel, partnerForm, reporti
          parameter(id = "partner", label = "Partner", range = partnerForm$id)),
        grants = list(
          grant(resourceId = partnerForm$databaseId, 
-               permissions = permissions(
+               permissions = resourcePermissions(
                  view = TRUE,
                  edit_record = FALSE
                )),
          grant(resourceId = reportingForm$id,
-               permissions = permissions(
+               permissions = resourcePermissions(
                  view = sprintf("%s == @user.partner", partnerForm$id),
                  edit_record = sprintf("%s == @user.partner", partnerForm$id),
                  discover = TRUE,
                  export_records = TRUE)),
          grant(resourceId = partnerForm$id,
-               permissions = permissions(
+               permissions = resourcePermissions(
                  view = TRUE,
                  discover = TRUE,
                  edit_record = TRUE), 
@@ -401,6 +401,12 @@ testthat::test_that("updateRole() works for both legacy and new roles", {
   }))
   testthat::expect_true(roleIdentical)
   
+  testthat::test_that("Grant-based role defined as a list does not trigger a warning", {
+    newReportingPartnerRoleList <- newReportingPartnerRole
+    class(newReportingPartnerRoleList) <- "list"
+    updateRole(databaseId = database$databaseId, role = newReportingPartnerRoleList)
+  })
+    
   testthat::test_that("Deprecated roles work and provide deprecation warning", {
     deprecatedNonGrantRole <- createDeprecatedReportingPartnerRole(label, partnerForm, reportingForm)
     

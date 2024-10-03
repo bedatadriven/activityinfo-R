@@ -14,7 +14,9 @@ createFormSchemaFromData(
   logicalAsSingleSelect = TRUE,
   logicalText = c("True", "False"),
   codes = rep(NA_character_, ncol(x)),
-  upload = FALSE
+  upload = FALSE,
+  parentId,
+  parentFormId
 )
 }
 \arguments{

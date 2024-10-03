@@ -14,12 +14,13 @@ roleFilter(id, label, filter)
 \item{filter}{A formula that can be used to filter a record-level permission.}
 }
 \description{
+This should no longer be used. Please update your code to use grant-based
+roles. This function is deprecated.
+}
+\details{
 Pre-defined filters. Role filters allow other users to choose filters for
 permissions without having to write formulas themselves. This is a feature of
 legacy roles.
-}
-\details{
-See \link{resourcePermissions} for the creation of resource permissions.
 }
 \examples{
 \dontrun{

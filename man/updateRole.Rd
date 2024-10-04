@@ -2,9 +2,15 @@
 % Please edit documentation in R/databases.R
 \name{updateRole}
 \alias{updateRole}
-\title{Updates a role's definition in the database}
+\alias{addRole}
+\alias{deleteRoles}
+\title{Add, Update or Delete a role's definition in the database}
 \usage{
 updateRole(databaseId, role)
+
+addRole(databaseId, role)
+
+deleteRoles(databaseId, roleIds)
 }
 \arguments{
 \item{databaseId}{the id of the database}
@@ -12,11 +18,19 @@ updateRole(databaseId, role)
 \item{role}{the role definition}
 }
 \description{
-Updates the role definition in the database. A role is defined with the
-\link{role} function, which implements the grant-based role system of
-ActivityInfo.
+updateRole() updates the role definition in the database. A role is defined
+with the \link{role} function, which implements the grant-based role system
+of ActivityInfo. updateRole() will also silently add a new role if the role
+id has not yet been used.
 }
 \details{
+addRole() will add a new role definition and will stop the script if the role
+already exists.
+
+deleteRoles() can take a list of role ids and will delete those. It will
+provide a warning if any role id was not found but will continue and delete
+any ids that do exist.
+
 Older style non-grant roles are deprecated. See \link{resourcePermissions}
 for more details for old roles without grants. These will be phased out of
 use and should be avoided.

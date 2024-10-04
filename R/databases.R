@@ -851,7 +851,7 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #'   updateRole("cxy123", deprecatedNonGrantRole)
 #' }
 #' }
-updateRole <- function(databaseId, role, tree = getDatabaseTree(databaseId)) {
+updateRole <- function(databaseId, role) {
   stopifnot("databaseId must be a string" = is.character(databaseId)&&length(databaseId)==1)
   stopifnot("The role must be defined" = is.list(role))
   if (
@@ -877,8 +877,8 @@ updateRole <- function(databaseId, role, tree = getDatabaseTree(databaseId)) {
 #' @export
 addRole <- function(databaseId, role) {
   tree <- getDatabaseTree(databaseId)
-  if (any(sapply(tree$roles, function(x) {x$id==role$id}))) {
-    updateRole(databaseId, role, tree)
+  if (!any(sapply(tree$roles, function(x) {x$id==role$id}))) {
+    updateRole(databaseId, role)
   } else {
     stop(sprintf("The role '%s' already exists. Cannot add new role with the same id. Use updateRole() instead.", role$id))
   }
@@ -1081,12 +1081,12 @@ roleFilter <- function(id, label, filter) {
 #' }
 role <- function(id, label, parameters = list(), grants, permissions = databasePermissions()) {
   stopifnot("The id must be a character string" = is.null(id)||(is.character(id)&&length(id)==1&&nchar(id)>0))
-  stopifnot("The id must start with a letter, must be made of letters and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", id))
+  stopifnot("The id must start with a letter, must be made of lowercase letters and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[a-z][a-z0-9_]{0,31}$", id))
   
   stopifnot("The label is required to be a character string" = (is.character(label)&&length(label)==1&&nchar(label)>0))
   
   stopifnot("parameters must be a list" = is.list(parameters))
-  stopifnot("grants must be a list of grants, for example, grants = list(grant(...))" = is.list(grants)&&length(grants)>=1)
+  stopifnot("grants must be a list of grants, for example, grants = list(grant(...))" = is.list(grants))
   
   stopifnot("Define management permissions using the databasePermissions() function" = "activityInfoDatabasePermissions" %in% class(permissions))
   

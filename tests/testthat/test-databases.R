@@ -312,6 +312,51 @@ createDeprecatedReportingPartnerRole <- function(roleLabel, partnerForm, reporti
   )
 }
 
+testthat::test_that("addRole() and deleteRoles() work", {
+  testthat::test_that("addRole()", {
+    roleId1 <- "newrole1"
+    roleLabel1 <- "Test role 1 for addRole()"
+    roleId2 <- "newrole2"
+    roleLabel2 <- "Test role 2 for addRole()"
+    
+    newRoleToAdd1 <- role(roleId1, roleLabel1, grants = list(grant(resourceId = personFormId)))
+    newRoleToAdd2 <- role(roleId2, roleLabel2, grants = list(grant(resourceId = personFormId)))
+
+    originalTree <- getDatabaseTree(database$databaseId)
+        
+    addRole(database$databaseId, newRoleToAdd1)
+    addRole(database$databaseId, newRoleToAdd2)
+    
+    addedTree <- getDatabaseTree(database$databaseId)
+    
+    role1Present = any(sapply(addedTree$roles, function(x) {x$id==roleId1}))
+    testthat::expect_true(role1Present)
+    role2Present = any(sapply(addedTree$roles, function(x) {x$id==roleId2}))
+    testthat::expect_true(role2Present)
+    
+    testthat::expect_length(addedTree$roles, length(originalTree$roles)+2)
+    
+    testthat::test_that("deleteRoles", {
+      deleteRoles(database$databaseId, roleIds = c(roleId1, roleId2))
+      
+      deletedTree <- getDatabaseTree(database$databaseId)
+      
+      role1Present = any(sapply(deletedTree$roles, function(x) {x$id==roleId1}))
+      testthat::expect_false(role1Present)
+      role2Present = any(sapply(deletedTree$roles, function(x) {x$id==roleId2}))
+      testthat::expect_false(role2Present)
+      
+      testthat::expect_length(deletedTree$roles, length(originalTree$roles))
+    })
+  })
+  
+})
+
+testthat::test_that("deleteRole() works", {
+  
+})
+
+
 testthat::test_that("updateRole() works for both legacy and new roles", {
   roleId = "rp"
   roleLabel = "Reporting partner"

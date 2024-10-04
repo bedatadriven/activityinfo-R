@@ -771,11 +771,19 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
   invisible(NULL)
 }
 
-#' Updates a role's definition in the database
+#' Add, Update or Delete a role's definition in the database
 #' 
-#' Updates the role definition in the database. A role is defined with the
-#' \link{role} function, which implements the grant-based role system of 
-#' ActivityInfo. 
+#' updateRole() updates the role definition in the database. A role is defined 
+#' with the \link{role} function, which implements the grant-based role system 
+#' of ActivityInfo. updateRole() will also silently add a new role if the role 
+#' id has not yet been used.
+#' 
+#' addRole() will add a new role definition and will stop the script if the role
+#' already exists.
+#' 
+#' deleteRoles() can take a list of role ids and will delete those. It will 
+#' provide a warning if any role id was not found but will continue and delete
+#' any ids that do exist.
 #' 
 #' Older style non-grant roles are deprecated. See \link{resourcePermissions} 
 #' for more details for old roles without grants. These will be phased out of 
@@ -784,6 +792,8 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #' @param databaseId the id of the database
 #' @param role the role definition
 #'
+#' @rdname updateRole
+#' @order 1
 #' @export
 #'
 #' @examples
@@ -841,7 +851,7 @@ updateGrant <- function(databaseId, userId, resourceId, permissions) {
 #'   updateRole("cxy123", deprecatedNonGrantRole)
 #' }
 #' }
-updateRole <- function(databaseId, role, tree = getDatabaseTree(databaseId)) {
+updateRole <- function(databaseId, role) {
   stopifnot("databaseId must be a string" = is.character(databaseId)&&length(databaseId)==1)
   stopifnot("The role must be defined" = is.list(role))
   if (
@@ -857,25 +867,38 @@ updateRole <- function(databaseId, role, tree = getDatabaseTree(databaseId)) {
   } else {
     path <- paste("databases", databaseId, sep = "/")
     request = list(roleUpdates = list(role))
-    x <- postResource(path, request, task = "updateRole")
+    x <- postResource(path, request, task = "a")
     invisible()    
   }
 }
 
-deleteRole <- function(databaseId, roleId) {
-  
-}
-
+#' @rdname updateRole
+#' @order 2
+#' @export
 addRole <- function(databaseId, role) {
   tree <- getDatabaseTree(databaseId)
-  if (any(sapply(tree$roles, function(x) {x$id==role$id}))) {
-    updateRole(databaseId, role, tree)
+  if (!any(sapply(tree$roles, function(x) {x$id==role$id}))) {
+    updateRole(databaseId, role)
   } else {
-    stop(sprintf("The role '%s' already exists. Cannot add new role with the same id. Use updateRole().", role$id))
+    stop(sprintf("The role '%s' already exists. Cannot add new role with the same id. Use updateRole() instead.", role$id))
   }
 }
 
-
+#' @rdname updateRole
+#' @order 3
+#' @export
+deleteRoles <- function(databaseId, roleIds) {
+  stopifnot("databaseId must be a string" = is.character(databaseId)&&length(databaseId)==1)
+  stopifnot("The roleIds must be a character vector with at least one id" = is.character(roleIds)&&length(roleIds)>0)
+  
+  path <- paste("databases", databaseId, sep = "/")
+  
+  request <- databaseUpdates()
+  request$roleDeletions = lapply(roleIds, function(x) x)
+  
+  x <- postResource(path, request, task = "updateRole")
+  invisible()
+}
 
 #' Create a role parameter to add to a user role definition
 #' 
@@ -1058,12 +1081,12 @@ roleFilter <- function(id, label, filter) {
 #' }
 role <- function(id, label, parameters = list(), grants, permissions = databasePermissions()) {
   stopifnot("The id must be a character string" = is.null(id)||(is.character(id)&&length(id)==1&&nchar(id)>0))
-  stopifnot("The id must start with a letter, must be made of letters and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", id))
+  stopifnot("The id must start with a letter, must be made of lowercase letters and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[a-z][a-z0-9_]{0,31}$", id))
   
   stopifnot("The label is required to be a character string" = (is.character(label)&&length(label)==1&&nchar(label)>0))
   
   stopifnot("parameters must be a list" = is.list(parameters))
-  stopifnot("grants must be a list of grants, for example, grants = list(grant(...))" = is.list(grants)&&length(grants)>=1)
+  stopifnot("grants must be a list of grants, for example, grants = list(grant(...))" = is.list(grants))
   
   stopifnot("Define management permissions using the databasePermissions() function" = "activityInfoDatabasePermissions" %in% class(permissions))
   

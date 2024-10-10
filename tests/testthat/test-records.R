@@ -160,16 +160,66 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
 })
 
 testthat::test_that("getRecords() works", {
-  testData <- tibble(`Identifier number` = as.character(1:500), "A single select column" = rep(factor(paste0(1:5, "_stuff")), 100), "A logical column" = ((1:500)%%7==(1:500)%%3), "A date column" = rep(seq(as.Date("2021-07-06"),as.Date("2021-07-25"),by = 1),25))
-  schema <- createFormSchemaFromData(testData, database$databaseId, label = "getRecords() test form", keyColumns = "Identifier number", requiredColumns = "Identifier number")
+  testData <- tibble(
+    `Identifier number` = as.character(1:500), 
+    "A single select column" = rep(factor(paste0(1:5, "_stuff")), 100), 
+    "A logical column" = ((1:500)%%7==(1:500)%%3), 
+    "A date column" = rep(seq(as.Date("2021-07-06"),as.Date("2021-07-25"),by = 1),25))
+  schema <- createFormSchemaFromData(
+    testData, 
+    database$databaseId, 
+    label = "getRecords() test form", 
+    keyColumns = "Identifier number", 
+    requiredColumns = "Identifier number")
+  
+  # add a sub-form
+  
+  childSubformId <- cuid()
+  schema <- addFormField(schema, subformFieldSchema(
+    code = "child",
+    label = "Children",
+    description = "Child records",
+    subformId = childSubformId))
+
+  childData <- tibble(
+    `Child identifier number` = as.character((1:250)),
+    `parent` = as.character(2*(1:250)), 
+    "Sub-form Content" = rep(factor(paste0(1:5, "_child_stuff")), 50))
+  childSchema <- createFormSchemaFromData(
+    childData, 
+    database$databaseId, 
+    label = "getRecords() child form", 
+    keyColumns = "Child identifier number", 
+    requiredColumns = "Child identifier number", 
+    parentFormId = schema$id, 
+    parentIdColumn = "parent")
+  childSchema$id <- childSubformId
+  
   schemaView <- as.data.frame(schema)
   uploadedForm <- addForm(schema)
+  uploadedChildForm <- addForm(childSchema)
+
   importRecords(formId = schema$id, data = testData)
   
+  # get ActivityInfo cuids for the parent records after import
+  parentRecords <- 
+    getRecords(schema$id, style = prettyColumnStyle()) %>% 
+    select(`_id`,`Identifier number`) %>%  collect() %>% 
+    rename(parentRecordId = `_id`, parent = `Identifier number`)
+  childData <- left_join(childData, parentRecords, by = 'parent')
+  
+  importRecords(formId = childSchema$id, data = childData, parentIdColumn = 'parentRecordId')
+  
+  testthat::test_that('varNames works on a child form with reference records.', {
+    childVarNames = varNames(childSchema$id, prettyColumnStyle(allReferenceFields = TRUE))
+  })
+  
+  testthat::test_that('Can retrieve child form with all reference records using getRecords().', {
+    childRecords <- getRecords(childSchema$id, style = prettyColumnStyle(allReferenceFields = TRUE))
+  })
+
   rcrds <- getRecords(uploadedForm$id, style = prettyColumnStyle())
-  
   rcrdsMin <- getRecords(uploadedForm$id, style = minimalColumnStyle())
-  
   rcrdsMinDf <- rcrdsMin %>% collect %>% as.data.frame()
   
   testthat::expect_snapshot(rcrdsMinDf)
@@ -262,7 +312,9 @@ testthat::test_that("getRecords() works", {
     })
     
     testthat::test_that("It is possible to copy a form and upload the data to the new form", {
-      copiedForm <- rcrds %>% extractSchemaFromFields(label = "New reference table", databaseId = database$databaseId)
+      copiedForm <- rcrds %>% 
+        extractSchemaFromFields(label = "New reference table", databaseId = database$databaseId) %>%
+        deleteFormField(label = "Children")
       addForm(copiedForm)
       importRecords(formId = copiedForm$id, data = testData)
     })

@@ -16,6 +16,8 @@ deleteRoles(databaseId, roleIds)
 \item{databaseId}{the id of the database}
 
 \item{role}{the role definition}
+
+\item{roleIds}{the ids of the roles to be deleted. It should be passed as a character vector.}
 }
 \description{
 updateRole() updates the role definition in the database. A role is defined
@@ -38,10 +40,12 @@ use and should be avoided.
 \examples{
 \dontrun{
 
-# Use the current recommended grant-based roles 
+# Use the current grant-based roles; legacy roles are deprecated
 grantBased = TRUE
+dbId = "cxy123"
 
 if (grantBased) {
+  
   currentGrantBasedRole <- 
     role(id = "rp",
         label = "Reporting Partner",
@@ -61,7 +65,24 @@ if (grantBased) {
               add_record = TRUE),
             optional = TRUE))
         )
-  updateRole("cxy123", currentGrantBasedRole) 
+
+  # Duplicate the role with a different id
+  currentGrantBasedRole2 <- currentGrantBasedRole
+  currentGrantBasedRole2$id <- "rp2"
+
+  addRole(dbId, currentGrantBasedRole)
+  addRole(dbId, currentGrantBasedRole2)
+  
+  currentGrantBasedRole$label <- "Original reporting orgs"
+  updateRole(dbId, currentGrantBasedRole)
+  
+  deleteRoles(dbId, c(currentGrantBasedRole$id,currentGrantBasedRole2$id))
+  
+  # delete all roles containing "readonly" - will fail if assigned to a user
+  remainingRoles <- sapply((getDatabaseTree(dbId))$roles, function(x) x$id)
+  readOnlyRoles <- remainingRoles[grepl("readonly", remainingRoles)]
+  deleteRoles(dbId, roleIds = readOnlyRoles)
+   
 } else {
   # These older-style roles will be phased out.
   deprecatedNonGrantRole <- list(

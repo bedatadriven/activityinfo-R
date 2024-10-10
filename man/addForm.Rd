@@ -9,7 +9,7 @@
 \usage{
 addForm(...)
 
-\method{addForm}{formSchema}(schema, parentId = schema$databaseId, folderId = NULL, ...)
+\method{addForm}{formSchema}(schema, parentId = NULL, folderId = NULL, ...)
 
 \method{addForm}{character}(databaseId, schema, ...)
 
@@ -20,7 +20,7 @@ addForm(...)
 
 \item{schema}{the schema of the form to add}
 
-\item{parentId}{the id of the database or folder to which this form should be added (optional)}
+\item{parentId}{the id of the database or folder to which this form should be added (optional; defaults to the database id)}
 
 \item{folderId}{this argument is deprecated and superceded by parentId. Use folderId in formSchema().}
 

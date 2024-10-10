@@ -1,10 +1,10 @@
-<<<<<<< HEAD
 ## [4.37]
 - New functions for new role and permissions system (#114)
-=======
+- Added ability to update sub-forms (#119)
+- Addressed cyclic structures in reference columns and parent forms and added maxDepth parameter to column styles. (#132)
+
 ## [4.36.1]
 - Fix for `importRecords()` when the form has a serial number (#124)
->>>>>>> origin/master
 
 ## [4.36]
 - API tokens are now stored per root URL of the server. The token will need to be added again using activityInfoToken(token). The location of the token file has changed from "~/.activityinfo.credentials" to "~/.activityinfo.server.credentials" to avoid accidentally overwriting and losing the old tokens. (#101)

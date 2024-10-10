@@ -12,7 +12,8 @@ columnStyle(
   recordId = TRUE,
   lastEditedTime = TRUE,
   .names_repair = "unique",
-  style
+  style,
+  maxDepth = 3
 )
 }
 \arguments{
@@ -35,6 +36,8 @@ default is TRUE to make it easier to join data in R}
 \item{.names_repair}{Treatment of problematic column names following the approach used in tibbles / vctrs. Default is "unique".}
 
 \item{style}{a style to modify with one or more parameters}
+
+\item{maxDepth}{the maximum depth of recursion in referenced forms. This is set to 3 by default.}
 }
 \description{
 This function is used to modify existing styles and create new styles. Most

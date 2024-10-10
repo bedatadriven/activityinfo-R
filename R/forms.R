@@ -69,20 +69,6 @@ print.formSchema <- function(x, ...) {
   cat(sprintf("  elements: %d\n", length(schema$elements)))
 
   for (field in schema$elements) {
-    # cat(sprintf("    %s: %s\n", field$id, field$label))
-    # attrs <- c(
-    #   if (field$key) "Key" else NULL,
-    #   if (field$required) "Required" else NULL
-    # )
-    #
-    # if (length(attrs)) {
-    #   cat(sprintf("      %s\n", paste(attrs, collapse = ", ")))
-    # }
-    #
-    # if (is.character(field$description)) {
-    #   cat(sprintf("      description: %s\n", field$description))
-    # }
-    # cat(sprintf("      type: %s\n", field$type))
     print(field)
   }
 }
@@ -164,7 +150,7 @@ deleteForm <- function(databaseId, formId) {
 #' @rdname addForm
 #' @param databaseId the id of the database (optional)
 #' @param schema the schema of the form to add
-#' @param parentId the id of the database or folder to which this form should be added (optional)
+#' @param parentId the id of the database or folder to which this form should be added (optional; defaults to the database id)
 #' @param folderId this argument is deprecated and superceded by parentId. Use folderId in formSchema().
 #' @param ... ignored
 #' @export
@@ -184,9 +170,9 @@ addForm <- function(...) {
 
 #' @export
 #' @rdname addForm
-addForm.formSchema <- function(schema, parentId=schema$databaseId, folderId=NULL, ...) {
+addForm.formSchema <- function(schema, parentId=NULL, folderId=NULL, ...) {
   if (!is.null(folderId)) {
-    warning("folderId is now deprecated in addForm. Please update your code to replace folderId with parentId in addForm() or add the folderId directly to the form schema in formSchema().")
+    warning("folderId is now deprecated. Please update your code to replace it with parentId in addForm().")
   }
   
   if (!is.null(schema$parentFormId)) {
@@ -197,6 +183,7 @@ addForm.formSchema <- function(schema, parentId=schema$databaseId, folderId=NULL
       warning("Overriding parentId with the sub-form parentFormId provided in the schema.")
       parentId = schema$parentFormId
     }
+    parentId = schema$parentFormId
   } else {
     if (!is.null(folderId)) {
       if (!is.null(parentId)) {
@@ -206,9 +193,14 @@ addForm.formSchema <- function(schema, parentId=schema$databaseId, folderId=NULL
       }
     }
   }
+
+  if (is.null(schema$databaseId)) {
+    stop("The form schema must have a databaseId.")
+  }
   
+    
   if (is.null(parentId)) {
-    stop("A parentId must be provided to addForm().")
+    parentId = schema$databaseId
   }
   
   checkForm(schema)
@@ -237,22 +229,15 @@ addForm.formSchema <- function(schema, parentId=schema$databaseId, folderId=NULL
     stop(condition)
   })
   
+  if (!is.null(result$code)&&result$code == "BAD_REQUEST") {
+    stop("The server returned 'BAD_REQUEST' when trying to add the form '%s' with id %s in database %s. Check the form schema and fields.")
+  }
+  
   # The API returns all affected forms, as well as the database tree.
   # Extract only the form we added
   schemaResult <- result$forms[[ which(sapply(result$forms, function(f) f$id == schema$id)) ]]$schema
 
   asFormSchema(schemaResult)
-}
-
-reportFormValidationErrors <- function(condition) {
-  errors <- condition$result$errors
-  for(error in errors) {
-    if(is.null(error$fieldId)) {
-      message(sprintf("Form validation error: %s", error$message))  
-    } else {
-      message(sprintf("Form validation error in field %s: %s", error$fieldId, error$message))  
-    }
-  }
 }
 
 #' @export
@@ -268,6 +253,17 @@ addForm.character <- function(databaseId, schema, ...) {
 #' @export
 #' @rdname addForm
 addForm.default <- addForm.character
+
+reportFormValidationErrors <- function(condition) {
+  errors <- condition$result$errors
+  for(error in errors) {
+    if(is.null(error$fieldId)) {
+      message(sprintf("Form validation error: %s", error$message))  
+    } else {
+      message(sprintf("Form validation error in field %s: %s", error$fieldId, error$message))  
+    }
+  }
+}
 
 #' Create a form schema object
 #'
@@ -409,20 +405,27 @@ relocateForm <- function(formId, newDatabaseId) {
 #' schema
 #' @param databaseId the id of the database to which the form should belong.
 #' @param label the label of the new form
-#' @param folderId the id of the folder where the form should reside; defaults to the database id. This argument only has an effect if upload is TRUE.
+#' @param folderId Deprecated; use parentId. Optional id of a folder where the form should reside. This argument only has an effect if upload is TRUE.
 #' @param keyColumns a character vector of the column names of the form fields that should be form keys
 #' @param requiredColumns a character vector of the column names of the form fields that should be required
 #' @param logicalAsSingleSelect by default TRUE and converts logical columns in the data frame to a single select form field; if FALSE then it will convert TRUE to 1 and FALSE to 0
 #' @param logicalText the single select replacement values for c(TRUE, FALSE); default is c("True","False")
 #' @param codes a character vector of field codes that must have the same length as the number of columns
+#' @param parentId The id of the database or folder to which this should be added. Defaults to the database. This argument only has an effect if upload is TRUE.
+#' @param parentFormId The parent form id when creating a sub-form.
 #' @param upload immediately upload the new form
+#' @param parentIdColumn Indicates the sub-form data column that references the parent form to be ignored in the schema creation
+#'
 #' @export
-createFormSchemaFromData <- function(x, databaseId, label, folderId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False"), codes = rep(NA_character_, ncol(x)), upload = FALSE, parentId, parentFormId) {
+createFormSchemaFromData <- function(x, databaseId, label, folderId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False"), codes = rep(NA_character_, ncol(x)), upload = FALSE, parentId = folderId, parentFormId = NULL, parentIdColumn = NULL) {
   stopifnot("A data frame or tibble must be provided to formSchemaFromData()" = is.data.frame(x))
   stopifnot("databaseId must be a singe character string" = is.character(databaseId)&&length(databaseId)==1)
   stopifnot("The label for the new form schema must not be empty" = !missing(label)&&is.character(label)&&length(label)==1&&nchar(label)>0)
   if (!missing(folderId)) {
-    stopifnot("The folderId must be a single character string if defined" = is.character(folderId)&&length(folderId)==1)
+    stopifnot("The folderId must be a character string if defined" = is.character(folderId)&&length(folderId)==1)
+  }
+  if (!missing(parentId)&&!is.null(parentId)) {
+    stopifnot("The parentId must be a character string if defined" = is.character(parentId)&&length(parentId)==1)
   }
   stopifnot("The keyColumns named must be provided as a character vector" = is.character(keyColumns))
   stopifnot("logicalAsSingleSelect must be TRUE or FALSE" = is.logical(logicalAsSingleSelect))
@@ -433,19 +436,40 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId, keyColumns 
       length(codes)==ncol(x)&&
       length(unique(codes[!is.na(codes)]))==length(codes[!is.na(codes)])
   )
+  if (!is.null(parentFormId)) {
+    stopifnot("The parentFormId must be a character string if defined" = (is.character(parentFormId)&&length(parentFormId)==1))
+    stopifnot("The parentIdColumn must be a character string if defined" = 
+                is.null(parentIdColumn)||
+                (is.character(parentIdColumn)&&length(parentIdColumn)==1)
+    )
+  } else {
+    if (!is.null(parentIdColumn)) {
+      warning("parentIdColumn defined without a parentFormId. Ignoring parentIdColumn and including the column in the schema.")
+      parentIdColumn = NULL
+    }
+  }
   
   providedCols <- names(x)
   
-  stopifnot("Some key columns do not exist in the data.frame provided" = keyColumns %in% providedCols)
-  stopifnot("Some required columns do not exist in the data.frame provided" = keyColumns %in% providedCols)
-  
-  if (!missing(folderId)) {
-    fmSchema <- formSchema(databaseId = databaseId, label = label, folderId = folderId) 
-  } else {
-    fmSchema <- formSchema(databaseId = databaseId, label = label)
+  if (!is.null(parentFormId)&&!is.null(parentIdColumn)) {
+    providedCols[providedCols != parentIdColumn]
   }
   
+  stopifnot("Some key columns do not exist in the data.frame provided" = keyColumns %in% providedCols)
+  stopifnot("Some required columns do not exist in the data.frame provided" = keyColumns %in% providedCols)
+  stopifnot("The parentIdColumn does not exist in the data.frame provided" = parentIdColumn %in% providedCols)
   
+  if(!missing(folderId)) {
+    if (!missing(parentId) && !is.null(parentId) && folderId != parentId) {
+      warning("folderId does not match parentId. folderId is deprecated in createFormSchemaFromData(). Ignoring folderId and using parentId.")
+      folderId = parentId
+    } else {
+      warning("folderId is deprecated in createFormSchemaFromData(). Please replace it with parentId.")
+    }
+  }
+  
+  fmSchema <- formSchema(databaseId = databaseId, label = label, parentFormId = parentFormId)
+
   addIt <- function(fieldSchema) fmSchema <<- addFormField(fmSchema, fieldSchema)
   keyStop <- function(type, pCol) stop(sprintf("Column '%s' of type %s cannot be a key column", pCol, type))
   
@@ -505,7 +529,11 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId, keyColumns 
   })
   
   if(upload) {
-    addForm(fmSchema)
+    if (!missing(parentId) && !is.null(parentId) && fmSchema$databaseId != parentId) {
+        addForm(fmSchema, parentId = parentId)
+      } else {
+        addForm(fmSchema)
+      }
     importRecords(formId = fmSchema$id, data = x2)
   }
   

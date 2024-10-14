@@ -9,3 +9,4 @@ docs/
 /doc/
 /Meta/
 inst/doc
+tests/testthat/testthat-problems.rds

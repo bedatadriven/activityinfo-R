@@ -516,7 +516,7 @@ getRecords.default <- getRecords.character
 #' @param columnNames Can be "pretty", "label", "id", c("code", "id), or c("code", "label"); default is "pretty".
 #' @param .names_repair Treatment of problematic column names following the approach used in tibbles / vctrs. Default is "unique".
 #' @param style a style to modify with one or more parameters
-#' @param maxDepth the maximum depth of recursion in referenced forms. This is set to 3 by default.
+#' @param maxDepth the maximum depth of recursion in referenced forms. This is set to 2 by default.
 #' 
 #' @export
 columnStyle <- function(
@@ -528,7 +528,7 @@ columnStyle <- function(
     lastEditedTime = TRUE,
     .names_repair = "unique",
     style,
-    maxDepth = 3
+    maxDepth = 2
     ) {
   stopifnot(is.logical(referencedId))
   stopifnot(is.logical(referencedKey))
@@ -577,14 +577,14 @@ columnStyle <- function(
 #' default is TRUE to make it easier to join data in R.
 #' @param allReferenceFields include all the fields in referenced records; the 
 #' default is FALSE
-#' @param maxDepth the maximum depth of recursion in referenced forms. This is set to 3 by default.
+#' @param maxDepth the maximum depth of recursion in referenced forms. This is set to 2 by default.
 #' @export
 prettyColumnStyle <- function(
     recordId = TRUE, 
     lastEditedTime = TRUE, 
     referencedId = TRUE, 
     allReferenceFields = FALSE, 
-    maxDepth = 3
+    maxDepth = 2
     ) {
   columnStyle(referencedId = referencedId,
               referencedKey = TRUE,
@@ -607,12 +607,12 @@ prettyColumnStyle <- function(
 #' * "id" : Using the form field unique id used by ActivityInfo, for example "c12c92vi5olfmn7khb4.c13cmf6la3lfmn7khb5"
 #'
 #' @param columnNames Can be "pretty", "label", "id", c("code", "id), or c("code", "label")
-#' @param maxDepth the maximum depth of recursion in referenced forms. This is set to 3 by default.
+#' @param maxDepth the maximum depth of recursion in referenced forms. This is set to 2 by default.
 #' 
 #' @export
 allColumnStyle <- function(
     columnNames = c("code", "label"), 
-    maxDepth = 3
+    maxDepth = 2
     ) {
   columnStyle(referencedId = TRUE,
               referencedKey = TRUE,
@@ -632,7 +632,7 @@ allColumnStyle <- function(
 #' 
 #' @export
 idColumnStyle <- function(
-    maxDepth = 3
+    maxDepth = 2
     ) {
   allColumnStyle(
     columnNames = "id", 
@@ -648,7 +648,7 @@ idColumnStyle <- function(
 #' 
 #' @export
 minimalColumnStyle <- function(
-    maxDepth = 3
+    maxDepth = 2
     ) {
   prettyColumnStyle(
     referencedId = FALSE, 

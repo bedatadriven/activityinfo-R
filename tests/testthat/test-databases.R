@@ -224,12 +224,14 @@ testthat::test_that("grant() works", {
 })
 
 testthat::test_that("roleFilter() works", {
-  roleLevelFilter <- 
-    roleFilter(
-      id = "partner", 
-      label = "Partner is user's partner", 
-      filter = "ck5dxt1712 == @user.partner"
-    )
+  testthat::expect_warning({
+    roleLevelFilter <- 
+      roleFilter(
+        id = "partner", 
+        label = "Partner is user's partner", 
+        filter = "ck5dxt1712 == @user.partner"
+      )
+  },"deprecated")
   testthat::expect_snapshot(roleLevelFilter)
 })
 
@@ -284,32 +286,35 @@ createReportingPartnerGrantBasedRole <- function(roleLabel, partnerForm, reporti
 }
 
 createDeprecatedReportingPartnerRole <- function(roleLabel, partnerForm, reportingForm) {
-  list(
-    id = "rpold",
-    label = "Reporting partner",
-    permissions = permissions(
-      view = sprintf("%s == @user.partner2", partnerForm$id),
-      edit_record = sprintf("%s == @user.partner2", partnerForm$id),
-      add_record = sprintf("%s == @user.partner2", partnerForm$id),
-      delete_record = sprintf("%s == @user.partner2", partnerForm$id),
-      export_records = TRUE
-    ),
-    parameters = list(
-      parameter(
-        id = "partner2",
-        label = "Partner",
-        range = partnerForm$id
-      )
-    ),
-    filters = list(
-      roleFilter(
-        id = "partner2",
-        label = "partner is user's partner2",
-        filter = sprintf("%s == @user.partner2", partnerForm$id)
-      )
-    ),
-    grantBased = FALSE
-  )
+  testthat::expect_warning({
+    x <- list(
+      id = "rpold",
+      label = "Reporting partner",
+      permissions = permissions(
+        view = sprintf("%s == @user.partner2", partnerForm$id),
+        edit_record = sprintf("%s == @user.partner2", partnerForm$id),
+        add_record = sprintf("%s == @user.partner2", partnerForm$id),
+        delete_record = sprintf("%s == @user.partner2", partnerForm$id),
+        export_records = TRUE
+      ),
+      parameters = list(
+        parameter(
+          id = "partner2",
+          label = "Partner",
+          range = partnerForm$id
+        )
+      ),
+      filters = list(
+        roleFilter(
+          id = "partner2",
+          label = "partner is user's partner2",
+          filter = sprintf("%s == @user.partner2", partnerForm$id)
+        )
+      ),
+      grantBased = FALSE
+    )
+  }, "deprecated")
+  x
 }
 
 testthat::test_that("addRole() and deleteRoles() work", {

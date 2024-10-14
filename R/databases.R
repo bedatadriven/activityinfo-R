@@ -1042,6 +1042,7 @@ grant <- function(resourceId, permissions = resourcePermissions(), optional = FA
 #'           )
 #' }
 roleFilter <- function(id, label, filter) {
+  warning("roleFilter() is deprecated. Use grant-based roles. Legacy roles are no longer supported.")
   result = list(
     id = id,
     label = label,

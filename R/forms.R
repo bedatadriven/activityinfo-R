@@ -293,6 +293,7 @@ reportFormValidationErrors <- function(condition) {
 formSchema <- function(databaseId, label, id = cuid(), elements = list(), parentFormId = NULL, folderId = NULL) {
   stopifnot(is.character(label))
   stopifnot("The label must have one or more characters." = nchar(label)>0)
+  stopifnot("The id must start with a letter, must be made of letters and cannot be longer than 32 characters" = grepl("^[A-Za-z][A-Za-z0-9]{0,31}$", id))
 
   result <- asFormSchema(list(
     id = id,
@@ -405,24 +406,24 @@ relocateForm <- function(formId, newDatabaseId) {
 #' schema
 #' @param databaseId the id of the database to which the form should belong.
 #' @param label the label of the new form
-#' @param folderId Deprecated; use parentId. Optional id of a folder where the form should reside. This argument only has an effect if upload is TRUE.
+#' @param parentId The id of the database or folder to which this should be added. Defaults to the database. This argument only has an effect if upload is TRUE.
 #' @param keyColumns a character vector of the column names of the form fields that should be form keys
 #' @param requiredColumns a character vector of the column names of the form fields that should be required
 #' @param logicalAsSingleSelect by default TRUE and converts logical columns in the data frame to a single select form field; if FALSE then it will convert TRUE to 1 and FALSE to 0
 #' @param logicalText the single select replacement values for c(TRUE, FALSE); default is c("True","False")
 #' @param codes a character vector of field codes that must have the same length as the number of columns
-#' @param parentId The id of the database or folder to which this should be added. Defaults to the database. This argument only has an effect if upload is TRUE.
+#' @param folderId Deprecated; use parentId. Optional id of a folder where the form should reside. This argument only has an effect if upload is TRUE.
 #' @param parentFormId The parent form id when creating a sub-form.
 #' @param upload immediately upload the new form
-#' @param parentIdColumn Indicates the sub-form data column that references the parent form to be ignored in the schema creation
+#' @param parentRecordIdColumn The column with the parent record id. This is ignored during schema creation but used to link sub-form records to parent records.
 #'
 #' @export
-createFormSchemaFromData <- function(x, databaseId, label, folderId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False"), codes = rep(NA_character_, ncol(x)), upload = FALSE, parentId = folderId, parentFormId = NULL, parentIdColumn = NULL) {
+createFormSchemaFromData <- function(x, databaseId, label, parentId, keyColumns = character(), requiredColumns = keyColumns, logicalAsSingleSelect = TRUE, logicalText = c("True","False"), codes = rep(NA_character_, ncol(x)), upload = FALSE, folderId, parentFormId = NULL, parentRecordIdColumn = NULL) {
   stopifnot("A data frame or tibble must be provided to formSchemaFromData()" = is.data.frame(x))
   stopifnot("databaseId must be a singe character string" = is.character(databaseId)&&length(databaseId)==1)
   stopifnot("The label for the new form schema must not be empty" = !missing(label)&&is.character(label)&&length(label)==1&&nchar(label)>0)
   if (!missing(folderId)) {
-    stopifnot("The folderId must be a character string if defined" = is.character(folderId)&&length(folderId)==1)
+    stopifnot("folderId is deprecated. Use parentId. The folderId must be a character string if defined" = is.character(folderId)&&length(folderId)==1)
   }
   if (!missing(parentId)&&!is.null(parentId)) {
     stopifnot("The parentId must be a character string if defined" = is.character(parentId)&&length(parentId)==1)
@@ -438,35 +439,37 @@ createFormSchemaFromData <- function(x, databaseId, label, folderId, keyColumns 
   )
   if (!is.null(parentFormId)) {
     stopifnot("The parentFormId must be a character string if defined" = (is.character(parentFormId)&&length(parentFormId)==1))
-    stopifnot("The parentIdColumn must be a character string if defined" = 
-                is.null(parentIdColumn)||
-                (is.character(parentIdColumn)&&length(parentIdColumn)==1)
+    stopifnot("The parentRecordIdColumn must be a character string if defined" = 
+                is.null(parentRecordIdColumn)||
+                (is.character(parentRecordIdColumn)&&length(parentRecordIdColumn)==1)
     )
   } else {
-    if (!is.null(parentIdColumn)) {
-      warning("parentIdColumn defined without a parentFormId. Ignoring parentIdColumn and including the column in the schema.")
-      parentIdColumn = NULL
+    if (!is.null(parentRecordIdColumn)) {
+      warning("parentRecordIdColumn defined without a parentFormId. Ignoring parentRecordIdColumn and including the column in the schema.")
+      parentRecordIdColumn = NULL
     }
   }
   
   providedCols <- names(x)
   
-  if (!is.null(parentFormId)&&!is.null(parentIdColumn)) {
-    providedCols[providedCols != parentIdColumn]
+  if (!is.null(parentFormId)&&!is.null(parentRecordIdColumn)) {
+    stopifnot("The parentRecordIdColumn does not exist in the data.frame provided" = parentRecordIdColumn %in% names(x))
+    providedCols[providedCols != parentRecordIdColumn]
   }
   
   stopifnot("Some key columns do not exist in the data.frame provided" = keyColumns %in% providedCols)
   stopifnot("Some required columns do not exist in the data.frame provided" = keyColumns %in% providedCols)
-  stopifnot("The parentIdColumn does not exist in the data.frame provided" = parentIdColumn %in% providedCols)
-  
+
   if(!missing(folderId)) {
-    if (!missing(parentId) && !is.null(parentId) && folderId != parentId) {
-      warning("folderId does not match parentId. folderId is deprecated in createFormSchemaFromData(). Ignoring folderId and using parentId.")
-      folderId = parentId
-    } else {
-      warning("folderId is deprecated in createFormSchemaFromData(). Please replace it with parentId.")
+    warning("folderId is deprecated in createFormSchemaFromData(). Use parentId instead.")
+  }
+  
+  if(missing(parentId)||is.null(parentId)) {
+    if(!missing(folderId)&&!is.null(folderId)&&is.null(parentFormId)) {
+      parentId = folderId
     }
   }
+    
   
   fmSchema <- formSchema(databaseId = databaseId, label = label, parentFormId = parentFormId)
 

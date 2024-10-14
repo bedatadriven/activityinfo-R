@@ -129,9 +129,9 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
   
   importRecords(formId = caseFormId, caseData)
   
-  cases <- getRecords(caseFormId, style = prettyColumnStyle(allReferenceFields = TRUE))
+  cases <- getRecords(caseFormId, style = prettyColumnStyle(allReferenceFields = TRUE, maxDepth = 10))
   
-  caseDf <- getRecords(caseFormId, style = minimalColumnStyle()) %>% slice_head(n = 10) %>% collect() %>% as.data.frame()
+  caseDf <- getRecords(caseFormId, style = minimalColumnStyle(maxDepth = 10)) %>% slice_head(n = 10) %>% collect() %>% as.data.frame()
   
   testthat::test_that("No errors are thrown when filtering on a variable name that is also found up the tree", {
     testthat::expect_no_error({
@@ -192,7 +192,7 @@ testthat::test_that("getRecords() works", {
     keyColumns = "Child identifier number", 
     requiredColumns = "Child identifier number", 
     parentFormId = schema$id, 
-    parentIdColumn = "parent")
+    parentRecordIdColumn = "parent")
   childSchema$id <- childSubformId
   
   schemaView <- as.data.frame(schema)
@@ -208,7 +208,7 @@ testthat::test_that("getRecords() works", {
     rename(parentRecordId = `_id`, parent = `Identifier number`)
   childData <- left_join(childData, parentRecords, by = 'parent')
   
-  importRecords(formId = childSchema$id, data = childData, parentIdColumn = 'parentRecordId')
+  importRecords(formId = childSchema$id, data = childData, parentRecordIdColumn = 'parentRecordId')
   
   testthat::test_that('varNames works on a child form with reference records.', {
     childVarNames = varNames(childSchema$id, prettyColumnStyle(allReferenceFields = TRUE))

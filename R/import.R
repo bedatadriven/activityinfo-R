@@ -9,13 +9,14 @@
 #' @param formId The form ID
 #' @param data The data.frame to import
 #' @param recordIdColumn The record ID column
-#' @param parentIdColumn The parent ID column required when importing a subform
+#' @param parentRecordIdColumn The parent record ID column required when importing a subform
 #' @param stageDirect Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.
 #' @param progress Show import progress while waiting for import job to complete
+#' @param parentIdColumn Use parentRecordIdColumn instead. parentIdColumn is deprecated.
 #'
 #' @importFrom utils head
 #' @export
-importRecords <- function(formId, data, recordIdColumn, parentIdColumn, stageDirect = TRUE, progress = getOption("activityinfo.import.progress", default = TRUE)) { 
+importRecords <- function(formId, data, recordIdColumn, parentRecordIdColumn, stageDirect = TRUE, progress = getOption("activityinfo.import.progress", default = TRUE), parentIdColumn = parentRecordId) { 
   parentId <- NULL
 
   schema <- activityinfo::getFormSchema(formId)
@@ -31,6 +32,16 @@ importRecords <- function(formId, data, recordIdColumn, parentIdColumn, stageDir
     recordId <- rep.int(NA_character_, times = nrow(data))
   }
   if(subform) {
+    if (missing(parentRecordIdColumn)||is.null(parentRecordIdColumn)) {
+      if(!missing(parentIdColumn)&&!is.null(parentIdColumn)) {
+        parentRecordIdColumn = parentIdColumn
+        warning("parentIdColumn is deprecated. Please use parentRecordIdColumn instead.")
+      } else {
+        stop("A subform requires a parentRecordIdColumn for parent record ids.")
+      }
+    }
+    parentIdColumn = parentRecordIdColumn
+
     parentId <- parentIdFromData(data, parentIdColumn, schema)
     providedCols <- providedCols[providedCols != parentIdColumn]
   } else {
@@ -92,7 +103,7 @@ recordIdFromData <- function(data, recordIdColumn) {
 }
 
 parentIdFromData <- function(data, parentIdColumn, schema) {
-  if(missing(parentIdColumn)) {
+  if(missing(parentIdColumn)||is.null(parentIdColumn)) {
     stop("When importing to a subform, you must provide a parentIdColumn")
   }
   parentId <- as.character(data[[parentIdColumn]])

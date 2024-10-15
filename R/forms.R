@@ -230,7 +230,7 @@ addForm.formSchema <- function(schema, parentId=NULL, folderId=NULL, ...) {
   })
   
   if (!is.null(result$code)&&result$code == "BAD_REQUEST") {
-    stop("The server returned 'BAD_REQUEST' when trying to add the form '%s' with id %s in database %s. Check the form schema and fields.")
+    stop(sprintf("The server returned 'BAD_REQUEST' when trying to add the form '%s' with id %s in database %s. Check the form schema and fields.",schema$label, schema$id, schema$databaseId))
   }
   
   # The API returns all affected forms, as well as the database tree.

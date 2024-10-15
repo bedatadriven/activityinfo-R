@@ -16,7 +16,7 @@
 #'
 #' @importFrom utils head
 #' @export
-importRecords <- function(formId, data, recordIdColumn, parentRecordIdColumn, stageDirect = TRUE, progress = getOption("activityinfo.import.progress", default = TRUE), parentIdColumn = parentRecordId) { 
+importRecords <- function(formId, data, recordIdColumn, parentRecordIdColumn, stageDirect = TRUE, progress = getOption("activityinfo.import.progress", default = TRUE), parentIdColumn = parentRecordIdColumn) { 
   parentId <- NULL
 
   schema <- activityinfo::getFormSchema(formId)

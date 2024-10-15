@@ -4,7 +4,7 @@
 \alias{idColumnStyle}
 \title{A form table style including all columns with ids as column names}
 \usage{
-idColumnStyle(maxDepth = 3)
+idColumnStyle(maxDepth = 2)
 }
 \arguments{
 \item{maxDepth}{the maximum depth of recursion in referenced forms. This is set to 3 by default.}

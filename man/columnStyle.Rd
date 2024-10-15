@@ -13,7 +13,7 @@ columnStyle(
   lastEditedTime = TRUE,
   .names_repair = "unique",
   style,
-  maxDepth = 3
+  maxDepth = 2
 )
 }
 \arguments{
@@ -37,7 +37,7 @@ default is TRUE to make it easier to join data in R}
 
 \item{style}{a style to modify with one or more parameters}
 
-\item{maxDepth}{the maximum depth of recursion in referenced forms. This is set to 3 by default.}
+\item{maxDepth}{the maximum depth of recursion in referenced forms. This is set to 2 by default.}
 }
 \description{
 This function is used to modify existing styles and create new styles. Most

@@ -4,7 +4,7 @@
 \alias{minimalColumnStyle}
 \title{A form table style with columns limited to those in the web interface}
 \usage{
-minimalColumnStyle(maxDepth = 3)
+minimalColumnStyle(maxDepth = 2)
 }
 \arguments{
 \item{maxDepth}{the maximum depth of recursion in referenced forms. This is set to 3 by default.}

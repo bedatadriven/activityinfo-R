@@ -9,10 +9,10 @@ roleAssignment(roleId, roleParameters = list(), roleResources)
 \arguments{
 \item{roleId}{the id of the role to assign to the user}
 
-\item{roleParameters}{a named list of parameters, if the role has any parameters}
+\item{roleParameters}{a named list of role parameters, optional}
 
-\item{roleResources}{the list of resources (database, folder, form, or report)
-to assign to this user. Using the databaseId assigns all resources to this user}
+\item{roleResources}{a list of resources (database id, folder id, form id, or report id)
+to assign to this user. Using the database id assigns all resources to this user}
 }
 \description{
 Creates a role assignment object

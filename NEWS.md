@@ -1,3 +1,10 @@
+## [4.37]
+- Legacy roles are no longer supported from 4.37 onwards
+- Potential breaking change: the maxDepth parameter in column styles is now set to two by default; parent and reference columns no longer expand indefinitely
+- New functions for new role and permissions system (#114)
+- Added ability to update sub-forms (#119)
+- Addressed cyclic structures in reference columns and parent forms and added maxDepth parameter to column styles. (#132)
+
 ## [4.36.1]
 - Fix for `importRecords()` when the form has a serial number (#124)
 

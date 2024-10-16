@@ -2,45 +2,113 @@
 % Please edit documentation in R/databases.R
 \name{updateRole}
 \alias{updateRole}
-\title{Updates a role's definition in the database
-See \link{permissions} for more details.}
+\alias{addRole}
+\alias{deleteRoles}
+\title{Add, Update or Delete a role's definition in the database}
 \usage{
 updateRole(databaseId, role)
+
+addRole(databaseId, role)
+
+deleteRoles(databaseId, roleIds)
 }
 \arguments{
 \item{databaseId}{the id of the database}
 
 \item{role}{the role definition}
+
+\item{roleIds}{the ids of the roles to be deleted. It should be passed as a character vector.}
 }
 \description{
-Updates a role's definition in the database
-See \link{permissions} for more details.
+updateRole() updates the role definition in the database. A role is defined
+with the \link{role} function, which implements the grant-based role system
+of ActivityInfo. updateRole() will also silently add a new role if the role
+id has not yet been used.
+}
+\details{
+addRole() will add a new role definition and will stop the script if the role
+already exists.
+
+deleteRoles() can take a list of role ids and will delete those. It will
+provide a warning if any role id was not found but will continue and delete
+any ids that do exist.
+
+Older style non-grant roles are deprecated. See \link{resourcePermissions}
+for more details for old roles without grants. These will be phased out of
+use and should be avoided.
 }
 \examples{
 \dontrun{
-updateRole("cxy123", list(
-  id = "rp",
-  label = "Reporting partner",
-  permissions = permissions(
-    view = "ck5dxt1712 == @user.partner",
-    edit_record = "ck5dxt1712 == @user.partner",
-    export_records = TRUE
-  ),
-  parameters = list(
-    list(
-      parameterId = "partner",
-      label = "Partner",
-      range = "ck5dxt1712"
-    )
-  ),
-  filters = list(
-    list(
-      id = "partner",
-      label = "partner is user's partner",
-      filter = "ck5dxt1712 == @user.partner"
+
+# Use the current grant-based roles; legacy roles are deprecated
+grantBased = TRUE
+dbId = "cxy123"
+
+if (grantBased) {
+  
+  currentGrantBasedRole <- 
+    role(id = "rp",
+        label = "Reporting Partner",
+        parameters = list(
+         parameter(id = "partner", label = "Partner", range = "ck5dxt1712")),
+        grants = list(
+          grant(resourceId = "cq9xyz1552",
+            permissions = resourcePermissions(
+              view = "ck5dxt1712 == @user.partner",
+             edit_record = "ck5dxt1712 == @user.partner",
+              discover = TRUE,
+              export_records = TRUE)),
+          grant(resourceId = "cz55555555",
+            permissions = resourcePermissions(
+             view = TRUE,
+              discover = TRUE,
+              add_record = TRUE),
+            optional = TRUE))
+        )
+
+  # Duplicate the role with a different id
+  currentGrantBasedRole2 <- currentGrantBasedRole
+  currentGrantBasedRole2$id <- "rp2"
+
+  addRole(dbId, currentGrantBasedRole)
+  addRole(dbId, currentGrantBasedRole2)
+  
+  currentGrantBasedRole$label <- "Original reporting orgs"
+  updateRole(dbId, currentGrantBasedRole)
+  
+  deleteRoles(dbId, c(currentGrantBasedRole$id,currentGrantBasedRole2$id))
+  
+  # delete all roles containing "readonly" - will fail if assigned to a user
+  remainingRoles <- sapply((getDatabaseTree(dbId))$roles, function(x) x$id)
+  readOnlyRoles <- remainingRoles[grepl("readonly", remainingRoles)]
+  deleteRoles(dbId, roleIds = readOnlyRoles)
+   
+} else {
+  # These older-style roles will be phased out.
+  deprecatedNonGrantRole <- list(
+    id = "rp",
+    label = "Reporting partner",
+    permissions = resourcePermissions(
+      view = "ck5dxt1712 == @user.partner",
+      edit_record = "ck5dxt1712 == @user.partner",
+      export_records = TRUE
+    ),
+    parameters = list(
+      list(
+        id = "partner",
+        label = "Partner",
+        range = "ck5dxt1712"
+      )
+    ),
+    filters = list(
+      roleFilter(
+        id = "partner",
+        label = "partner is user's partner",
+        filter = "ck5dxt1712 == @user.partner"
+       )
     )
   )
-))
+  updateRole("cxy123", deprecatedNonGrantRole)
 }
-
+}
 }

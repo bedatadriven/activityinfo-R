@@ -17,13 +17,14 @@ updateGrant(databaseId, userId, resourceId, permissions)
 }
 \description{
 Adds or updates a grant for a user to a specific resource.
-See \link{permissions} for how to set permissions for a grant.
+See \link{resourcePermissions} for how to set resource-level permissions for
+a grant.
 }
 \examples{
 \dontrun{
 updateGrant(
   databaseId = "cxy123", user = 165,
-  permissions(
+  resourcePermissions(
     add_record = TRUE,
     edit_record = TRUE,
     delete_record = TRUE

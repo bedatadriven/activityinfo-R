@@ -8,13 +8,16 @@ createFormSchemaFromData(
   x,
   databaseId,
   label,
-  folderId = databaseId,
+  parentId,
   keyColumns = character(),
   requiredColumns = keyColumns,
   logicalAsSingleSelect = TRUE,
   logicalText = c("True", "False"),
   codes = rep(NA_character_, ncol(x)),
-  upload = FALSE
+  upload = FALSE,
+  folderId,
+  parentFormId = NULL,
+  parentRecordIdColumn = NULL
 )
 }
 \arguments{
@@ -25,7 +28,7 @@ schema}
 
 \item{label}{the label of the new form}
 
-\item{folderId}{the id of the folder where the form should reside; defaults to the database id. This argument only has an effect if upload is TRUE.}
+\item{parentId}{The id of the database or folder to which this should be added. Defaults to the database. This argument only has an effect if upload is TRUE.}
 
 \item{keyColumns}{a character vector of the column names of the form fields that should be form keys}
 
@@ -38,6 +41,12 @@ schema}
 \item{codes}{a character vector of field codes that must have the same length as the number of columns}
 
 \item{upload}{immediately upload the new form}
+
+\item{folderId}{Deprecated; use parentId. Optional id of a folder where the form should reside. This argument only has an effect if upload is TRUE.}
+
+\item{parentFormId}{The parent form id when creating a sub-form.}
+
+\item{parentRecordIdColumn}{The column with the parent record id. This is ignored during schema creation but used to link sub-form records to parent records.}
 }
 \description{
 This function helps to create new form schemas for existing datasets.

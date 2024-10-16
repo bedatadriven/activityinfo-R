@@ -516,6 +516,7 @@ getRecords.default <- getRecords.character
 #' @param columnNames Can be "pretty", "label", "id", c("code", "id), or c("code", "label"); default is "pretty".
 #' @param .names_repair Treatment of problematic column names following the approach used in tibbles / vctrs. Default is "unique".
 #' @param style a style to modify with one or more parameters
+#' @param maxDepth the maximum depth of recursion in referenced forms. This is set to 2 by default.
 #' 
 #' @export
 columnStyle <- function(
@@ -526,12 +527,15 @@ columnStyle <- function(
     recordId = TRUE,
     lastEditedTime = TRUE,
     .names_repair = "unique",
-    style) {
+    style,
+    maxDepth = 2
+    ) {
   stopifnot(is.logical(referencedId))
   stopifnot(is.logical(referencedKey))
   stopifnot(is.character(columnNames))
   stopifnot(is.logical(recordId))
   stopifnot(is.logical(lastEditedTime))
+  stopifnot("maxDepth must be a whole number" = is.numeric(maxDepth)&&maxDepth==as.integer(maxDepth)&&maxDepth>0)
   if(!missing(style)) {
     stopifnot(is.list(style))
     stopifnot("activityInfoColumnStyle" %in% class(style))
@@ -550,7 +554,8 @@ columnStyle <- function(
       "columnNames" = columnNames,
       "recordId" = recordId,
       "lastEditedTime" = lastEditedTime,
-      ".names_repair" = .names_repair
+      ".names_repair" = .names_repair,
+      "maxDepth" = maxDepth
     )
     class(style) <- c("activityInfoColumnStyle", class(style))
   }
@@ -572,14 +577,22 @@ columnStyle <- function(
 #' default is TRUE to make it easier to join data in R.
 #' @param allReferenceFields include all the fields in referenced records; the 
 #' default is FALSE
+#' @param maxDepth the maximum depth of recursion in referenced forms. This is set to 2 by default.
 #' @export
-prettyColumnStyle <- function(recordId = TRUE, lastEditedTime = TRUE, referencedId = TRUE, allReferenceFields = FALSE) {
+prettyColumnStyle <- function(
+    recordId = TRUE, 
+    lastEditedTime = TRUE, 
+    referencedId = TRUE, 
+    allReferenceFields = FALSE, 
+    maxDepth = 2
+    ) {
   columnStyle(referencedId = referencedId,
               referencedKey = TRUE,
               allReferenceFields = allReferenceFields,
               columnNames = "pretty",
               recordId = recordId,
-              lastEditedTime = lastEditedTime)
+              lastEditedTime = lastEditedTime,
+              maxDepth = maxDepth)
 }
 
 #' A form table style including all columns with configurable label names
@@ -594,15 +607,20 @@ prettyColumnStyle <- function(recordId = TRUE, lastEditedTime = TRUE, referenced
 #' * "id" : Using the form field unique id used by ActivityInfo, for example "c12c92vi5olfmn7khb4.c13cmf6la3lfmn7khb5"
 #'
 #' @param columnNames Can be "pretty", "label", "id", c("code", "id), or c("code", "label")
+#' @param maxDepth the maximum depth of recursion in referenced forms. This is set to 2 by default.
 #' 
 #' @export
-allColumnStyle <- function(columnNames = c("code", "label")) {
+allColumnStyle <- function(
+    columnNames = c("code", "label"), 
+    maxDepth = 2
+    ) {
   columnStyle(referencedId = TRUE,
               referencedKey = TRUE,
               allReferenceFields = TRUE,
               columnNames = columnNames,
               recordId = TRUE,
-              lastEditedTime = TRUE)
+              lastEditedTime = TRUE,
+              maxDepth = maxDepth)
 }
 
 #' A form table style including all columns with ids as column names
@@ -610,9 +628,15 @@ allColumnStyle <- function(columnNames = c("code", "label")) {
 #' @description
 #' This function is primarily used in [activityinfo::getRecords].
 #' 
+#' @param maxDepth the maximum depth of recursion in referenced forms. This is set to 3 by default.
+#' 
 #' @export
-idColumnStyle <- function() {
-  allColumnStyle(columnNames = "id")
+idColumnStyle <- function(
+    maxDepth = 2
+    ) {
+  allColumnStyle(
+    columnNames = "id", 
+    maxDepth = maxDepth)
 }
 
 #' A form table style with columns limited to those in the web interface 
@@ -620,9 +644,18 @@ idColumnStyle <- function() {
 #' @description
 #' This function is primarily used in getRecords().
 #' 
+#' @param maxDepth the maximum depth of recursion in referenced forms. This is set to 3 by default.
+#' 
 #' @export
-minimalColumnStyle <- function() {
-  prettyColumnStyle(referencedId = FALSE, allReferenceFields = FALSE, recordId = FALSE, lastEditedTime = FALSE)
+minimalColumnStyle <- function(
+    maxDepth = 2
+    ) {
+  prettyColumnStyle(
+    referencedId = FALSE, 
+    allReferenceFields = FALSE, 
+    recordId = FALSE, 
+    lastEditedTime = FALSE, 
+    maxDepth = maxDepth)
 }
 
 #' Set or get the default column style as an R option 
@@ -825,46 +858,73 @@ varNames <- function(x, style, addNames) {
 #' @importFrom vctrs vec_as_names
 #' @exportS3Method varNames activityInfoFormTree
 varNames.activityInfoFormTree <- function(x, style = defaultColumnStyle(), addNames = FALSE) {
-  fmSchema <- x$forms[[x$root]]
-
-  vrNames <- character()
-  
-  if("parentFormId" %in% names(fmSchema)) {
-    parentSchema <- x$forms[[x$forms[[x$root]]$parentFormId]]    
-    if (style$allReferenceFields) {
-      parentVarNames <- varNames(parentSchema, style)
-    } else {
-      parentVarNames <- unlist(lapply(parentSchema$elements, function(y) {
-        if (y$key) {
-          elementVarName(y, style)
-        }
-      }))
-      parentVarNames <- parentVarNames[lengths(parentVarNames)!=0]
+  # Internal helper function with recursion control
+  varNamesHelper <- function(x, visitedFormIds) {
+    if (length(visitedFormIds) > style$maxDepth) return(character())
+    
+    fmSchema <- x$forms[[x$root]]
+    
+    # Check if this form has already been processed
+    if (fmSchema$id %in% visitedFormIds) {
+      # Form already visited; prevent infinite recursion
+      return(character())
     }
-
-    if (!is.null(parentVarNames)) {
-      if(identical(style$columnNames, "pretty")) {
-        parentVarNames <- paste("Parent", parentVarNames, sep = " ")
+    
+    # Add current form id to visitedFormIds
+    visitedFormIds <- c(visitedFormIds, fmSchema$id)
+    
+    vrNames <- character()
+    
+    if ("parentFormId" %in% names(fmSchema)) {
+      parentSchema <- x$forms[[fmSchema$parentFormId]]    
+      if (style$allReferenceFields) {
+        parentVarNames <- varNamesHelper(list(root = fmSchema$parentFormId, forms = x$forms), visitedFormIds)
       } else {
-        parentVarNames <- paste("@parent", parentVarNames, sep = ".")
+        parentVarNames <- unlist(lapply(parentSchema$elements, function(y) {
+          if (y$key) {
+            elementVarName(y, style)
+          }
+        }))
+        parentVarNames <- parentVarNames[lengths(parentVarNames) != 0]
       }
+      
+      if (length(parentVarNames) > 0) {
+        if (identical(style$columnNames, "pretty")) {
+          parentVarNames <- paste("Parent", parentVarNames, sep = " ")
+        } else {
+          parentVarNames <- paste("@parent", parentVarNames, sep = ".")
+        }
+      }
+      
+      vrNames <- c(vrNames, "@parent", parentVarNames)
     }
-
-    vrNames <- c(vrNames, "@parent", parentVarNames)
+    
+    if (style$recordId) vrNames <- c(vrNames, "_id")
+    if (style$lastEditedTime) vrNames <- c(vrNames, "_lastEditTime")
+    
+    vrNames <- c(vrNames, unlist(lapply(fmSchema$elements, function(y) {
+      elementVars(
+        element = y, 
+        formTree = x, 
+        style = style, 
+        namedElement = FALSE,
+        visitedForms = visitedFormIds  # Pass visitedFormIds to elementVars
+      )
+    })))
+    
+    vrNames
   }
-  if (style$recordId) vrNames[length(vrNames)+1] <- "_id"
-  if (style$lastEditedTime) vrNames[length(vrNames)+1] <- "_lastEditTime"
-
-  vrNames <- c(vrNames, unlist(lapply(fmSchema$elements, function(y) {
-    elementVars(element = y, formTree = x, style = style, namedElement = FALSE)
-  })))
-
-  vrNames <- vctrs::vec_as_names(vrNames, repair = style[[".names_repair"]])
   
-  if(addNames) {
+  # Start recursion with empty visitedFormIds
+  vrNames <- varNamesHelper(x, visitedFormIds = character())
+  
+  # Ensure unique and valid variable names
+  vrNames <- vctrs::vec_as_names(vrNames, repair = style[[".names_repair"]], quiet = TRUE)
+  
+  if (addNames) {
     names(vrNames) <- vrNames
   }
-
+  
   vrNames
 }
 
@@ -893,7 +953,6 @@ varNames.activityInfo_tbl_df <- function(x, style = NULL, addNames = TRUE) {
   varNames(attr(x, "remoteRecords"), style = NULL, addNames)
 }
 
-
 #' Get form field schemas from a form tree in a named list using a column style 
 #' to select and name each form field
 #'
@@ -910,127 +969,111 @@ namedElementVarList <- function(formTree, style = defaultColumnStyle()) {
   fmSchema <- formTree$forms[[formTree$root]]
 
   unlist(lapply(fmSchema$elements, function(x) {
-    elementVars(element = x, formTree = formTree, style = style, namedElement = TRUE)
+    elementVars(
+      element = x, 
+      formTree = formTree, 
+      style = style, 
+      namedElement = TRUE)
   }), recursive = FALSE)
 }
 
-elementVars <- function(element, formTree, style = defaultColumnStyle(), namedElement = FALSE, includeFirst = TRUE, useParentLabel, parentLabel) {
+elementVars <- function(element, formTree, style = defaultColumnStyle(), namedElement = FALSE, includeFirst = TRUE, useParentLabel, parentLabel, visitedForms = NULL) {
+  # Initialize visitedForms if NULL
+  if (is.null(visitedForms)) {
+    visitedForms <- character()
+  } else if (length(visitedForms) > style$maxDepth) {
+    return(NULL)
+  }
   
-  refOfRef <- FALSE
   elementList <- list()
   
-  useParentLabel <- (!missing(useParentLabel)&&useParentLabel)
+  useParentLabel <- (!missing(useParentLabel) && useParentLabel)
   if (useParentLabel) {
-    stopifnot(!missing(parentLabel)&&is.character(parentLabel)&&length(parentLabel)==1)
+    stopifnot(!missing(parentLabel) && is.character(parentLabel) && length(parentLabel) == 1)
+    stopifnot("There is a parent label for a form element but no parent form." = length(visitedForms)>0)
   } else {
     parentLabel <- ""
   }
   
-  isRefId <- inherits(element,"activityInfoReferenceFieldSchema")
-  
-  # Determine if passed element should be included
-  if (includeFirst&&!(isRefId&&!style$referencedId)) {
-    fieldName <- elementVarName(element, style)
-    
-    elementList <- c(elementList, list(element))
-    names(elementList) <- elementVarName(element, style)
-    
-    if (useParentLabel&&parentLabel!=fieldName) {
-      if (style$columnNames[[1]] == "pretty") {
-        names(elementList) <- paste0(parentLabel, " ", fieldName)
-      } else {
-        names(elementList) <- paste0(parentLabel, ".", fieldName)
-      }
-    } else {
-      names(elementList) <- fieldName
+  # check if the element is a reference field and form has been visited
+  isRefId <- inherits(element, "activityInfoReferenceFieldSchema")
+  refFormVisited <- FALSE
+  if (isRefId) {
+    refFormId <- element$typeParameters$range[[1]]$formId
+    if (refFormId %in% visitedForms) {
+      refFormVisited <- TRUE
     }
-  } else {
-    if (isRefId) fieldName <- elementVarName(element, style)
   }
   
-  # If it is a reference id field then get all related fields according to the style
-  if (isRefId) {
+  if (
+    (includeFirst && !(isRefId && !style$referencedId))||refFormVisited) {
+    fieldName <- elementVarName(element, style)
+    
+    if (useParentLabel && parentLabel != "") {
+      if (style$columnNames[[1]] == "pretty") {
+        fullName <- paste0(parentLabel, " ", fieldName)
+      } else {
+        fullName <- paste0(parentLabel, ".", fieldName)
+      }
+    } else {
+      fullName <- fieldName
+    }
+    
+    elementList[[fullName]] <- element
+  }
 
-    if (style$referencedKey||style$allReferenceFields){
-      refId <- element$typeParameters$range[[1]]$formId
-      refFormSchema <- formTree$forms[[refId]]
+  if (!refFormVisited) { 
+    # If it is a reference field, get all related fields according to the style
+    if (isRefId && (style$referencedKey || style$allReferenceFields)) {
       
-      # collect all the referenced form fields
+      newVisitedForms <- c(visitedForms, refFormId)
+      
+      refFormSchema <- formTree$forms[[refFormId]]
+      
+      # Collect all the referenced form fields
       refFormSchemaElements <- lapply(refFormSchema$elements, function(x) {
-        if (x$key) {
-            if (inherits(x,"activityInfoReferenceFieldSchema")) refOfRef <<- TRUE
-            x
+        if (x$key || style$allReferenceFields) {
+          x
         } else {
-          if (style$allReferenceFields) {
-            x
-          } else {
-            NULL
-          }
+          NULL
         }
       })
-
-      refFormSchemaElements <- refFormSchemaElements[lengths(refFormSchemaElements)!=0]
+      refFormSchemaElements <- refFormSchemaElements[lengths(refFormSchemaElements) != 0]
       
-      # collect all the additional reference fields up the form tree
-      if (refOfRef) {
-        nestedFormSchemaElements <- list()
-        nestedFormSchemaElements <- lapply(refFormSchemaElements, function(z) {
-          if (inherits(z,"activityInfoReferenceFieldSchema")) {
-            if (style$columnNames[[1]]=="pretty") {
-              refParentLabel <- refFormSchema$label
-            } else {
-              if (parentLabel!="") {
-                refParentLabel <- paste0(parentLabel, ".", elementVarName(z, style))
-              } else {
-                refParentLabel <- elementVarName(z, style)
-              }
-            }
-            result <- elementVars(element = z, formTree = formTree, style = style, namedElement = TRUE, includeFirst = TRUE, useParentLabel = TRUE, parentLabel = refParentLabel)
-            if (length(result)==0) {
-              NULL
-            } else {
-              result
-            }
-          } else {
-            if (style$columnNames[[1]]=="pretty") {
-              refParentLabel <- refFormSchema$label
-            } else {
-              if (parentLabel!="") {
-                refParentLabel <- paste0(parentLabel, ".", elementVarName(z, style))
-              } else {
-                refParentLabel <- elementVarName(z, style)
-              }
-            }
-            elementVars(element = z, formTree = formTree, style = style, namedElement = TRUE, includeFirst = TRUE, useParentLabel = TRUE, parentLabel = refParentLabel)
-          }
-        })
-        nestedFormSchemaElements <- nestedFormSchemaElements[lengths(nestedFormSchemaElements)!=0]
-        refFormSchemaElements <- unlist(nestedFormSchemaElements, recursive = FALSE)
-        
-      } else {
-        
-        names(refFormSchemaElements) <- unlist(lapply(refFormSchemaElements, function(z) {
-          if (refOfRef||useParentLabel) {
-            prefix <-  refFormSchema$label
-          } else {
-            prefix <- fieldName
-          }
-          suffix <- elementVarName(z, style)
-          if (suffix==prefix) {
-            elementVarName(z, style)
-          } else {
-            if (style$columnNames[[1]] == "pretty") {
-              paste0(prefix, " ", elementVarName(z, style))
-            } else {
-              paste0(fieldName, ".", elementVarName(z, style))
-            }
-          }
-        }))
-      }
       
-      elementList <- c(elementList, refFormSchemaElements)
+      # test whether to use form labels (shallow ref) or field labels (deep ref)
+      hasRefFields <- any(sapply(refFormSchemaElements, function(e) inherits(e, "activityInfoReferenceFieldSchema")))
+      isShallowRef <- !hasRefFields && length(visitedForms) <= 1 && parentLabel == ""
+      
+      fieldName <- elementVarName(element, style)
+      
+      refElementLists <- lapply(refFormSchemaElements, function(z) {
+        if (style$columnNames[[1]] == "pretty" && !isShallowRef) {
+            refParentLabel <- refFormSchema$label
+        } else {
+          if (parentLabel != "") {
+            refParentLabel <- paste0(parentLabel, ".", fieldName)
+          } else {
+            refParentLabel <- fieldName
+          }
+        }
+        
+        elementVars(
+          element = z,
+          formTree = formTree,
+          style = style,
+          namedElement = TRUE,
+          includeFirst = TRUE,
+          useParentLabel = TRUE,
+          parentLabel = refParentLabel,
+          visitedForms = newVisitedForms
+        )
+      })
+      
+      refElementList <- do.call(c, refElementLists)
+      
+      elementList <- c(elementList, refElementList)
     }
-
   }
 
   if (namedElement) {
@@ -1039,7 +1082,7 @@ elementVars <- function(element, formTree, style = defaultColumnStyle(), namedEl
     return(names(elementList))
   }
 }
-
+ 
 elementVarName <- function(y, style) {
   stopifnot(style$columnNames %in% c("pretty", "label", "code", "id"))
 
@@ -1326,7 +1369,7 @@ tblWindow <- function(x, limit) {
 #' @export
 extractSchemaFromFields <- function(x, databaseId, label, useColumnNames = FALSE, ...) {
   stopifnot("tbl_activityInfoRemoteRecords" %in% class(x))
-  fmSchema <- formSchema(databaseId, label, ...)
+  fmSchema <- formSchema(databaseId = databaseId, label = label, ...)
 
   codes <- character(0)
   

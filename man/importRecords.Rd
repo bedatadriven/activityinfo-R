@@ -8,9 +8,10 @@ importRecords(
   formId,
   data,
   recordIdColumn,
-  parentIdColumn,
+  parentRecordIdColumn,
   stageDirect = TRUE,
-  progress = getOption("activityinfo.import.progress", default = TRUE)
+  progress = getOption("activityinfo.import.progress", default = TRUE),
+  parentIdColumn = parentRecordIdColumn
 )
 }
 \arguments{
@@ -20,11 +21,13 @@ importRecords(
 
 \item{recordIdColumn}{The record ID column}
 
-\item{parentIdColumn}{The parent ID column required when importing a subform}
+\item{parentRecordIdColumn}{The parent record ID column required when importing a subform}
 
 \item{stageDirect}{Whether the import should be directly staged to Google Cloud Storage. This may not be possible if connecting from Syria or other countries that are blocked from accessing Google services directly. This option is ignored when connecting to a self-managed instance of ActivityInfo.}
 
 \item{progress}{Show import progress while waiting for import job to complete}
+
+\item{parentIdColumn}{Use parentRecordIdColumn instead. parentIdColumn is deprecated.}
 }
 \description{
 Please be aware of the 600 column and 200,000 row limit for ActivityInfo forms.

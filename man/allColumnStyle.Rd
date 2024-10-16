@@ -4,10 +4,12 @@
 \alias{allColumnStyle}
 \title{A form table style including all columns with configurable label names}
 \usage{
-allColumnStyle(columnNames = c("code", "label"))
+allColumnStyle(columnNames = c("code", "label"), maxDepth = 2)
 }
 \arguments{
 \item{columnNames}{Can be "pretty", "label", "id", c("code", "id), or c("code", "label")}
+
+\item{maxDepth}{the maximum depth of recursion in referenced forms. This is set to 2 by default.}
 }
 \description{
 This function is primarily used in \link{getRecords}.

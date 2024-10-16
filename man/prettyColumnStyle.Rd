@@ -9,7 +9,8 @@ prettyColumnStyle(
   recordId = TRUE,
   lastEditedTime = TRUE,
   referencedId = TRUE,
-  allReferenceFields = FALSE
+  allReferenceFields = FALSE,
+  maxDepth = 2
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ default is TRUE to make it easier to join data in R.}
 
 \item{allReferenceFields}{include all the fields in referenced records; the
 default is FALSE}
+
+\item{maxDepth}{the maximum depth of recursion in referenced forms. This is set to 2 by default.}
 }
 \description{
 This function is primarily used in \link{getRecords}. See \link{minimalColumnStyle} for a style

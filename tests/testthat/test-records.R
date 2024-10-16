@@ -1,3 +1,5 @@
+
+
 testthat::test_that("add, update, and deleteRecord() works", {
   
   form <- addForm(formSchema(
@@ -129,9 +131,9 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
   
   importRecords(formId = caseFormId, caseData)
   
-  cases <- getRecords(caseFormId, style = prettyColumnStyle(allReferenceFields = TRUE))
+  cases <- getRecords(caseFormId, style = prettyColumnStyle(allReferenceFields = TRUE, maxDepth = 10))
   
-  caseDf <- getRecords(caseFormId, style = minimalColumnStyle()) %>% slice_head(n = 10) %>% collect() %>% as.data.frame()
+  caseDf <- getRecords(caseFormId, style = minimalColumnStyle(maxDepth = 10)) %>% slice_head(n = 10) %>% collect() %>% as.data.frame()
   
   testthat::test_that("No errors are thrown when filtering on a variable name that is also found up the tree", {
     testthat::expect_no_error({
@@ -160,16 +162,66 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
 })
 
 testthat::test_that("getRecords() works", {
-  testData <- tibble(`Identifier number` = as.character(1:500), "A single select column" = rep(factor(paste0(1:5, "_stuff")), 100), "A logical column" = ((1:500)%%7==(1:500)%%3), "A date column" = rep(seq(as.Date("2021-07-06"),as.Date("2021-07-25"),by = 1),25))
-  schema <- createFormSchemaFromData(testData, database$databaseId, label = "getRecords() test form", keyColumns = "Identifier number", requiredColumns = "Identifier number")
+  testData <- tibble(
+    `Identifier number` = as.character(1:500), 
+    "A single select column" = rep(factor(paste0(1:5, "_stuff")), 100), 
+    "A logical column" = ((1:500)%%7==(1:500)%%3), 
+    "A date column" = rep(seq(as.Date("2021-07-06"),as.Date("2021-07-25"),by = 1),25))
+  schema <- createFormSchemaFromData(
+    testData, 
+    database$databaseId, 
+    label = "getRecords() test form", 
+    keyColumns = "Identifier number", 
+    requiredColumns = "Identifier number")
+  
+  # add a sub-form
+  
+  childSubformId <- cuid()
+  schema <- addFormField(schema, subformFieldSchema(
+    code = "child",
+    label = "Children",
+    description = "Child records",
+    subformId = childSubformId))
+
+  childData <- tibble(
+    `Child identifier number` = as.character((1:250)),
+    `parent` = as.character(2*(1:250)), 
+    "Sub-form Content" = rep(factor(paste0(1:5, "_child_stuff")), 50))
+  childSchema <- createFormSchemaFromData(
+    childData, 
+    database$databaseId, 
+    label = "getRecords() child form", 
+    keyColumns = "Child identifier number", 
+    requiredColumns = "Child identifier number", 
+    parentFormId = schema$id, 
+    parentRecordIdColumn = "parent")
+  childSchema$id <- childSubformId
+  
   schemaView <- as.data.frame(schema)
   uploadedForm <- addForm(schema)
+  uploadedChildForm <- addForm(childSchema)
+
   importRecords(formId = schema$id, data = testData)
   
+  # get ActivityInfo cuids for the parent records after import
+  parentRecords <- 
+    getRecords(schema$id, style = prettyColumnStyle()) %>% 
+    select(`_id`,`Identifier number`) %>%  collect() %>% 
+    rename(parentRecordId = `_id`, parent = `Identifier number`)
+  childData <- left_join(childData, parentRecords, by = 'parent')
+  
+  importRecords(formId = childSchema$id, data = childData, parentRecordIdColumn = 'parentRecordId')
+  
+  testthat::test_that('varNames works on a child form with reference records.', {
+    childVarNames = varNames(childSchema$id, prettyColumnStyle(allReferenceFields = TRUE))
+  })
+  
+  testthat::test_that('Can retrieve child form with all reference records using getRecords().', {
+    childRecords <- getRecords(childSchema$id, style = prettyColumnStyle(allReferenceFields = TRUE))
+  })
+
   rcrds <- getRecords(uploadedForm$id, style = prettyColumnStyle())
-  
   rcrdsMin <- getRecords(uploadedForm$id, style = minimalColumnStyle())
-  
   rcrdsMinDf <- rcrdsMin %>% collect %>% as.data.frame()
   
   testthat::expect_snapshot(rcrdsMinDf)
@@ -246,25 +298,25 @@ testthat::test_that("getRecords() works", {
   
   testthat::test_that("Copying of schemas with extractSchemaFromFields()", {
     newSchema <- rcrds %>% select(id = `Identifier number`) %>% extractSchemaFromFields(databaseId = "dbid", label = "new form")
+    newSchema2 <-rcrds %>% select(-`_id`, -`_lastEditTime`) %>% extractSchemaFromFields(databaseId = "dbid", label = "new form")
     
     schemaToCompare <- schema
     schemaToCompare$label <- "new form"
     schemaToCompare$id <- newSchema$id
     schemaToCompare$databaseId <- "dbid"
-    
-    identicalForm(schemaToCompare, newSchema)
-    
-    # removing newSchema snapshot - not per se safe - should use new snapshot function
+
+    identicalForm(canonicalizeActivityInfoObject(schemaToCompare), canonicalizeActivityInfoObject(newSchema2))
     expectActivityInfoSnapshotCompare(newSchema, "extractSchemaFromFields")
-    #expectActivityInfoSnapshot(newSchema)
-    
+
     # no form schema elements to provide - expect warning
     testthat::expect_warning({
       rcrds %>% select(starts_with("_")) %>% extractSchemaFromFields(databaseId = "dbid", label = "new form")
     })
     
     testthat::test_that("It is possible to copy a form and upload the data to the new form", {
-      copiedForm <- rcrds %>% extractSchemaFromFields(label = "New reference table", databaseId = database$databaseId)
+      copiedForm <- rcrds %>% 
+        extractSchemaFromFields(label = "New reference table", databaseId = database$databaseId) %>%
+        deleteFormField(label = "Children")
       addForm(copiedForm)
       importRecords(formId = copiedForm$id, data = testData)
     })
@@ -352,5 +404,219 @@ testthat::test_that("getRecords() works", {
       expected = 1)
   })
   
+})
+
+testthat::test_that("getRecords() subform column count increases with maxDepth", {
+  numLayers <- 5
+  formIds <- character(numLayers)
+  formSchemas <- vector("list", length = numLayers)
+  formData <- vector("list", length = numLayers)
   
+  # create ids up front for creation of the subform fields
+  for (i in 1:numLayers) {
+    formIds[[i]] <- cuid()
+  }
+  
+  # Create the forms
+  for (i in 1:numLayers) {
+    formData[[i]] <- tibble::tibble(
+      Name = paste("Form", i, "Record", 1:5)
+    )
+    label <- paste("Form", i)
+    keyColumns <- "Name"
+    requiredColumns <- "Name"
+    databaseId <- database$databaseId
+    parentFormId <- if (i == 1) NULL else formIds[[i-1]]
+    
+    schema <- createFormSchemaFromData(
+      formData[[i]],
+      databaseId = databaseId,
+      label = label,
+      keyColumns = keyColumns,
+      requiredColumns = requiredColumns,
+      parentFormId = parentFormId
+    )
+    schema$id <- formIds[[i]]
+    
+    if (i<numLayers) {
+        schema <- addFormField(schema, subformFieldSchema(
+          code = "child",
+          label = "Children",
+          description = "Child records",
+          subformId = formIds[[i+1]]))
+    }
+    
+    formSchemas[[i]] <- schema
+  }
+  
+  # Upload the forms
+  for (i in 1:numLayers) {
+    addForm(schema=formSchemas[[i]])
+  }
+  
+  # Import records into each form
+  for (i in 1:numLayers) {
+    if (i == 1) {
+      # No parent for the first form
+      importRecords(formId = formIds[i], data = formData[[i]])
+    } else {
+      # Get parent records
+      parentRecords <- getRecords(formIds[i - 1]) %>%
+        select(`_id`) %>%
+        collect()
+      parentRecordIds <- parentRecords$`_id`
+      # Link records to parents
+      formData[[i]] <- formData[[i]] %>%
+        mutate(
+          parentRecordId = rep(parentRecordIds, length.out = nrow(formData[[i]]))
+        )
+      importRecords(formId = formIds[i], data = formData[[i]], parentRecordIdColumn = "parentRecordId")
+    }
+  }
+  
+  # Test that the number of columns increases with maxDepth
+  previousN <- 0
+  for (depth in 1:numLayers) {
+    colNames <- getRecords(formIds[[numLayers]], style = allColumnStyle(maxDepth = depth)) %>%
+      colnames()
+    n <- length(colNames)
+    testthat::expect_gt(n, previousN)
+    previousN <- n
+  }
+})
+
+
+testthat::test_that("getRecords() column count increases with maxDepth in deep references and stops in cycles", {
+  numLayers <- 5
+  formIds <- character(numLayers)
+  formSchemas <- vector("list", length = numLayers)
+  formData <- vector("list", length = numLayers)
+  
+  # Create IDs upfront
+  for (i in 1:numLayers) {
+    formIds[[i]] <- cuid()
+  }
+  
+  # Create the forms
+  for (i in 1:numLayers) {
+    formData[[i]] <- tibble::tibble(
+      Name = paste("Form", i, "Record", 1:5)
+    )
+    label <- paste("Form", i)
+    keyColumns <- "Name"
+    requiredColumns <- "Name"
+    databaseId <- database$databaseId
+    
+    schema <- createFormSchemaFromData(
+      formData[[i]],
+      databaseId = databaseId,
+      label = label,
+      keyColumns = keyColumns,
+      requiredColumns = requiredColumns
+    )
+    schema$id <- formIds[[i]]
+    
+    if (i < numLayers) {
+      # Add reference field to next form
+      schema <- addFormField(schema, referenceFieldSchema(
+        label = paste("Reference to Form", i + 1),
+        referencedFormId = formIds[[i + 1]],
+        key = FALSE
+      ))
+    }
+    
+    formSchemas[[i]] <- schema
+  }
+  
+  # Upload the forms
+  for (i in numLayers:1) {
+    addForm(schema = formSchemas[[i]])
+  }
+  
+  # Import records into each form in reverse order
+  for (i in numLayers:1) {
+    if (i < numLayers) {
+      # Get records of the next form to reference
+      nextFormRecords <- getRecords(formIds[[i + 1]]) %>%
+        select(`_id`) %>%
+        collect()
+      nextFormRecordIds <- formData[[i]][[paste("Reference to Form", i + 1)]] <- nextFormRecords$`_id`
+    }
+    importRecords(formId = formIds[[i]], data = formData[[i]])
+  }
+  
+  # First, save the number of columns at each depth without cycles
+  columnCountsNoCycles <- integer(numLayers)
+  for (depth in 1:numLayers) {
+    colNames <- getRecords(formIds[[1]], style = allColumnStyle(maxDepth = depth)) %>%
+      colnames()
+    n <- length(colNames)
+    columnCountsNoCycles[depth] <- n
+  }
+  
+  # Now, add cyclic references
+  # Form 1 references Form 1, creating a cycle
+  formSchemas[[1]] <- addFormField(formSchemas[[1]], referenceFieldSchema(
+    label = "Self reference",
+    referencedFormId = formIds[[1]],
+    key = FALSE
+  ))
+  updateFormSchema(formSchemas[[1]])
+  
+  # Update the data in Form 1 to include the new reference
+  form1Records <- getRecords(formIds[[1]]) %>%
+    select(`_id`) %>%
+    collect()
+  formData[[1]][["Self reference"]] <- form1Records$`_id`
+  formData[[1]][["id"]] <- form1Records$`_id`
+  importRecords(formId = formIds[[1]], data = formData[[1]], recordIdColumn = "id")
+  
+  
+  # Form 3 references Form 1, creating a cycle
+  formSchemas[[3]] <- addFormField(formSchemas[[3]], referenceFieldSchema(
+    label = "Reference to Form 1",
+    referencedFormId = formIds[[1]],
+    key = FALSE
+  ))
+  updateFormSchema(formSchemas[[3]])
+  
+  # Update the data in Form 3 to include the new reference
+  form3Records <- getRecords(formIds[[3]]) %>%
+    select(`_id`) %>%
+    collect()
+  formData[[3]][["Reference to Form 1"]] <- form1Records$`_id`
+  formData[[3]][["id"]] <- form3Records$`_id`
+  importRecords(formId = formIds[[3]], data = formData[[3]], recordIdColumn = "id")
+  
+  # Now, save the number of columns at each depth with cycles
+  columnCountsWithCycles <- integer(numLayers)
+  for (depth in 1:numLayers) {
+    colNames <- getRecords(formIds[[1]], style = allColumnStyle(maxDepth = depth)) %>%
+      colnames()
+    n <- length(colNames)
+    columnCountsWithCycles[depth] <- n
+  }
+  
+  # Compare the number of columns at each depth
+  for (depth in 1:numLayers) {
+    if (depth >= 3) {
+      # Added one new field in Form 3
+      expectedIncrease <- 2
+    } else {
+      # Added one new field in Form 1
+      expectedIncrease <- 1
+    }
+    expectedN <- columnCountsNoCycles[depth] + expectedIncrease
+    actualN <- columnCountsWithCycles[depth]
+    testthat::expect_equal(actualN, expectedN)
+  }
+  
+  # Check that the number of columns does not increase after the last form
+  # Compare the number of columns at each depth
+  for (depth in numLayers+1:numLayers+3) {
+    colNames <- getRecords(formIds[[1]], style = allColumnStyle(maxDepth = depth)) %>%
+      colnames()
+    n <- length(colNames)
+    testthat::expect_equal(n, expectedN)
+  }
 })

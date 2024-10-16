@@ -14,14 +14,14 @@ testthat::test_that("addDatabase() and deleteDatabase() works", {
 })
 
 testthat::test_that("getDatabases() works", {
-  
-  # update snapshot; works for now
-  databases <- getDatabases() %>% 
+  databases <- getDatabases(asDataFrame = FALSE)  
+  expectActivityInfoSnapshotCompare(databases, snapshotName = "databases-getDatabases", allowed_new_fields = TRUE)
+
+  databasesDf <- getDatabases(asDataFrame = TRUE) %>% 
     select("billingAccountId", "databaseId", "description", "label", "ownerId", "suspended")
-  databases <- canonicalizeActivityInfoObject(databases)
-  
-  
-  testthat::expect_snapshot(databases)
+  databasesDf <- canonicalizeActivityInfoObject(databasesDf)
+  testthat::expect_snapshot(databasesDf)
+
 })
 
 testthat::test_that("getDatabaseSchema() and getDatabaseTree() return same value and getDatabaseSchema() provides deprecation warning", {
@@ -61,18 +61,29 @@ testthat::test_that("getDatabaseResources() works", {
   testthat::expect_snapshot(dbResources)
 })
 
-addTestUsers <- function(database, tree, nUsers = 1) {
+addTestUsers <- function(database, tree, nUsers = 1, roleId, roleParameters = list(), roleResources = list(database$databaseId)) {
+  if (missing(roleId)) roleId <- tree$roles[[2]]$id
   lapply(1:nUsers, function(x) {
     newUserEmail <- sprintf("test%s@example.com", cuid())
-    newDatabaseUser <- addDatabaseUser(databaseId = database$databaseId, email = newUserEmail, name = "Test database user", locale = "en", roleId = tree$roles[[2]]$id, roleResources = list(database$databaseId))
-
-    testthat::expect_true(newDatabaseUser$added)
-
-    testthat::expect_identical(newDatabaseUser$user$email, newUserEmail)
-    testthat::expect_identical(newDatabaseUser$user$role$id, tree$roles[[2]]$id)
-    testthat::expect_identical(newDatabaseUser$user$role$resources[[1]], database$databaseId)
-
-    newDatabaseUser
+    newDatabaseUser <- addDatabaseUser(
+      databaseId = database$databaseId, 
+      email = newUserEmail, 
+      name = "Test database user", 
+      locale = "en", 
+      roleId = roleId, 
+      roleParameters = roleParameters, 
+      roleResources = roleResources
+      )
+    
+    if (newDatabaseUser$added) {
+      testthat::expect_identical(newDatabaseUser$user$email, newUserEmail)
+      testthat::expect_identical(newDatabaseUser$user$role$id, roleId)
+      testthat::expect_identical(newDatabaseUser$user$role$resources[[1]], database$databaseId)
+      newDatabaseUser
+    } else {
+      warning("Could not add user.")
+      NULL
+    }
   })
 }
 
@@ -170,32 +181,388 @@ testthat::test_that("addDatabaseUser() and deleteDatabaseUser() and getDatabaseU
   deleteTestUsers(database, returnedUsers)
 })
 
+testthat::test_that("resourcePermissions() and synonym permissions() helper works", {
+  defaultPermissions <- permissions()
+  reviewerPermissions <- resourcePermissions(
+    view = TRUE,
+    add_record = TRUE,
+    reviewer_only = TRUE,
+    discover = TRUE
+  )
+  testthat::expect_snapshot(defaultPermissions)
+  testthat::expect_snapshot(reviewerPermissions)
+})
 
-testthat::test_that("updateUserRole() works", {
-  # databases <- getDatabases()
-  # database <- databases[[1]]
-  # tree <- getDatabaseTree(databaseId = database$databaseId)
-  #
-  # returnedUsers <- addTestUsers(database, tree, nUsers = 1)
-  #
-  # lapply(returnedUsers, function(newDatabaseUser) {
-  #
-  # })
-  #
-  # deleteTestUsers(database, tree, returnedUsers)
+testthat::test_that("parameter() works", {
+  param <- parameter(id = "partner", label = "Reporting partner", range = "ck5dxt1712")
+  testthat::expect_snapshot(param)
+})
+
+testthat::test_that("databasePermissions() works", {
+  defaultDatabasePermissions <- databasePermissions()
+  enhancedDatabasePermissions <- databasePermissions(
+    manage_automations = TRUE, 
+    manage_users = TRUE, 
+    manage_roles = TRUE
+  )
+  testthat::expect_snapshot(defaultDatabasePermissions)
+  testthat::expect_snapshot(enhancedDatabasePermissions)
 })
 
 
+testthat::test_that("grant() works", {
+  optionalGrant <- 
+    grant(resourceId = "ck5dxt1552",
+          permissions = resourcePermissions(
+            view = TRUE,
+            add_record = TRUE,
+            edit_record = TRUE
+          ),
+          optional = TRUE
+    )
+  testthat::expect_snapshot(optionalGrant)
+})
 
+testthat::test_that("roleFilter() works", {
+  testthat::expect_warning({
+    roleLevelFilter <- 
+      roleFilter(
+        id = "partner", 
+        label = "Partner is user's partner", 
+        filter = "ck5dxt1712 == @user.partner"
+      )
+  },"deprecated")
+  testthat::expect_snapshot(roleLevelFilter)
+})
+
+testthat::test_that("role() works", {
+  grantBasedRole <- 
+    role(id = "rp",
+         label = "Reporting Partner",
+         parameters = list(
+           parameter(id = "partner", label = "Partner", range = "ck5dxt1712")),
+         grants = list(
+           grant(resourceId = "cq9xyz1552",
+                 permissions = resourcePermissions(
+                   view = "ck5dxt1712 == @user.partner",
+                   edit_record = "ck5dxt1712 == @user.partner",
+                   discover = TRUE,
+                   export_records = TRUE)),
+           grant(resourceId = "cz55555555",
+                 permissions = resourcePermissions(
+                   view = TRUE,
+                   discover = TRUE,
+                   add_record = TRUE),
+                 optional = TRUE))
+    )
+  testthat::expect_snapshot(grantBasedRole)
+})
+
+createReportingPartnerGrantBasedRole <- function(roleLabel, partnerForm, reportingForm) {
+  role(id = "rp",
+       label = roleLabel,
+       parameters = list(
+         parameter(id = "partner", label = "Partner", range = partnerForm$id)),
+       grants = list(
+         grant(resourceId = partnerForm$databaseId, 
+               permissions = resourcePermissions(
+                 view = TRUE,
+                 edit_record = FALSE
+               )),
+         grant(resourceId = reportingForm$id,
+               permissions = resourcePermissions(
+                 view = sprintf("%s == @user.partner", partnerForm$id),
+                 edit_record = sprintf("%s == @user.partner", partnerForm$id),
+                 discover = TRUE,
+                 export_records = TRUE)),
+         grant(resourceId = partnerForm$id,
+               permissions = resourcePermissions(
+                 view = TRUE,
+                 discover = TRUE,
+                 edit_record = TRUE), 
+               optional = TRUE) 
+         )
+  ) 
+}
+
+createDeprecatedReportingPartnerRole <- function(roleLabel, partnerForm, reportingForm) {
+  testthat::expect_warning({
+    x <- list(
+      id = "rpold",
+      label = "Reporting partner",
+      permissions = permissions(
+        view = sprintf("%s == @user.partner2", partnerForm$id),
+        edit_record = sprintf("%s == @user.partner2", partnerForm$id),
+        add_record = sprintf("%s == @user.partner2", partnerForm$id),
+        delete_record = sprintf("%s == @user.partner2", partnerForm$id),
+        export_records = TRUE
+      ),
+      parameters = list(
+        parameter(
+          id = "partner2",
+          label = "Partner",
+          range = partnerForm$id
+        )
+      ),
+      filters = list(
+        roleFilter(
+          id = "partner2",
+          label = "partner is user's partner2",
+          filter = sprintf("%s == @user.partner2", partnerForm$id)
+        )
+      ),
+      grantBased = FALSE
+    )
+  }, "deprecated")
+  x
+}
+
+testthat::test_that("addRole() and deleteRoles() work", {
+  testthat::test_that("addRole()", {
+    roleId1 <- "newrole1"
+    roleLabel1 <- "Test role 1 for addRole()"
+    roleId2 <- "newrole2"
+    roleLabel2 <- "Test role 2 for addRole()"
+    
+    newRoleToAdd1 <- role(roleId1, roleLabel1, grants = list(grant(resourceId = personFormId)))
+    newRoleToAdd2 <- role(roleId2, roleLabel2, grants = list(grant(resourceId = personFormId)))
+
+    originalTree <- getDatabaseTree(database$databaseId)
+        
+    addRole(database$databaseId, newRoleToAdd1)
+    addRole(database$databaseId, newRoleToAdd2)
+    
+    addedTree <- getDatabaseTree(database$databaseId)
+    
+    role1Present = any(sapply(addedTree$roles, function(x) {x$id==roleId1}))
+    testthat::expect_true(role1Present)
+    role2Present = any(sapply(addedTree$roles, function(x) {x$id==roleId2}))
+    testthat::expect_true(role2Present)
+    
+    testthat::expect_length(addedTree$roles, length(originalTree$roles)+2)
+    
+    testthat::test_that("deleteRoles", {
+      deleteRoles(database$databaseId, roleIds = c(roleId1, roleId2))
+      
+      deletedTree <- getDatabaseTree(database$databaseId)
+      
+      role1Present = any(sapply(deletedTree$roles, function(x) {x$id==roleId1}))
+      testthat::expect_false(role1Present)
+      role2Present = any(sapply(deletedTree$roles, function(x) {x$id==roleId2}))
+      testthat::expect_false(role2Present)
+      
+      testthat::expect_length(deletedTree$roles, length(originalTree$roles))
+    })
+  })
+  
+})
+
+testthat::test_that("deleteRole() works", {
+  
+})
+
+
+testthat::test_that("updateRole() works for both legacy and new roles", {
+  roleId = "rp"
+  roleLabel = "Reporting partner"
+
+  # create a partner reference form
+  partnerForm <- formSchema(
+    databaseId = database$databaseId, 
+    label = "Reporting Partners") |>
+    activityinfo::addFormField(
+      textFieldSchema(
+        code = "name",
+        label = "Partner name", 
+        required = TRUE))
+
+  addForm(partnerForm)
+  
+  # create a reference partner table
+  partnerTbl <- tibble(id = paste0("partner",1:3), name = paste0("Partner ",1:3))
+  
+  # import partner records
+  importRecords(partnerForm$id, data = partnerTbl, recordIdColumn = "id")
+  
+  # create a reporting table with a reporting partner field
+  reportingForm <- formSchema(
+    databaseId = database$databaseId, 
+    label = "Reports") |>
+    addFormField(
+      referenceFieldSchema(
+        referencedFormId = partnerForm$id, 
+        code = "rp", 
+        label = "Partner", 
+        required = TRUE)) |>
+    addFormField(
+      textFieldSchema(
+        label = "Report", 
+        required = TRUE))
+  
+  addForm(reportingForm)
+
+  # create a reports table
+  reportingTbl <- tibble(Partner = rep(paste0("partner",1:3), 2), Report = rep(paste0("This is a report from Partner ",1:3),2))
+
+  # import reports
+  importRecords(reportingForm$id, data = reportingTbl)
+  
+  # create a role
+  newReportingPartnerRole <- createReportingPartnerGrantBasedRole(roleLabel, partnerForm, reportingForm)
+  
+  # update the role
+  updateRole(databaseId = database$databaseId, role = newReportingPartnerRole)
+  
+  # fetch and check that the role matches
+  tree <- getDatabaseTree(databaseId = database$databaseId)
+  
+  roleIdentical <- any(sapply(tree$roles, function(x) {
+    if (x$id == roleId) {
+      testthat::expect_identical(x$label, roleLabel)
+      testthat::expect_length(object = x$parameters, n = 1)
+      testthat::expect_identical(x$parameters[[1]]$parameterId,"partner")
+      testthat::expect_identical(x$parameters[[1]]$range,partnerForm$id)
+      
+      testthat::expect_length(object = x$permissions, n = 0)
+      
+      testthat::expect_length(object = x$grants, n = 3)
+      
+      grant1 <- x$grants[[which(sapply(x$grants, function(g) g$resourceId == reportingForm$id))]]
+      testthat::expect_identical(grant1$resourceId, reportingForm$id)
+      testthat::expect_length(object = grant1$operations, n = 4)
+      testthat::expect_identical(grant1$operations[[1]]$operation, "VIEW")
+      testthat::expect_identical(grant1$operations[[1]]$filter, sprintf("%s == @user.partner", partnerForm$id))
+      testthat::expect_identical(grant1$operations[[2]]$operation, "EDIT_RECORD")
+      testthat::expect_identical(grant1$operations[[2]]$filter, sprintf("%s == @user.partner", partnerForm$id))
+      testthat::expect_identical(grant1$operations[[3]]$operation, "EXPORT_RECORDS")
+      testthat::expect_identical(grant1$operations[[4]]$operation, "DISCOVER")
+      
+      grant2 <- x$grants[[which(sapply(x$grants, function(g) g$resourceId == partnerForm$id))]]
+      testthat::expect_identical(grant2$resourceId, partnerForm$id)
+      testthat::expect_length(object = grant2$operations, n = 3)
+      testthat::expect_identical(grant2$operations[[1]]$operation, "VIEW")
+      
+      testthat::expect_true(x$grantBased)
+      
+      TRUE
+    } else {
+      FALSE
+    }
+  }))
+  testthat::expect_true(roleIdentical)
+  
+  testthat::test_that("Grant-based role defined as a list does not trigger a warning", {
+    newReportingPartnerRoleList <- newReportingPartnerRole
+    class(newReportingPartnerRoleList) <- "list"
+    updateRole(databaseId = database$databaseId, role = newReportingPartnerRoleList)
+  })
+    
+  testthat::test_that("Deprecated roles work and provide deprecation warning", {
+    deprecatedNonGrantRole <- createDeprecatedReportingPartnerRole(label, partnerForm, reportingForm)
+    
+    testthat::expect_warning({
+      updateRole(databaseId = database$databaseId, role = deprecatedNonGrantRole)
+    }, regexp="deprecated")
+  })
+  
+  testthat::test_that("Grant-based role assignment works with updateUserRole()", {
+    
+    tree <- getDatabaseTree(database$databaseId)
+    
+    tree$roles
+    
+    returnedUsers <- addTestUsers(
+      database, 
+      tree, 
+      nUsers = 1, 
+      roleId = "readonly"
+    )
+    
+    user <- returnedUsers[[1]]$user
+    
+    userRoleParam <- list(
+      partner = reference(formId = partnerForm$id, recordId = "partner1")
+    )
+    
+    updateUserRole(
+      database$databaseId, 
+      user$userId, 
+      assignment = 
+        roleAssignment(
+          roleId = "rp", 
+          roleParameters = userRoleParam,
+          roleResources = list(partnerForm$id)
+        )
+    )
+    
+    userWithRole <- getDatabaseUser(database$databaseId, user$userId)
+    
+    userRole = userWithRole$role[[1]]
+    
+    testthat::expect_identical(userRole$id, "rp")
+    testthat::expect_identical(userRole$parameters, userRoleParam)
+    testthat::expect_identical(userRole$resources, partnerForm$id)
+    
+    deleteTestUsers(database, returnedUsers)
+  })
+  
+})
+
+testthat::test_that("getDatabaseRole() works", {
+  dbTree = getDatabaseTree(database$databaseId)
+  dbId = dbTree$databaseId
+  
+  role1 = getDatabaseRole(dbId, roleId = "rp") 
+  role2 = getDatabaseRole(dbTree, roleId = "rp")
+  
+  testthat::expect_identical(role1$id, "rp")
+  testthat::expect_identical(role1, role2)
+})
+
+testthat::test_that("Missing role resources and parameters are reported", {
+  testthat::expect_warning({
+    returnedUsers <- addTestUsers(database, tree, nUsers = 1, roleId = "rp2")
+  }, regexp = "Could not add user")
+  testthat::expect_warning({
+    returnedUsers <- addTestUsers(database, tree, nUsers = 1, roleId = "rp", roleParameters = list(nonexistant = "nonexistant"))
+  })
+  
+  returnedUsers <- addTestUsers(database, tree, roleId = "rp", roleParameters = list(partner = "partner1"))
+  
+  user <- returnedUsers[[1]]$user
+  
+  testthat::expect_error({
+    updateUserRole(
+      databaseId = database$databaseId, 
+      userId = user$userId, 
+      assignment = roleAssignment(roleId = "rp2", roleResources = database$databaseId)
+    )
+  }, regexp = "INVALID_ROLE_PARAMETERS")
+  testthat::expect_error({
+    updateUserRole(
+      databaseId = database$databaseId, 
+      userId = user$userId, 
+      assignment = roleAssignment(roleId = "rp", roleParameters = list(nonexistant = "nonexistant"), roleResources = database$databaseId)
+    )
+  }, regexp = "INVALID_ROLE_PARAMETERS")
+
+  testthat::expect_error({
+    updateUserRole(
+      databaseId = database$databaseId, 
+      userId = user$userId, 
+      assignment = roleAssignment(roleId = "rp", roleResources = list("nonexistant"))
+    )
+  }, regexp = "INVALID_ROLE_PARAMETERS")
+})
 
 testthat::test_that("roleAssignment() works", {
-})
-
-testthat::test_that("permissions() helper works", {
+  testthat::expect_snapshot(roleAssignment(
+    roleId = "rp",
+    roleParameter = list(partner = "test:test"),
+    roleResources = list("resource1", "resource2", "resource3")
+  ))
 })
 
 testthat::test_that("updateGrant() works", {
-})
-
-testthat::test_that("updateRole() works", {
+  #old method - not tested#
 })

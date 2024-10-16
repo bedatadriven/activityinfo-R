@@ -34,6 +34,7 @@ formFieldSchema <- function(type, label, description = NULL, code = NULL, id = c
   stopifnot("`reviewerOnly` must be a logical/boolean of length 1" = is.logical(reviewerOnly)&&length(reviewerOnly)==1)
   stopifnot("The type parameters must be a list if defined" = is.null(typeParameters)||is.list(typeParameters))
   stopifnot("The code must start with a letter, must be made of letters and underscores _ and cannot be longer than 32 characters" = is.null(code)||grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", code))
+  stopifnot("The id must start with a letter, must be made of letters and cannot be longer than 32 characters" = grepl("^[A-Za-z][A-Za-z0-9]{0,31}$", id))
   
   schema <- list()
   

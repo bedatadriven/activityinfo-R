@@ -2,8 +2,8 @@ Package: activityinfo
 Type: Package
 Title: R interface to ActivityInfo.org, an information management software for
     humanitarian and development operations
-Version: 4.36.1
-Date: 2023-07-01
+Version: 4.37
+Date: 2024-10-16
 Authors@R: c(
     person("Alex", "Bertram", email = "alex@bedatadriven.com", 
            role = c("aut", "cre")),

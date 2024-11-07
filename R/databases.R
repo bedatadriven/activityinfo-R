@@ -106,19 +106,23 @@ getDatabaseTree <- function(databaseId) {
 #'
 #' @export
 getDatabaseResources <- function(database) {
-  if(is.character(database)) {
-    databaseTree <- getDatabaseTree(database)  
-  } else if(is.list(database)) {
-    databaseTree <- database
-  } else {
-    stop("The `database` argument must be a database id or a databaseTree")
-  }
+  UseMethod("getDatabaseResources")
+}
+
+#' @export
+getDatabaseResources.character <- function(database) {
+  tree <- getDatabaseTree(database)  
+  getDatabaseResources(tree)
+}
+
+#' @export
+getDatabaseResources.databaseTree <- function(database) {
   dplyr::tibble(
-    id = unlist(lapply(databaseTree$resources, function(x) {x$id})),
-    label = unlist(lapply(databaseTree$resources, function(x) {x$label})),
-    type = unlist(lapply(databaseTree$resources, function(x) {x$type})),
-    parentId = unlist(lapply(databaseTree$resources, function(x) {x$parentId})),
-    visibility = unlist(lapply(databaseTree$resources, function(x) {x$visibility}))
+    id = unlist(lapply(database$resources, function(x) {x$id})),
+    label = unlist(lapply(database$resources, function(x) {x$label})),
+    type = unlist(lapply(database$resources, function(x) {x$type})),
+    parentId = unlist(lapply(database$resources, function(x) {x$parentId})),
+    visibility = unlist(lapply(database$resources, function(x) {x$visibility}))
   )
 }
 
@@ -215,8 +219,7 @@ getDatabaseUsers <- function(databaseId, asDataFrame = TRUE) {
       version = unlist(lapply(users, function(x) {x$version})),
       inviteDate = as.Date(unlist(lapply(users, function(x) {x$inviteDate}))),
       deliveryStatus = unlist(lapply(users, function(x) {x$deliveryStatus})),
-      inviteAccepted = unlist(lapply(users, function(x) {x$inviteAccepted})) # ,
-      # role = lapply(users, function(x) {x$role})
+      inviteAccepted = unlist(lapply(users, function(x) {x$inviteAccepted}))
     )
     
     usersDF$role <- lapply(users, function(x) {x$role})
@@ -318,7 +321,7 @@ checkUserRole <- function(databaseId, newUser, roleId, roleParameters, roleResou
 
 #' addDatabaseUser
 #'
-#' Invites a user to a database.
+#' Invites a user to a database and assigns a role
 #'
 #' @param databaseId the id of the database to which they should be added
 #' @param email the user's email
@@ -326,7 +329,7 @@ checkUserRole <- function(databaseId, newUser, roleId, roleParameters, roleResou
 #' @param locale the locale ("en', "fr", "ar", etc) to use inviting the user (only used if they do not already have an ActivityInfo account)
 #' @param roleId the id of the role to assign to the user.
 #' @param roleParameters a named list containing the role parameter values
-#' @param roleResources a list of folders in which this role should be assigned (or the databaseId if they should have this role in the whole database)
+#' @param roleResources an optional list of optional grant-based resources assigned to the user
 #'
 #' @details
 #'
@@ -347,6 +350,8 @@ checkUserRole <- function(databaseId, newUser, roleId, roleParameters, roleResou
 #' in many database templates has a `partner` parameter that is used to filter which
 #' records are visible to the user. The value of this parameter is the record id of the
 #' user's partner in the related Partner form.
+#' 
+#' Optional grants can be specified by adding the resource id of those grants to a list and passing that to `roleResources`.
 #'
 #' @examples
 #' \dontrun{
@@ -415,6 +420,44 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
   }
 }
 
+
+#' getDatabaseRoles
+#'
+#' Get database roles in a data frame.
+#'
+#' @param database database tree using \link{getDatabaseTree} or the databaseId
+#'
+#' @examples
+#' \dontrun{
+#' dbTree <- getDatabaseTree(databaseId = "ck3pqrp9a1z") # fetch the database tree
+#' roles <- getDatabaseRoles(dbTree) # get the database roles
+#' }
+#' @export
+#'
+getDatabaseRoles <- function(database) {
+  UseMethod("getDatabaseRoles")
+}
+
+#' @export
+getDatabaseRoles.character <- function(database) {
+  tree <- getDatabaseTree(databaseId = database)
+  getDatabaseRoles(tree)
+}
+
+#' @export
+getDatabaseRoles.databaseTree <- function(database) {
+  roles <- dplyr::tibble(
+    id = unlist(lapply(database$roles, function(x) {x$id})),
+    label = unlist(lapply(database$roles, function(x) {x$label})),
+    permissions = lapply(database$roles, function(x) {x$permissions}),
+    parameters = lapply(database$roles, function(x) {x$parameters}),
+    filters = lapply(database$roles, function(x) {x$filters}),
+    grants = lapply(database$roles, function(x) {x$grants}),
+    version = unlist(lapply(database$roles, function(x) {x$version})),
+    grantBased = unlist(lapply(database$roles, function(x) {x$grantBased}))
+  )
+}
+
 #' getDatabaseRole
 #'
 #' Helper method to fetch a role based on its id using the database tree or database id.
@@ -428,7 +471,6 @@ addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, rol
 #' dbTree <- getDatabaseTree(databaseId = "ck3pqrp9a1z") # fetch the database tree
 #' role <- getDatabaseRole(dbTree, roleId = "rp") # extract the reporting partner role
 #' }
-#' 
 #' @export
 #'
 getDatabaseRole <- function(database, roleId) {

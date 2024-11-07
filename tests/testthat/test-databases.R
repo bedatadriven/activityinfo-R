@@ -363,8 +363,8 @@ testthat::test_that("deleteRole() works", {
 
 
 testthat::test_that("updateRole() works for both legacy and new roles", {
-  roleId = "rp"
-  roleLabel = "Reporting partner"
+  roleId <- "rp"
+  roleLabel <- "Reporting partner"
 
   # create a partner reference form
   partnerForm <- formSchema(
@@ -506,6 +506,23 @@ testthat::test_that("updateRole() works for both legacy and new roles", {
     deleteTestUsers(database, returnedUsers)
   })
   
+})
+
+testthat::test_that("getDatabaseRoles() works", {
+  dbTree = getDatabaseTree(database$databaseId)
+  dbId = dbTree$databaseId
+  
+  result1 = getDatabaseRoles(dbId)
+  result2 = getDatabaseRoles(dbTree)
+  
+  testthat::expect_identical(result1, result2)
+  
+  testthat::expect_identical(
+    result1 |> filter(id == "rp") |> nrow(),
+    1L
+  )
+  
+  expectActivityInfoSnapshotCompare(result1, snapshotName = "databases-getDatabaseRoles", allowed_new_fields = TRUE)
 })
 
 testthat::test_that("getDatabaseRole() works", {

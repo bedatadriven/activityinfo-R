@@ -2,7 +2,7 @@ Package: activityinfo
 Type: Package
 Title: R interface to ActivityInfo.org, an information management software for
     humanitarian and development operations
-Version: 4.37
+Version: 4.38
 Date: 2024-10-16
 Authors@R: c(
     person("Alex", "Bertram", email = "alex@bedatadriven.com", 
@@ -47,6 +47,7 @@ Suggests:
     markdown,
     withr,
     assertthat,
+    tidyr,
     purrr,
     tinytex
 VignetteBuilder: knitr

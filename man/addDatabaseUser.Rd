@@ -27,10 +27,10 @@ addDatabaseUser(
 
 \item{roleParameters}{a named list containing the role parameter values}
 
-\item{roleResources}{a list of folders in which this role should be assigned (or the databaseId if they should have this role in the whole database)}
+\item{roleResources}{an optional list of optional grant-based resources assigned to the user}
 }
 \description{
-Invites a user to a database.
+Invites a user to a database and assigns a role
 }
 \details{
 This function adds a new user to a database and assigns them a role.
@@ -50,6 +50,8 @@ Some roles are \emph{parameterized}. For example, the "Reporting Partner" role i
 in many database templates has a \code{partner} parameter that is used to filter which
 records are visible to the user. The value of this parameter is the record id of the
 user's partner in the related Partner form.
+
+Optional grants can be specified by adding the resource id of those grants to a list and passing that to \code{roleResources}.
 }
 \examples{
 \dontrun{

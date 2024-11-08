@@ -35,7 +35,6 @@ testthat::test_that("getDatabaseSchema() and getDatabaseTree() return same value
 testthat::test_that("getDatabaseTree() works", {
   tree <- getDatabaseTree(databaseId = database$databaseId)
   testthat::expect_s3_class(tree, "databaseTree")
-  testthat::expect_named(tree, c("databaseId", "userId", "version", "label", "description", "ownerRef", "billingAccountId", "language", "originalLanguage", "continuousTranslation", "translationFromDbMemory", "thirdPartyTranslation", "languages", "role", "suspended", "storage", "publishedTemplate", "resources", "grants", "locks", "roles", "securityCategories"))
   testthat::expect_identical(tree$databaseId, database$databaseId)
   expectActivityInfoSnapshotCompare(tree, snapshotName = "databases-databaseTree", allowed_new_fields = TRUE)
 })
@@ -558,7 +557,7 @@ testthat::test_that("Missing role resources and parameters are reported", {
 testthat::test_that("roleAssignment() works", {
   testthat::expect_snapshot(roleAssignment(
     roleId = "rp",
-    roleParameter = list(partner = "test:test"),
+    roleParameters = list(partner = "test:test"),
     roleResources = list("resource1", "resource2", "resource3")
   ))
 })

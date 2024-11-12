@@ -25,89 +25,37 @@ knitr::opts_chunk$set(
 )
 ```
 
-
 ```{r setup}
 library(activityinfo)
 ```
 
 ## Introduction
+
 If you are new to grant-based roles, start with "[Working with grant-based roles](working-with-grant-based-roles.html)", which also covers role parameters for row level access and auditing roles across multiple databases.
 
-This tutorial will cover advanced use cases where database administrators may be required to apply bulk operations on a number of users at the same time. This includes:
-- bulk inviting users and assigning roles, optional resources and role parameters
-- deactivate users in a database while retaining their metadata
-- bulk delete multiple users from a database to delete users and their metadata
+This tutorial will cover advanced use cases where database administrators may be required to apply bulk operations on a number of users at the same time.
 
-Users metadata may be required for auditing purposes. If so, then the user should be deactivated. On the other hand, if the user metadata should be removed, the user can be deleted from the database instead.
+This includes adding and updating users:
 
-Note: in order to fully follow this tutorial you must have an ActivityInfo user account or a trial account with the permission to add a new database. Setup a free trial here: https://www.activityinfo.org/signUp
+-   bulk inviting users and assigning roles, optional resources and role parameters
+-   bulk updating role assignments while retaining important user parameters
 
+It also includes removing access to the database in different ways:
 
-## Examples of how to delete multiple users from a database
-For this set of examples we will use the `deleteDatabaseUser function`:
+-   deactivate users to retain their metadata
+-   bulk delete multiple users from a database to delete users and their metadata
 
-EXAMPLE 1: delete multiple users using the users export under the user management in ActivityInfo.
+Users metadata may be required for auditing purposes in which case the user may be deactivated.
 
-```{r eval=FALSE, include=TRUE}
-DatabaseId <- "you add the database ID located under the URL"
+On the other hand, if the user access and their metadata should be removed, the user may be deleted from the database altogether.
 
+Note: in order to fully follow this tutorial you must have an ActivityInfo user account or a trial account with the permission to add a new database. Setup a free trial here: <https://www.activityinfo.org/signUp>
 
-# you export from the user management the users list and you keep the users that you want to delete. You save the file in csv format and you upload the file in R
-users <- read.csv("readuserscsv.csv")
+## Providing access to the database
 
+### Example of how to bulk invite multiple users
 
-# R runs through all the rows of the csv and deletes based on the "UserId" column
-
-for (i in seq_len(nrow(users))) {
-  
-  deleteDatabaseUser(DatabaseId, users[i,"UserId"])
-  
-}
-
-```
-
-EXAMPLE 2: delete users based on user emails that you wish to delete.
-
-```{r eval=FALSE, include=TRUE}
-DatabaseId <- "you add the database ID located under the URL"
-
-emailsToDelete <- c("email.1@gmail.com", 
-                    "email.@gmail.com" 
-)
-
-users <- getDatabaseUsers(DatabaseId)
-
-for(user in users) {
-  
-  if((tolower(user$email) %in% emailsToDelete)) {
-    cat(sprintf("Deleting %s...\n", user$email))
-    deleteDatabaseUser(DatabaseId, user$userId)
-  }
-}
-```
-
-EXAMPLE 3: delete users based on user emails that you wish to keep.
-
-```{r eval=FALSE, include=TRUE}
-DatabaseId <- "you add the database ID under the URL"
-emailsToKeep <- c("email1@gmail.com")
-
-users <- getDatabaseUsers(DatabaseId)
-
-for(user in users) {
-  
-  if(!(tolower(user$email) %in% emailsToKeep)) {
-    cat(sprintf("Deleting %s...\n", user$email))
-    deleteDatabaseUser(DatabaseId, user$userId)
-  }
-}
-
-```
-
-
-## Example of how to create multiple users
-EXAMPLE1: you wish to add multiple new users in your database. 
-Description: in this example we have saved the users' names and emails in a csv file named "Users". We will import this csv file in R 
+EXAMPLE1: you wish to add multiple new users in your database. Description: in this example we have saved the users' names and emails in a csv file named "Users". We will import this csv file in R
 
 ```{r eval=FALSE, include=TRUE}
 DatabaseId <- "you add the database ID under the URL"
@@ -128,4 +76,66 @@ for (i in seq_len(nrow(users))) {
 
 ```
 
+## Removing access to the database
 
+### Examples of how to delete multiple users from a database
+
+For this set of examples we will use the `deleteDatabaseUser function`:
+
+#### EXAMPLE 1: delete multiple users using the users export under the user management in ActivityInfo.
+
+```{r eval=FALSE, include=TRUE}
+DatabaseId <- "you add the database ID located under the URL"
+
+
+# you export from the user management the users list and you keep the users that you want to delete. You save the file in csv format and you upload the file in R
+users <- read.csv("readuserscsv.csv")
+
+
+# R runs through all the rows of the csv and deletes based on the "UserId" column
+
+for (i in seq_len(nrow(users))) {
+  
+  deleteDatabaseUser(DatabaseId, users[i,"UserId"])
+  
+}
+
+```
+
+#### EXAMPLE 2: delete users based on user emails that you wish to delete.
+
+```{r eval=FALSE, include=TRUE}
+DatabaseId <- "you add the database ID located under the URL"
+
+emailsToDelete <- c("email.1@gmail.com", 
+                    "email.@gmail.com" 
+)
+
+users <- getDatabaseUsers(DatabaseId)
+
+for(user in users) {
+  
+  if((tolower(user$email) %in% emailsToDelete)) {
+    cat(sprintf("Deleting %s...\n", user$email))
+    deleteDatabaseUser(DatabaseId, user$userId)
+  }
+}
+```
+
+#### EXAMPLE 3: delete users based on user emails that you wish to keep.
+
+```{r eval=FALSE, include=TRUE}
+DatabaseId <- "you add the database ID under the URL"
+emailsToKeep <- c("email1@gmail.com")
+
+users <- getDatabaseUsers(DatabaseId)
+
+for(user in users) {
+  
+  if(!(tolower(user$email) %in% emailsToKeep)) {
+    cat(sprintf("Deleting %s...\n", user$email))
+    deleteDatabaseUser(DatabaseId, user$userId)
+  }
+}
+
+```

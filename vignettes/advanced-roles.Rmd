@@ -1,0 +1,161 @@
+---
+title: "Advanced roles"
+author: "BeDataDriven B.V."
+date: "`r Sys.Date()`"
+layout: docArticle
+category: tutorials
+order: 0
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+relatedVideos:
+- /support/webinars/2023-10-19-office-hour-designing-roles
+- /support/webinars/2023-10-12-best-practices-for-designing-roles
+vignette: >
+  %\VignetteIndexEntry{Advanced user and role management}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+```{r setup}
+library(activityinfo)
+```
+
+## Introduction
+If you are new to grant-based roles, start with "[Working with grant-based roles](working-with-grant-based-roles.html)", which also covers role parameters for row level access and auditing roles across multiple databases.
+
+This tutorial will provide advanced use cases for how to create and work with grant-based roles and permissions. Included are:
+- row-level access using multiple parameters in a role
+
+Note: in order to fully follow this tutorial you must have an ActivityInfo user account or a trial account with the permission to add a new database. Setup a free trial here: https://www.activityinfo.org/signUp
+
+## Row-level access using multiple parameters in a role
+
+EXAMPLE 1: role creation based on two different parameters. 
+Description: In this example we want the role to be based on field office and the partner. 
+These parameters are located in two different reference table. Both are used under the reference field of the form of interest
+
+```{r eval=FALSE, include=TRUE}
+DatabaseId <- "you add the database ID located under the URL"
+role4 <- list(
+  id = "Reporting_partner",
+  label = "Reporting Partner",
+  permissions = list(),
+  parameters = list(
+    list(parameterId = "field_office_1",
+         label = "Field office 1",
+         range = "referencetableid that includes field office"),
+    list(parameterId = "partner",
+         label = "Partner",
+         range = "referencetableid that includes partner")
+    
+  ),
+  filters = list(
+    list(id = "field_office_partner",
+         label = "field office and partner is user's field office and partner",
+         filter = "referencetableid == @user.field_office_1&&
+                   referencetableid == @user.partner")
+    
+  )
+)
+
+updateRole(databaseId, role4)
+
+## IMPORTANT NOTE: both parameters should be TRUE at the same time, thus the "&&" symbol is used
+
+```
+
+EXAMPLE 2: We wish to create a role so that each user will have access only to the records that he/she has added. 
+Description: The form of interest should include a user field. In our example the user field has the field code named "pwname". 
+This field code is used under the "filters".
+
+
+```{r eval=FALSE, include=TRUE}
+DatabaseId <- "you add the database ID located under the URL"
+role <- list(
+  id = "Counselor",
+  label = "Counselor",
+  permissions = permissions(
+    view=TRUE,
+    add_record=TRUE,
+    edit_record= TRUE
+  ),
+  parameters = list(),
+  filters = list(
+    list(id = "name",
+         label = "owner is user's owner",
+         filter = "@user==pwname")
+  )
+)
+
+updateRole(DatabaseId, role)
+```
+
+EXAMPLE 3: We want to create a role based on one parameter
+Description: In this example, we want a role so that each person from a specific reporting country will have access only to the respective records under the country. 
+
+```{r eval=FALSE, include=TRUE}
+DatabaseId <- "you add the database ID located under the URL"
+
+role <- list(
+  id = "countryreporting",
+  label = "Member Country Reporting",
+  permissions = list(),
+  parameters = list(
+    list(parameterId = "country",
+         label = "Country",
+         range = "referencetableid which includes the country information")
+  ),
+  filters = list(
+    list(id = "country",
+         label = "country is user's country",
+         filter = "referencetableid == @user.country")
+  )
+)
+
+updateRole(databaseId, role)
+```
+
+Example 4: we want to create a role based on one parameter
+Description: In this example we want to create a role so that a user may have access to one, two or three field offices
+
+```{r eval=FALSE, include=TRUE}
+DatabaseId <- "you add the database ID located under the URL"
+
+role1 <- list(
+  id = "administrator",
+  label = "Administrator",
+  permissions = list(),
+  parameters = list(
+    list(parameterId = "field_office_1",
+         label = "Field office 1",
+         range = "referencetableid which includes the field office information"),
+    list(parameterId = "field_office_2",
+         label = "Field office 2",
+         range = "referencetableid which includes the field office information"),
+    list(parameterId = "field_office_3",
+         label = "Field office 3",
+         range = "referencetableid which includes the field office information")
+  ),
+  filters = list(
+    list(id = "field_office",
+         label = "field office is user's field office",
+         filter = "referencetableid== @user.field_office_1||
+                   referencetableid == @user.field_office_2||
+                   referencetableid == @user.field_office_3")
+  )
+)
+
+updateRole(databaseId, role1)
+
+## IMPORTANT NOTE:  the "||" symbols stands for OR in R
+```

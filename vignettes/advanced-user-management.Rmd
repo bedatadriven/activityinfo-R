@@ -1,0 +1,131 @@
+---
+title: "Advanced user management"
+author: "BeDataDriven B.V."
+date: "`r Sys.Date()`"
+layout: docArticle
+category: tutorials
+order: 0
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+relatedVideos:
+- /support/webinars/2023-10-19-office-hour-designing-roles
+- /support/webinars/2023-10-12-best-practices-for-designing-roles
+vignette: >
+  %\VignetteIndexEntry{Advanced user management}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+```{r setup}
+library(activityinfo)
+```
+
+## Introduction
+If you are new to grant-based roles, start with "[Working with grant-based roles](working-with-grant-based-roles.html)", which also covers role parameters for row level access and auditing roles across multiple databases.
+
+This tutorial will cover advanced use cases where database administrators may be required to apply bulk operations on a number of users at the same time. This includes:
+- bulk inviting users and assigning roles, optional resources and role parameters
+- deactivate users in a database while retaining their metadata
+- bulk delete multiple users from a database to delete users and their metadata
+
+Users metadata may be required for auditing purposes. If so, then the user should be deactivated. On the other hand, if the user metadata should be removed, the user can be deleted from the database instead.
+
+Note: in order to fully follow this tutorial you must have an ActivityInfo user account or a trial account with the permission to add a new database. Setup a free trial here: https://www.activityinfo.org/signUp
+
+
+## Examples of how to delete multiple users from a database
+For this set of examples we will use the `deleteDatabaseUser function`:
+
+EXAMPLE 1: delete multiple users using the users export under the user management in ActivityInfo.
+
+```{r eval=FALSE, include=TRUE}
+DatabaseId <- "you add the database ID located under the URL"
+
+
+# you export from the user management the users list and you keep the users that you want to delete. You save the file in csv format and you upload the file in R
+users <- read.csv("readuserscsv.csv")
+
+
+# R runs through all the rows of the csv and deletes based on the "UserId" column
+
+for (i in seq_len(nrow(users))) {
+  
+  deleteDatabaseUser(DatabaseId, users[i,"UserId"])
+  
+}
+
+```
+
+EXAMPLE 2: delete users based on user emails that you wish to delete.
+
+```{r eval=FALSE, include=TRUE}
+DatabaseId <- "you add the database ID located under the URL"
+
+emailsToDelete <- c("email.1@gmail.com", 
+                    "email.@gmail.com" 
+)
+
+users <- getDatabaseUsers(DatabaseId)
+
+for(user in users) {
+  
+  if((tolower(user$email) %in% emailsToDelete)) {
+    cat(sprintf("Deleting %s...\n", user$email))
+    deleteDatabaseUser(DatabaseId, user$userId)
+  }
+}
+```
+
+EXAMPLE 3: delete users based on user emails that you wish to keep.
+
+```{r eval=FALSE, include=TRUE}
+DatabaseId <- "you add the database ID under the URL"
+emailsToKeep <- c("email1@gmail.com")
+
+users <- getDatabaseUsers(DatabaseId)
+
+for(user in users) {
+  
+  if(!(tolower(user$email) %in% emailsToKeep)) {
+    cat(sprintf("Deleting %s...\n", user$email))
+    deleteDatabaseUser(DatabaseId, user$userId)
+  }
+}
+
+```
+
+
+## Example of how to create multiple users
+EXAMPLE1: you wish to add multiple new users in your database. 
+Description: in this example we have saved the users' names and emails in a csv file named "Users". We will import this csv file in R 
+
+```{r eval=FALSE, include=TRUE}
+DatabaseId <- "you add the database ID under the URL"
+users <- read.csv("Users.csv")
+
+# R runs through all the rows of the csv and creates users based on "email" and "name" columns
+
+for (i in seq_len(nrow(users))) {
+  
+  addDatabaseUser(DatabaseId,
+                  users[i,"email"],
+                  users[i, "name"],
+                  roleId="Reporting_officer",
+                  roleParameters = list(),
+                  roleResources = list(DatabaseId))
+  
+}
+
+```
+
+

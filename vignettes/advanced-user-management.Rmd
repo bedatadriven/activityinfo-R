@@ -37,44 +37,208 @@ This tutorial will cover advanced use cases where database administrators may be
 
 This includes adding and updating users:
 
--   bulk inviting users and assigning roles, optional resources and role parameters
+-   bulk inviting users and assigning roles, using optional resources and role parameters
 -   bulk updating role assignments while retaining important user parameters
 
 It also includes removing access to the database in different ways:
 
--   deactivate users to retain their metadata
--   bulk delete multiple users from a database to delete users and their metadata
-
-Users metadata may be required for auditing purposes in which case the user may be deactivated.
-
-On the other hand, if the user access and their metadata should be removed, the user may be deleted from the database altogether.
+-   deactivate users to retain their metadata for auditing purposes
+-   bulk delete multiple users from a database to delete users and remove their metadata
 
 Note: in order to fully follow this tutorial you must have an ActivityInfo user account or a trial account with the permission to add a new database. Setup a free trial here: <https://www.activityinfo.org/signUp>
 
 ## Providing access to the database
 
-### Example of how to bulk invite multiple users
+### Bulk inviting multiple users and assigning roles
 
-EXAMPLE1: you wish to add multiple new users in your database. Description: in this example we have saved the users' names and emails in a csv file named "Users". We will import this csv file in R
+#### EXAMPLE 1: Add multiple new users in your database.
+
+In this example we have saved the users' names and emails in a csv file named `Users.csv` with columns `name` and `email`. We will import this csv file in R and then loop through each row to add the database user.
 
 ```{r eval=FALSE, include=TRUE}
-DatabaseId <- "you add the database ID under the URL"
+databaseId <- "you add the database ID under the URL"
 users <- read.csv("Users.csv")
+roleId = "reporting_officer"
 
 # R runs through all the rows of the csv and creates users based on "email" and "name" columns
 
 for (i in seq_len(nrow(users))) {
-  
-  addDatabaseUser(DatabaseId,
+    tryCatch(
+      expr = {
+        addDatabaseUser(databaseId,
                   users[i,"email"],
-                  users[i, "name"],
-                  roleId="Reporting_officer",
-                  roleParameters = list(),
-                  roleResources = list(DatabaseId))
-  
-}
+                  users[i,"name"],
+                  roleId=roleId)
+      },
+      error = function(e) {
+        warning(sprintf("Failed to add user %s with error: %s.", users[i,"email"], e))
+      }
+    )
+}  
 
 ```
+
+#### EXAMPLE 2: Add multiple users and assign optional grants and parameters
+
+In this example, we’ll add users to the system while assigning optional grants for specific resources and defining row-level access controls using parameters. This builds upon the example from "[Record-level access using parameters](working-with-grant-based-roles.html#record-level-access-control-using-parameters)" to allow precise user permissions.
+
+To structure our CSV file, we’ll use column names that clearly distinguish between parameters and grants:
+
+Parameter columns will start with the prefix "p:", followed by the parameter name. Grant columns will start with the prefix "g:", followed by the form label.
+
+This approach allows us to quickly identify columns related to either parameters or optional grants in the CSV file, which will include the following columns:
+
+-   `name`: the user's name
+-   `email`: the user’s email address
+-   `role`: the user’s role ID
+-   `Partner name`: the reporting partner name, which we’ll use to look up the corresponding ID
+-   `p:Partner`: the user’s reporting partner ID, which will be filled in by our script based on the `Partner name`
+-   `g:Reporting Partners`: the user’s access level to the Reporting Partners form, where 1 grants write access and 0 grants read-only access
+
+This example builds on "[Assigning users a reporting partner role](working-with-grant-based-roles.html#assigning-users-a-reporting-partner-role)" by enabling optional editing rights to the `Reporting Partner` form using an optional grant.
+
+The first step in our process is to retrieve the partner id of each user based on partner names provided in the CSV file.
+
+The following script performs this lookup and ensures all specified partner names have corresponding entries in the `Reporting Partners` form, raising an error if any names do not match.
+
+```{r eval=FALSE, include=TRUE}
+databaseId <- "you add the database ID under the URL"
+reportingPartnerFormId = "the form id of the reporting partner"
+
+usersWithGrantsParameters <- read.csv("UsersWithGrantsParameters.csv")
+
+partners <- getRecords(reportingPartnerFormId) %>% collect()
+
+# Ensure partner names provided exist in our partner table
+unmatched <- usersWithGrantsParameters[["Partner name"]][ !usersWithGrantsParameters[["Partner name"]] %in% partners[["Partner name"]] ]
+if (length(unmatched) > 0) {
+  stop("Error: The following values in `Partner name` do not have a corresponding _id in the Reporting Partners form: ", paste(unmatched, collapse = ", "))
+}
+
+# Map partner names to partner ids
+partnerIdMap <- setNames(
+  partners[["_id"]],
+  partners[["Partner name"]]
+)
+
+# Add missing ids to the `p:Partners` column
+usersWithGrantsParameters <- usersWithGrantsParameters |>
+  mutate(
+    `p:Partners` = coalesce(`p:Partners`, partnerIdMap[`Partner name`])
+    )
+
+```
+
+Now we have the partner id for each user.
+
+The second step is to retrieve all the role grants and parameters corresponding to each column in the CSV file. We will use this information to add the user roles.
+
+```{r eval=FALSE, include=TRUE}
+# get database role definitions and resource labels
+dbTree <- getDatabaseTree(databaseId)
+dbResources <- getDatabaseResources(databaseId)
+roles <- getDatabaseRoles(dbTree)
+
+# treat grant and parameter columns differently
+columnNames <- names(usersWithGrantsParameters)
+grantColumns <- columnNames[grep("^g:", columnNames)]
+parameterColumns <- columnNames[grep("^p:", columnNames)]
+
+# identify optional grants for the `g:` prepended columns
+optionalGrants <-
+  roles |>
+  select(roleId = id, roleLabel = label, grants) |> 
+  tidyr::unnest_longer(grants) |> 
+  tidyr::unnest_wider(grants) |> 
+  filter(optional == TRUE) |> 
+  left_join(dbResources, by = c(resourceId = "id")) |> 
+  filter(!is.na(label))
+
+grantColumnDfs <- lapply(substring(grantColumns, 3), function(x) {
+  df = optionalGrants |> filter(label == x)
+  if (nrow(df) != 1) {
+    stop(sprintf("Error: %s matches. There is no unique corresponding grant for column '%s' in the CSV file.", nrow(df), x))
+  }
+})
+names(grantColumnDfs) <- grantColumns
+
+# identify role parameters for each `p:` prepended columns
+roleParameters <- 
+  roles |> 
+  select(roleId = id, roleLabel = label, parameters)  |> 
+  tidyr::unnest_longer(parameters) |> 
+  tidyr::unnest_wider(parameters)
+
+# make a list of roles that contain a corresponding parameter label
+parameterColumnDfs <- lapply(substring(parameterColumns, 3), function(x) {
+  df = roleParameters |> filter(label = x )
+  if (nrow(df) == 0) {
+    stop(sprintf("Error: No corresponding parameter for column '%s' in the CSV file.", x))
+  }
+  df
+})
+names(parameterColumnDfs) <- parameterColumns
+
+
+```
+
+Finally, we can loop through each new user record and apply the role, optional grants, and parameters.
+
+```{r eval=FALSE, include=TRUE}
+
+for (i in seq_len(nrow(usersWithGrantsParameters))) {
+    tryCatch(
+      expr = {
+        email = usersWithGrantsParameters[i,"email"]
+        role = usersWithGrantsParameters[i,"role"]
+        name = usersWithGrantsParameters[i,"name"]
+        
+        roleParameters = list()
+        for (paramCol in parameterColumns) {
+          # get the parameters corresponding to the role
+          df <- parameterColumnDfs[paramCol] %>% filter(roleId == role)
+          if (nrow(df)==1) {
+            # Add the parameter to the list of parameters for this role
+            roleParameters <- 
+              c(
+                roleParameters, 
+                list(
+                  df[1,"parameterId"] = usersWithGrantsParameters[i,paramCol]
+                )
+              )
+          }
+        }
+        
+        roleResources = list()
+        for (grantCol in grantColumns) {
+          # get the resources corresponding to the grant
+          df <- grantColumnDfs[grantCol] %>% filter(roleId == role)
+          # Add the optional resources if the grant column equals 1
+          if (nrow(df)==1&&usersWithGrantsParameters[i,grantCol]==1) {
+            roleResources <- c(roleResources, df[1,"resourceId"])
+          }
+        }
+
+        addDatabaseUser(databaseId,
+                  email,
+                  name,
+                  roleId=role, 
+                  roleParameters=roleParameters,
+                  roleResources=roleResources)
+      },
+      error = function(e) {
+        warning(sprintf("Failed to add user %s with error: %s.", users[i,"email"], e))
+      }
+    )
+}
+
+bulkAddUsers(usersDf = users, roleId = "reporting_officer")
+
+```
+
+We will use the parameters may be defined through a "Name" column in a reference table and we will allow users to add the record "Name" instead of the record id in the reference table.
+
+First we will list the optional grants and get the grant resource label.
 
 ## Removing access to the database
 
@@ -85,7 +249,7 @@ For this set of examples we will use the `deleteDatabaseUser function`:
 #### EXAMPLE 1: delete multiple users using the users export under the user management in ActivityInfo.
 
 ```{r eval=FALSE, include=TRUE}
-DatabaseId <- "you add the database ID located under the URL"
+databaseId <- "you add the database ID located under the URL"
 
 
 # you export from the user management the users list and you keep the users that you want to delete. You save the file in csv format and you upload the file in R
@@ -96,7 +260,7 @@ users <- read.csv("readuserscsv.csv")
 
 for (i in seq_len(nrow(users))) {
   
-  deleteDatabaseUser(DatabaseId, users[i,"UserId"])
+  deleteDatabaseUser(databaseId, users[i,"UserId"])
   
 }
 
@@ -105,19 +269,19 @@ for (i in seq_len(nrow(users))) {
 #### EXAMPLE 2: delete users based on user emails that you wish to delete.
 
 ```{r eval=FALSE, include=TRUE}
-DatabaseId <- "you add the database ID located under the URL"
+databaseId <- "you add the database ID located under the URL"
 
 emailsToDelete <- c("email.1@gmail.com", 
                     "email.@gmail.com" 
 )
 
-users <- getDatabaseUsers(DatabaseId)
+users <- getDatabaseUsers(databaseId)
 
 for(user in users) {
   
   if((tolower(user$email) %in% emailsToDelete)) {
     cat(sprintf("Deleting %s...\n", user$email))
-    deleteDatabaseUser(DatabaseId, user$userId)
+    deleteDatabaseUser(databaseId, user$userId)
   }
 }
 ```
@@ -125,16 +289,16 @@ for(user in users) {
 #### EXAMPLE 3: delete users based on user emails that you wish to keep.
 
 ```{r eval=FALSE, include=TRUE}
-DatabaseId <- "you add the database ID under the URL"
+databaseId <- "you add the database ID under the URL"
 emailsToKeep <- c("email1@gmail.com")
 
-users <- getDatabaseUsers(DatabaseId)
+users <- getDatabaseUsers(databaseId)
 
 for(user in users) {
   
   if(!(tolower(user$email) %in% emailsToKeep)) {
     cat(sprintf("Deleting %s...\n", user$email))
-    deleteDatabaseUser(DatabaseId, user$userId)
+    deleteDatabaseUser(databaseId, user$userId)
   }
 }
 

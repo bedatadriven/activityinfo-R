@@ -232,17 +232,17 @@ There are a number of helper functions that make the creation of user roles stra
 
 There are few important principles:
 
--   The role object is created and then added to the database
+-   The role object is first created and then added to the database
 
 -   There are separate functions for adding a new role `addRole()` and for updating an existing role `updateRole()`
 
--   When granting access to a resource, a resource id must be provided. Resource ids are not validated during role creation.
+-   When granting access to a resource, a resource id must be provided. Note that resource ids are not validated during role creation.
 
 ### Resource-level access
 
-A simple role that gives resource-level access can be quickly created using a few helper functions.
+A simple role that gives resource-level access can be quickly created.
 
-This first example role grants access to a single data entry form. It does so by defining a grant and the operations available to edit and view a form. The operations are defined in the `resourcePermissions()` function. In R use `??resourcePermissions` to see the function definition.
+This example grants access to a single data entry form. It does so by defining a grant to the form and the operations available to edit and view the form. The operations are defined with the `resourcePermissions()` function. In R use `??resourcePermissions` to see the function definition.
 
 ```{r eval=FALSE, include=TRUE}
 
@@ -322,6 +322,8 @@ addRole(dbTree$databaseId, adminRoleNoAutomation)
 
 ```
 
+#### Update role with optional access to another form
+
 We can modify our role so that we can optionally give access to another form. To modify a role, we need to change the definition and then use the `updateRole()` function to change the role in our database.
 
 ```{r eval=FALSE, include=TRUE}
@@ -368,7 +370,7 @@ See the documentation for `role()`, `grant()`, `resourcePermissions()` for the f
 
 Sometimes, it is necessary to be able to specify exactly which operations are available on a row by row basis. For example, a reporting partner may be able to use a form to submit reports and they may also have the ability to view and edit their own reports. However, they should not be able to view or edit reports of other partners.
 
-Initially, advanced role creation with record-level permission filters are easiest to create with the ActivityInfo user-interface. See "[Add your first parameter to a role](https://www.activityinfo.org/support/docs/permissions/add-your-first-parameter-to-a-role.html)".
+Role creation in a single database with record-level permission filters is easiest within the ActivityInfo user-interface. See "[Add your first parameter to a role](https://www.activityinfo.org/support/docs/permissions/add-your-first-parameter-to-a-role.html)".
 
 #### Create partner form and reporting forms
 
@@ -413,7 +415,7 @@ We can examine the form records with `getRecords(partnerForm)`:
 3 c6lra77m37c3f5icoi      1730985535 Partner C
 ```
 
-Next we create our reporting form. In addition, we will need to get the partner ids that were generated in the partner form when we added those records.
+Next we create our reporting form. We will add a Partner field which references the partner form and fill it with the partner ids. Next we have to get the partner ids that were generated in the partner form so we can fill the reference field.
 
 ```{r eval=FALSE, include=TRUE}
 # create a reporting table with a reporting partner field
@@ -469,7 +471,7 @@ We can examine the form table using `getRecords(reportingForm)`:
 
 #### Defining a reporting partner role
 
-Using ActivityInfo formulas, we can specify row-level access rules. We assign each user a `partner` parameter in the role definition in order to do this. This parameter will be available in formulas using `@user.partner`
+Using ActivityInfo formulas, we can specify row-level access rules. We assign each user a `partner` parameter in the role definition in order to do this. This parameter will be available in formulas using `@user.partner`.
 
 ```{r eval=FALSE, include=TRUE}
 
@@ -477,9 +479,11 @@ partnerParameter <- parameter(id = "partner", label = "Partner", range = partner
 
 ```
 
-We can then add this parameter to a "Reporting Partner" role that has access to view the partner form so that they can choose their own organization when creating a report.
+The "Reporting Partner" role will also have access to view the partner reference form so that they can choose their own organization when creating a report.
 
-Additionally, they have row-level access to the reporting form for submitting and editing only their own reports. Optionally, they can be provided full access to the partner form and manage the full list of partners.
+They will have restricted row-level access to the reporting form for submitting and editing only their own reports. We'll use a formula to restrict access to the rows where the reporting partner is correct (`rp == @user.partner`).
+
+We will also define an optional partner form grant, so the administrator can decide if they should have full access to the partner form and manage the full list of partners.
 
 ```{r eval=FALSE, include=TRUE}
 roleId <- "rp"
@@ -532,7 +536,7 @@ addRole(dbTree$databaseId, reportingPartnerRole)
 
 #### Assigning users a reporting partner role
 
-We will assign a new users to the database and give them the reporting partner roles:
+We can assign new users to the database and give them reporting partner roles:
 
 -   **User A**: Assign to Reporting Partner A so they can view and edit Partner A reports only
 
@@ -570,6 +574,8 @@ userB <- addDatabaseUser(
 
 ## Add users and assign roles
 
+Adding users and assigning a role can be quickly achieved using `addDatabaseUser()`.
+
 ```{r eval=FALSE, include=TRUE}
 
 addDatabaseUser(
@@ -593,6 +599,8 @@ dbUsers <- getDatabaseUsers(databaseId = newDb$databaseId)
 dbUsers
 
 ```
+
+For a fuller example using optional grants and parameters for row-level access, see the previous section on creating roles. There are also advanced tutorials for bulk adding users with grants and parameters.
 
 ## List roles across all databases
 
@@ -635,6 +643,8 @@ allRoles <- purrr::pmap_dfr(databases, function(databaseId, label, ...) {
 ```
 
 ## List all users and their roles across all databases
+
+To list all users and all roles across all databases to which you have access, we first need to make a function that uses `getDatabaseUsers()` to collect the list of users. It is setup to fail gracefully if one does not have permission to get the database users for any of the databases.
 
 ```{r eval=FALSE, include=TRUE}
 

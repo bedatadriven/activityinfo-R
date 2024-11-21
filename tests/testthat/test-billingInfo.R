@@ -14,9 +14,9 @@ testthat::test_that("getDatabaseBillingAccount with valid input returns correct 
   
   testthat::expect_true(nrow(returnedDatabaseBillingAccount)==1)
   
-  logical_columns <- c("trial", "staleCounts", "automaticCollection")
-  numeric_columns <- c("expirationTime", "userLimit", "userCount", "fullUserCount", "basicUserCount", "databaseCount", "expectedPaymentTime")
-  character_columns <- c("id", "name", "status", "planName")
+  logical_columns <- c("trial", "staleCounts", "automaticCollection", "capped")
+  numeric_columns <- c("expirationTime", "userLimit", "userCount", "fullUserCount", "fullUserLimit", "basicUserCount", "databaseCount", "expectedPaymentTime")
+  character_columns <- c("id", "name", "status", "planName", "code")
   
   invisible(sapply(logical_columns, function(x) {
     testthat::expect_identical(typeof(returnedDatabaseBillingAccount[[x]]), "logical")

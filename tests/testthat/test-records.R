@@ -46,6 +46,11 @@ testthat::test_that("getRecordHistory() works", {
   
   list_columns = c("user", "values")
   character_columns = c("formId", "recordId", "time", "subFieldId", "subFieldLabel", "subRecordKey", "changeType")
+  numeric_columns = c("version")
+  
+  invisible(sapply(numeric_columns, function(x) {
+    testthat::expect_true(is.numeric(recordHistory[[x]]))
+  }))
   
   invisible(sapply(list_columns, function(x) {
     testthat::expect_identical(class(recordHistory[[x]]), "list")
@@ -55,12 +60,14 @@ testthat::test_that("getRecordHistory() works", {
     testthat::expect_identical(typeof(recordHistory[[x]]), "character")
   }))
   
+  all_columns = c(list_columns, character_columns, numeric_columns)
+  
   recordHistory2 <- getRecordHistory(formId = firstFormId, recordId = firstRecordId, asDataFrame = FALSE)
   recordHistoryNames <- names(recordHistory2$entries[[1]])
   
-  testthat::expect_true(all(c(list_columns, character_columns) %in% recordHistoryNames))
+  testthat::expect_true(all(all_columns %in% recordHistoryNames))
   
-  additionalColumns <- recordHistoryNames[!(recordHistoryNames %in% c(list_columns, character_columns))]
+  additionalColumns <- recordHistoryNames[!(recordHistoryNames %in% all_columns)]
   if (length(additionalColumns)>0) {
     message(sprintf("There are additional names in getRecordHistory() to be added as columns: '%s'", paste(additionalColumns, collapse = "', '")))
   }
@@ -116,7 +123,7 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
   districtRecordIds <- districts %>% select(id = `_id`) %>% collect() %>% pull(id)
   
   # Create a case table that references districts
-  caseData <- tibble("Case number"  = as.character(1:20), "A single select column" = rep(factor(paste0(1:5, "_stuff")), 4))
+  caseData <- tibble("Case number"  = sprintf("%02d", 1:20), "A single select column" = rep(factor(paste0(1:5, "_stuff")), 4))
   caseSchema <- createFormSchemaFromData(caseData, database$databaseId, label = "Cases for testing pretty field names", keyColumns = c("Case number"), requiredColumns = c("Case number", "A single select column"))
   caseSchema <- caseSchema %>% 
     addFormField(
@@ -133,7 +140,7 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
   
   cases <- getRecords(caseFormId, style = prettyColumnStyle(allReferenceFields = TRUE, maxDepth = 10))
   
-  caseDf <- getRecords(caseFormId, style = minimalColumnStyle(maxDepth = 10)) %>% slice_head(n = 10) %>% collect() %>% as.data.frame()
+  caseDf <- getRecords(caseFormId, style = minimalColumnStyle(maxDepth = 10)) %>% arrange(`Case number`) %>% slice_head(n = 10) %>% collect() %>% as.data.frame()
   
   testthat::test_that("No errors are thrown when filtering on a variable name that is also found up the tree", {
     testthat::expect_no_error({
@@ -157,13 +164,36 @@ testthat::test_that("getRecords() pretty field names are correct with deep refer
     })
   })
   
+  testthat::test_that('Case data has not changed after upload and collection', {
+    for (i in c("Case number", "A single select column")) {
+      testthat::expect_identical(
+        caseDf[[i]],
+        as.character(caseData[1:10,][[i]])
+      )
+    }
+    
+    caseData <- caseData %>% left_join(
+      districts %>% collect(),
+      by = c("District (from Field)"="_id")
+    )
+    
+    testthat::expect_identical(
+      caseDf[1:10,][["Country (from Form) Name"]],
+      caseData[1:10,][["Country (from Field) Name"]]
+    )
+    
+    testthat::expect_identical(
+      caseDf[1:10,][["District (from form) Name"]],
+      caseData[1:10,][["Name"]]
+    )
+    
+  })
   
-  testthat::expect_snapshot(caseDf)
 })
 
 testthat::test_that("getRecords() works", {
   testData <- tibble(
-    `Identifier number` = as.character(1:500), 
+    `Identifier number` = sprintf("%03d", 1:500), 
     "A single select column" = rep(factor(paste0(1:5, "_stuff")), 100), 
     "A logical column" = ((1:500)%%7==(1:500)%%3), 
     "A date column" = rep(seq(as.Date("2021-07-06"),as.Date("2021-07-25"),by = 1),25))
@@ -184,8 +214,8 @@ testthat::test_that("getRecords() works", {
     subformId = childSubformId))
 
   childData <- tibble(
-    `Child identifier number` = as.character((1:250)),
-    `parent` = as.character(2*(1:250)), 
+    `Child identifier number` = sprintf("%03d", 1:250),
+    `parent` = sprintf("%03d", 2*(1:250)), 
     "Sub-form Content" = rep(factor(paste0(1:5, "_child_stuff")), 50))
   childSchema <- createFormSchemaFromData(
     childData, 
@@ -218,14 +248,27 @@ testthat::test_that("getRecords() works", {
   
   testthat::test_that('Can retrieve child form with all reference records using getRecords().', {
     childRecords <- getRecords(childSchema$id, style = prettyColumnStyle(allReferenceFields = TRUE))
+    nChildRecords <- childRecords %>% collect() %>% nrow()
+    testthat::expect_identical(nChildRecords, 250L)
   })
 
   rcrds <- getRecords(uploadedForm$id, style = prettyColumnStyle())
   rcrdsMin <- getRecords(uploadedForm$id, style = minimalColumnStyle())
-  rcrdsMinDf <- rcrdsMin %>% collect %>% as.data.frame()
+  rcrdsMinDf <- rcrdsMin %>% arrange(`Identifier number`) %>% collect() %>% as.data.frame()
   
-  testthat::expect_snapshot(rcrdsMinDf)
+  testthat::test_that('getRecords returns the number of child records',{
+    testthat::expect_equal(rcrdsMinDf %>% pull(Children) %>% sum(), 250L)
+  })
   
+  testthat::test_that('Form data has not changed after upload and collection', {
+    for (i in names(testData)) {
+      testthat::expect_identical(
+        toupper(rcrdsMinDf[[i]]),
+        toupper(as.character(testData[[i]]))
+      )
+    }
+  })
+
   dfA <- rcrds %>% 
     addFilter('[A logical column] == "True"') %>% 
     addSort(list(list(dir = "ASC", field = "_id"))) %>%
@@ -370,7 +413,7 @@ testthat::test_that("getRecords() works", {
     personMinimalRefDf <- as.data.frame(personMinimalRef)
     
     testthat::expect_true("Ref 1 Identifier number" %in% colnames(personMinimalRef))
-    testthat::expect_snapshot(personMinimalRefDf)
+    testthat::expect_true("107" %in% personMinimalRefDf[["Ref 1 Identifier number"]])
   })
   
   getFormSchema(personFormId) %>%
@@ -395,7 +438,11 @@ testthat::test_that("getRecords() works", {
     
     filteredRowDf <- as.data.frame(filteredRow)
     
-    testthat::expect_snapshot(filteredRowDf)
+    testthat::expect_true(
+      all(
+        paste0(c("Ref 1", "Ref 2", "Ref 3"), " Identifier number") %in% 
+          names(filteredRowDf))
+    )
     
     testthat::expect_equal(
       object = filteredRow  %>% 

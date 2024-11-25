@@ -27,6 +27,7 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(activityinfo)
+library(readr)
 ```
 
 ## Introduction
@@ -56,9 +57,9 @@ Note: in order to fully follow this tutorial you must have an ActivityInfo user 
 In this example we have saved the users' names and emails in a csv file named `Users.csv` with columns `name` and `email`. We will import this csv file in R and then loop through each row to add the database user.
 
 ```{r eval=FALSE, include=TRUE}
-databaseId <- "you add the database ID under the URL"
-users <- read.csv("Users.csv")
-roleId = "reporting_officer"
+databaseId <- "<the database id>"
+users <- readr::read_csv("Users.csv")
+roleId = "readonly"
 
 # R runs through all the rows of the csv and creates users based on "email" and "name" columns
 
@@ -74,7 +75,7 @@ for (i in seq_len(nrow(users))) {
         warning(sprintf("Failed to add user %s with error: %s.", users[i,"email"], e))
       }
     )
-}  
+}
 
 ```
 
@@ -91,28 +92,28 @@ This approach allows us to quickly identify columns related to either parameters
 -   `name`: the user's name
 -   `email`: the user’s email address
 -   `role`: the user’s role ID
--   `Partner name`: the reporting partner name, which we’ll use to look up the corresponding ID
--   `p:Partner`: the user’s reporting partner ID, which will be filled in by our script based on the `Partner name`
--   `g:Reporting Partners`: the user’s access level to the Reporting Partners form, where 1 grants write access and 0 grants read-only access
+-   `Partner name`: the user's organization name, which we’ll use to look up the corresponding ID in the reporting partner table
+-   `g:Reporting Partners`: An optional grant to the Reporting Partners form. 1 grants write access and 0 grants read-only access
+-   `p:Partner` (optional): the user’s reporting partner ID. It will be filled in by our script based on the `Partner name.`
 
 This example builds on "[Assigning users a reporting partner role](working-with-grant-based-roles.html#assigning-users-a-reporting-partner-role)" by enabling optional editing rights to the `Reporting Partner` form using an optional grant.
 
-The first step in our process is to retrieve the partner id of each user based on partner names provided in the CSV file.
-
-The following script performs this lookup and ensures all specified partner names have corresponding entries in the `Reporting Partners` form, raising an error if any names do not match.
+The first step in our process is to retrieve the partner id of each user based on partner names in the column `Partner name`. The following script performs this look up and raises an error if any names do not match.
 
 ```{r eval=FALSE, include=TRUE}
 databaseId <- "you add the database ID under the URL"
-reportingPartnerFormId = "the form id of the reporting partner"
+reportingPartnerReferenceFormId = "the id of the reporting partner form"
 
-usersWithGrantsParameters <- read.csv("UsersWithGrantsParameters.csv")
+users <- readr::read_csv("Users.csv")
 
-partners <- getRecords(reportingPartnerFormId) %>% collect()
+# Get the names and ids of partners for the look up
+partners <- getRecords(reportingPartnerReferenceFormId) %>% collect()
 
-# Ensure partner names provided exist in our partner table
-unmatched <- usersWithGrantsParameters[["Partner name"]][ !usersWithGrantsParameters[["Partner name"]] %in% partners[["Partner name"]] ]
-if (length(unmatched) > 0) {
-  stop("Error: The following values in `Partner name` do not have a corresponding _id in the Reporting Partners form: ", paste(unmatched, collapse = ", "))
+# Identify and report any reporting partner names that do not match our partner form data
+wrongPartnerNames <- users[["Partner name"]][ !users[["Partner name"]] %in% partners[["Partner name"]] ]
+
+if (length(wrongPartnerNames) > 0) {
+  stop("Error: The following values in `Partner name` do not have a corresponding _id in the Reporting Partners form: ", paste(unmatched, collapse = ", "), ". Please fix the names and start over.")
 }
 
 # Map partner names to partner ids
@@ -122,9 +123,9 @@ partnerIdMap <- setNames(
 )
 
 # Add missing ids to the `p:Partners` column
-usersWithGrantsParameters <- usersWithGrantsParameters |>
+users <- users |>
   mutate(
-    `p:Partners` = coalesce(`p:Partners`, partnerIdMap[`Partner name`])
+    `p:Partner` = coalesce(`p:Partner`, partnerIdMap[`Partner name`])
     )
 
 ```
@@ -134,13 +135,14 @@ Now we have the partner id for each user.
 The second step is to retrieve all the role grants and parameters corresponding to each column in the CSV file. We will use this information to add the user roles.
 
 ```{r eval=FALSE, include=TRUE}
-# get database role definitions and resource labels
+# get database role definitions and resources
 dbTree <- getDatabaseTree(databaseId)
 dbResources <- getDatabaseResources(databaseId)
 roles <- getDatabaseRoles(dbTree)
 
-# treat grant and parameter columns differently
 columnNames <- names(usersWithGrantsParameters)
+
+# treat grant and parameter columns differently
 grantColumns <- columnNames[grep("^g:", columnNames)]
 parameterColumns <- columnNames[grep("^p:", columnNames)]
 

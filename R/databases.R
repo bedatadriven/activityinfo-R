@@ -446,7 +446,7 @@ getDatabaseRoles.character <- function(database) {
 
 #' @export
 getDatabaseRoles.databaseTree <- function(database) {
-  roles <- dplyr::tibble(
+  dplyr::tibble(
     id = unlist(lapply(database$roles, function(x) {x$id})),
     label = unlist(lapply(database$roles, function(x) {x$label})),
     permissions = lapply(database$roles, function(x) {x$permissions}),

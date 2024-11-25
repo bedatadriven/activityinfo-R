@@ -319,7 +319,7 @@
 # roleAssignment() works
 
     Code
-      roleAssignment(roleId = "rp", roleParameter = list(partner = "test:test"),
+      roleAssignment(roleId = "rp", roleParameters = list(partner = "test:test"),
       roleResources = list("resource1", "resource2", "resource3"))
     Output
       $id

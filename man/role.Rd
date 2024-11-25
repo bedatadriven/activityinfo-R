@@ -13,7 +13,8 @@ role(
 )
 }
 \arguments{
-\item{id}{the id of the role}
+\item{id}{the id of the role, must start with a lower case letter and may
+contain up to 32 lower case letters and numbers}
 
 \item{label}{the label or name of the role, e.g. "Viewer" or "Administrator"}
 

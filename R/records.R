@@ -262,6 +262,7 @@ getRecordHistory <- function(formId, recordId, asDataFrame = TRUE) {
     recHistDF <- dplyr::tibble(
       formId = unlist(lapply(recHist, function(x) {x$formId})),
       recordId = unlist(lapply(recHist, function(x) {x$recordId})),
+      version = unlist(lapply(recHist, function(x) {x$version})),
       time = format(as.POSIXct(unlist(lapply(recHist, function(x) {x$time})), origin = "1970-01-01", tz = "UTC"), "%Y-%m-%d %H:%M:%S"), #unlist(lapply(reHist, function(x) {x$time})),
       subFieldId = unlist(lapply(recHist, function(x) {x$subFieldId})),
       subFieldLabel = unlist(lapply(recHist, function(x) {x$subFieldLabel})),

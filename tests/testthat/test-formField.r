@@ -216,38 +216,49 @@ testthat::test_that("migrateFieldData() works", {
     addFormField(
       singleSelectFieldSchema(label = "newC", options = as.list(letters[1:10]))
     )
-  
   updateFormSchema(schema = newSchema)
+  
+  aFnc = function(x) {
+    sprintf("2023-03-%02d", x)
+  }
+  bFnc =function(x) {
+    as.numeric(x)
+  }
+  cFnc = function(x) {
+    letters[as.numeric(x)]
+  }
   
   records <- getRecords(newSchema, prettyColumnStyle())
   
   migrateFieldData(
     records, 
     from = a, 
-    to = newA, 
-    function(x) {
-      sprintf("2023-03-%02d", x)
-    })
+    to = newA,
+    fn = aFnc
+    )
   
   migrateFieldData(
     records, 
     from = b, 
     to = newB, 
-    function(x) {
-      as.numeric(x)
-    })
+    fn = bFnc)
   
   migrateFieldData(
     records, 
     from = c, 
     to = newC, 
-    function(x) {
-      letters[as.numeric(x)]
-    })
+    fn = cFnc)
   
   recordsMinimal <- getRecords(newSchema, minimalColumnStyle()) %>% collect() %>% as.data.frame()
   
-  # should be a safe snapshot with minimalColumnStyle
-  testthat::expect_snapshot(recordsMinimal)
+  recordsMinimal <- recordsMinimal %>% mutate(
+    newALocal = aFnc(a),
+    newBLocal = bFnc(b),
+    newCLocal = cFnc(c)
+  )
+  
+  expect_identical(recordsMinimal[["newA"]], recordsMinimal[["newALocal"]])
+  expect_identical(recordsMinimal[["newB"]], recordsMinimal[["newBLocal"]])
+  expect_identical(recordsMinimal[["newC"]], recordsMinimal[["newCLocal"]])
 })
 

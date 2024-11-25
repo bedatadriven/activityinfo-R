@@ -13,7 +13,7 @@ relatedVideos:
 - /support/webinars/2023-10-19-office-hour-designing-roles
 - /support/webinars/2023-10-12-best-practices-for-designing-roles
 vignette: >
-  %\VignetteIndexEntry{Advanced user and role management}
+  %\VignetteIndexEntry{Advanced roles}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

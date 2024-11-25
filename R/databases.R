@@ -977,7 +977,8 @@ deleteRoles <- function(databaseId, roleIds) {
 #' See \link{role} for the creation of roles.
 #'
 #' @param id the id of the parameter, for example "partner", which can
-#' be used in a formula as "@user.partner" 
+#' be used in a formula as "@user.partner". The id starts with a letter and may
+#' contain letters, numbers and underscores _ under 32 characters.
 #' @param label the label of the partner, for example, "Reporting partner"
 #' @param range the id of a reference table, for example the list of partners, 
 #' or a formula
@@ -991,7 +992,7 @@ deleteRoles <- function(databaseId, roleIds) {
 #' }
 parameter <- function(id, label, range) {
   stopifnot("The id must be a character string" = is.null(id)||(is.character(id)&&length(id)==1&&nchar(id)>0))
-  stopifnot("The id must start with a letter, must be made of letters and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", id))
+  stopifnot("The id must start with a letter, must be made of letters, numbers and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", id))
   stopifnot("The label is required to be a character string" = (is.character(label)&&length(label)==1&&nchar(label)>0))
   stopifnot("The range is required and must be a character string" = !is.null(range)&&(is.character(range)&&length(range)==1&&nchar(range)>0))
   
@@ -1105,7 +1106,8 @@ roleFilter <- function(id, label, filter) {
 #' Some administrative permissions are defined at the level of the role rather 
 #' than within grants. See \link{databasePermissions}.
 #'
-#' @param id the id of the role
+#' @param id the id of the role, must start with a lower case letter and may 
+#' contain up to 32 lower case letters and numbers 
 #' @param label the label or name of the role, e.g. "Viewer" or "Administrator" 
 #' @param parameters a list of \link{parameter} items defining role parameters
 #' @param grants a list of \link{grant} items for each resource and their 
@@ -1145,7 +1147,7 @@ roleFilter <- function(id, label, filter) {
 #' }
 role <- function(id, label, parameters = list(), grants, permissions = databasePermissions()) {
   stopifnot("The id must be a character string" = is.null(id)||(is.character(id)&&length(id)==1&&nchar(id)>0))
-  stopifnot("The id must start with a letter, must be made of lowercase letters and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[a-z][a-z0-9_]{0,31}$", id))
+  stopifnot("The id must start with a letter, must be made of lowercase letters and numbers and cannot be longer than 32 characters" = is.null(id)||grepl("^[a-z][a-z0-9]{0,31}$", id))
   
   stopifnot("The label is required to be a character string" = (is.character(label)&&length(label)==1&&nchar(label)>0))
   

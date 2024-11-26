@@ -330,6 +330,7 @@ checkUserRole <- function(databaseId, newUser, roleId, roleParameters, roleResou
 #' @param roleId the id of the role to assign to the user.
 #' @param roleParameters a named list containing the role parameter values
 #' @param roleResources an optional list of optional grant-based resources assigned to the user
+#' @param assignment optionally create and pass a \code{\link[activityinfo]{roleAssignment}} like in updateUserRole()
 #'
 #' @details
 #'
@@ -377,9 +378,17 @@ checkUserRole <- function(databaseId, newUser, roleId, roleParameters, roleResou
 #' @export
 addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId,
                             roleParameters = list(),
-                            roleResources = c(databaseId)) {
+                            roleResources = c(databaseId), assignment) {
 
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", sep = "/")
+  
+  if (!missing(assignment)) {
+    stopifnot("An assignment must be created with roleAssignment()" = ("activityInfoRoleAssignment" %in% class(assignment)))
+    stopifnot("Either an assignment must be provided or roleId to addDatabaseUser(), but not both." = missing(roleId))
+    roleId = assignment$id
+    roleParameters = assignment$parameters
+    roleResources = assignment$resources
+  }
 
   request <- list(
     email = email,
@@ -627,7 +636,7 @@ updateUserRole <- function(databaseId, userId, assignment) {
 roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
   stopifnot(is.list(roleParameters))
   if (any(is.na(names(roleParameters)))) {
-    stop("roleParameters must be named with each parameter name.")
+    stop("In the `roleParameters` list, each item must be named")
   }
 
   if (length(roleParameters) == 0) {

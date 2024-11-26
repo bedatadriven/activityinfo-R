@@ -49,6 +49,8 @@ Suggests:
     assertthat,
     tidyr,
     purrr,
+    readr,
+    readxl,
     tinytex
 VignetteBuilder: knitr
 Config/testthat/edition: 3

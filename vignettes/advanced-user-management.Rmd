@@ -28,6 +28,8 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(activityinfo)
 library(readr)
+library(readxl)
+
 ```
 
 ## Introduction
@@ -132,7 +134,7 @@ users <- users |>
 
 Now we have the partner id for each user.
 
-The second step is to retrieve all the role grants and parameters corresponding to each column in the CSV file. We will use this information to add the user roles.
+The second step is to retrieve all the role grants and parameters corresponding to each column in the CSV file. We will use this information to correctly add the user roles.
 
 ```{r eval=FALSE, include=TRUE}
 # get database role definitions and resources
@@ -140,7 +142,7 @@ dbTree <- getDatabaseTree(databaseId)
 dbResources <- getDatabaseResources(databaseId)
 roles <- getDatabaseRoles(dbTree)
 
-columnNames <- names(usersWithGrantsParameters)
+columnNames <- names(users)
 
 # treat grant and parameter columns differently
 grantColumns <- columnNames[grep("^g:", columnNames)]
@@ -161,6 +163,7 @@ grantColumnDfs <- lapply(substring(grantColumns, 3), function(x) {
   if (nrow(df) != 1) {
     stop(sprintf("Error: %s matches. There is no unique corresponding grant for column '%s' in the CSV file.", nrow(df), x))
   }
+  df
 })
 names(grantColumnDfs) <- grantColumns
 
@@ -173,7 +176,7 @@ roleParameters <-
 
 # make a list of roles that contain a corresponding parameter label
 parameterColumnDfs <- lapply(substring(parameterColumns, 3), function(x) {
-  df = roleParameters |> filter(label = x )
+  df = roleParameters |> filter(label == x )
   if (nrow(df) == 0) {
     stop(sprintf("Error: No corresponding parameter for column '%s' in the CSV file.", x))
   }
@@ -184,57 +187,111 @@ names(parameterColumnDfs) <- parameterColumns
 
 ```
 
+If we use the same database created in the basic tutorial, we see the following:
+
+```{r eval=FALSE, include=TRUE}
+
+# optional grants
+grantColumnDfs
+
+```
+
+
+```
+$`g:Reporting Partners`
+# A tibble: 1 × 9
+  roleId roleLabel         resourceId                   optional operations label              type  parentId         visibility
+  <chr>  <chr>             <chr>                        <lgl>    <list>     <chr>              <chr> <chr>            <chr>     
+1 rp     Reporting Partner <reporting_partner_form_id>  TRUE     <list [3]> Reporting Partners FORM  <parent_id>      PRIVATE   
+```
+
+We now know the form id from the `resourceId` column and we will be able to set the optional grant
+
+```{r eval=FALSE, include=TRUE}
+
+# optional grants
+parameterColumnDfs
+
+```
+
+
+```
+$`p:Partner`
+# A tibble: 1 × 5
+  roleId roleLabel         parameterId label   range           
+  <chr>  <chr>             <chr>       <chr>   <chr>           
+1 rp     Reporting Partner partner     Partner <reporting_partner_form_id>
+
+```
+
+We now know the parameter id from the `parameterId` column for the parameter we will add to the role.
+
 Finally, we can loop through each new user record and apply the role, optional grants, and parameters.
 
 ```{r eval=FALSE, include=TRUE}
 
-for (i in seq_len(nrow(usersWithGrantsParameters))) {
+# creates a named list item for each parameter where the name is the parameterId and the value is the parameter value.
+createParameterItem <- function(parameterId, value) {
+  item <- list(value)
+  names(item) <- parameterId
+  item
+}
+
+for (i in seq_len(nrow(users))) {
     tryCatch(
       expr = {
-        email = usersWithGrantsParameters[i,"email"]
-        role = usersWithGrantsParameters[i,"role"]
-        name = usersWithGrantsParameters[i,"name"]
+        email = users[[i,"email"]]
+        role = users[[i,"role"]]
+        name = users[[i,"name"]]
         
         roleParameters = list()
         for (paramCol in parameterColumns) {
           # get the parameters corresponding to the role
-          df <- parameterColumnDfs[paramCol] %>% filter(roleId == role)
+          df <- parameterColumnDfs[[paramCol]] %>% filter(roleId == role)
           if (nrow(df)==1) {
-            # Add the parameter to the list of parameters for this role
+            
+            # Create the parameter item
+            parameterItem <- createParameterItem(
+                parameterId = df[[1,"parameterId"]], 
+                value = reference(reportingPartnerReferenceFormId, users[[i,paramCol]])
+              )
+            
+            # Add item to roleParameters
             roleParameters <- 
               c(
                 roleParameters, 
-                list(
-                  df[1,"parameterId"] = usersWithGrantsParameters[i,paramCol]
-                )
+                parameterItem
               )
           }
         }
         
         roleResources = list()
         for (grantCol in grantColumns) {
-          # get the resources corresponding to the grant
-          df <- grantColumnDfs[grantCol] %>% filter(roleId == role)
+          # Get the table with the resourceId corresponding to the grant
+          df <- grantColumnDfs[[grantCol]] %>% filter(roleId == role)
+          
           # Add the optional resources if the grant column equals 1
-          if (nrow(df)==1&&usersWithGrantsParameters[i,grantCol]==1) {
-            roleResources <- c(roleResources, df[1,"resourceId"])
+          if (nrow(df)==1&&users[[i,grantCol]]==1) {
+            roleResources <- c(roleResources, df[[1,"resourceId"]])
           }
         }
 
+        # Add a database user using the assignment parameter which matches the assignment of roles in updateUserRole()
         addDatabaseUser(databaseId,
                   email,
                   name,
-                  roleId=role, 
-                  roleParameters=roleParameters,
-                  roleResources=roleResources)
+                  assignment = roleAssignment(
+                    roleId = role,
+                    roleParameters = roleParameters,
+                    roleResources = roleResources
+                  )
+        )
       },
       error = function(e) {
-        warning(sprintf("Failed to add user %s with error: %s.", users[i,"email"], e))
+        warning(sprintf("Failed to add user %s with error: %s.", users[[i,"email"]], e))
       }
     )
 }
-
-bulkAddUsers(usersDf = users, roleId = "reporting_officer")
 
 ```
 
@@ -251,19 +308,23 @@ For this set of examples we will use the `deleteDatabaseUser function`:
 #### EXAMPLE 1: delete multiple users using the users export under the user management in ActivityInfo.
 
 ```{r eval=FALSE, include=TRUE}
-databaseId <- "you add the database ID located under the URL"
+databaseId <- "<database ID>"
 
 
-# you export from the user management the users list and you keep the users that you want to delete. You save the file in csv format and you upload the file in R
-users <- read.csv("readuserscsv.csv")
-
-
-# R runs through all the rows of the csv and deletes based on the "UserId" column
-
-for (i in seq_len(nrow(users))) {
+# you export from the user management the users list and you keep the users that you want to delete and save it as "userstodelete.xlsx" and put it in your working directory
+usersToDelete <- readxl::read_excel("userstodelete.xlsx")
   
-  deleteDatabaseUser(databaseId, users[i,"UserId"])
-  
+# R runs through all the rows and deletes based on the "UserId" column
+
+for (i in seq_len(nrow(usersToDelete))) {
+    tryCatch(
+      expr = {
+        deleteDatabaseUser(databaseId, usersToDelete[i,"UserId"])
+      },
+      error = function(e) {
+        warning(sprintf("Failed to delete user %s with error: %s.", usersToDelete[i,"Email"], e))
+      }
+    )
 }
 
 ```
@@ -271,19 +332,25 @@ for (i in seq_len(nrow(users))) {
 #### EXAMPLE 2: delete users based on user emails that you wish to delete.
 
 ```{r eval=FALSE, include=TRUE}
-databaseId <- "you add the database ID located under the URL"
+databaseId <- "<database ID>"
 
 emailsToDelete <- c("email.1@gmail.com", 
                     "email.@gmail.com" 
 )
 
-users <- getDatabaseUsers(databaseId)
+dbUsers <- getDatabaseUsers(databaseId, asDataFrame = FALSE)
 
-for(user in users) {
-  
-  if((tolower(user$email) %in% emailsToDelete)) {
+for(user in dbUsers) {
+  if((tolower(user$email) %in% tolower(emailsToDelete))) {
     cat(sprintf("Deleting %s...\n", user$email))
-    deleteDatabaseUser(databaseId, user$userId)
+    tryCatch(
+      expr = {
+        deleteDatabaseUser(databaseId, user$userId)
+      },
+      error = function(e) {
+        warning(sprintf("Failed to delete user %s with error: %s.", user$email, e))
+      }
+    )
   }
 }
 ```
@@ -291,16 +358,21 @@ for(user in users) {
 #### EXAMPLE 3: delete users based on user emails that you wish to keep.
 
 ```{r eval=FALSE, include=TRUE}
-databaseId <- "you add the database ID under the URL"
+databaseId <- "<database ID>"
 emailsToKeep <- c("email1@gmail.com")
 
-users <- getDatabaseUsers(databaseId)
+dbUsers <- getDatabaseUsers(databaseId, asDataFrame = FALSE)
 
-for(user in users) {
-  
+for(user in dbUsers) {
   if(!(tolower(user$email) %in% emailsToKeep)) {
     cat(sprintf("Deleting %s...\n", user$email))
-    deleteDatabaseUser(databaseId, user$userId)
+    tryCatch(
+      expr = {
+        deleteDatabaseUser(databaseId, user$userId)
+      },
+      error = function(e) {
+        warning(sprintf("Failed to delete user %s with error: %s.", user$email, e))
+      })
   }
 }
 

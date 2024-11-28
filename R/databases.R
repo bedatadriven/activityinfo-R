@@ -219,7 +219,11 @@ getDatabaseUsers <- function(databaseId, asDataFrame = TRUE) {
       version = unlist(lapply(users, function(x) {x$version})),
       inviteDate = as.Date(unlist(lapply(users, function(x) {x$inviteDate}))),
       deliveryStatus = unlist(lapply(users, function(x) {x$deliveryStatus})),
-      inviteAccepted = unlist(lapply(users, function(x) {x$inviteAccepted}))
+      inviteAccepted = unlist(lapply(users, function(x) {x$inviteAccepted})),
+      locked = unlist(lapply(users, function(x) {x$locked})),
+      userLicenseType = unlist(lapply(users, function(x) {x$userLicenseType})),
+      lastLoginDate = as.Date(unlist(lapply(users, function(x) {if(is.null(x$lastLoginDate)) NA else x$lastLoginDate}))),
+      activationStatus = unlist(lapply(users, function(x) {x$activationStatus}))
     )
     
     usersDF$role <- lapply(users, function(x) {x$role})

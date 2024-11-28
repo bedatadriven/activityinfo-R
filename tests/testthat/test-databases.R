@@ -101,7 +101,7 @@ deleteTestUsers <- function(database, returnedUsers) {
 
 # Simplifies the user object for snapshots and warns when expected fields are missing and provides an informative message when there are new fields
 simplifyUsers <- function(returnedUsers, additionalFields = list(), addedUsers = FALSE, expectAdded = TRUE) {
-  expectedFields <- c(additionalFields, "databaseId","deliveryStatus","email", "name", "role", "userId")
+  expectedFields <- c(additionalFields, "databaseId","deliveryStatus","email", "name", "role", "userId", "locked")
   
   if (addedUsers) {
     expectedFields <- c("inviteTime",'version', 'activationStatus', 'lastLoginTime', 'grants', expectedFields)

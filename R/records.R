@@ -1089,7 +1089,7 @@ elementVarName <- function(y, style) {
 
   colNameStyle <- style$columnNames[[1]]
 
-  colName = NULL
+  colName <- NULL
 
   if(colNameStyle == "code") {
     colName <- y[["code"]]
@@ -1142,14 +1142,14 @@ tbl.src_activityInfo <- function(src, formTree, style = defaultColumnStyle(),...
   stopifnot(formTree$root %in% dplyr::src_tbls(src))
 
   recordsMetadata <- getTotalLastEditTime(formTree)
-  totalRecords = recordsMetadata[["totalRecords"]]
-  lastEditTime = recordsMetadata[["lastEditTime"]]
+  totalRecords <- recordsMetadata[["totalRecords"]]
+  lastEditTime <- recordsMetadata[["lastEditTime"]]
   
-  step = firstStep(formTree, style, totalRecords)
+  step <- firstStep(formTree, style, totalRecords)
   idStyle <- style
   idStyle$columnNames <- "id"
 
-  elements = namedElementVarList(formTree = formTree, style = idStyle)
+  elements <- namedElementVarList(formTree = formTree, style = idStyle)
 
   dplyr::make_tbl(
     c("activityInfoRemoteRecords", "lazy"),
@@ -1173,7 +1173,7 @@ getTotalLastEditTime <- function(formTree) {
     df <- queryTable(formTree$root, columns = list("id"="_id", "lastEditTime" = "_lastEditTime"), asTibble = TRUE, makeNames = FALSE, window = c(0L,1L), sort=list(list(dir = "DESC", field = "_lastEditTime")))
     totalRecords <- attr(df, "totalRows")
   }
-  lastEditTime = df[[1,"lastEditTime"]]
+  lastEditTime <- df[[1,"lastEditTime"]]
   list(totalRecords = totalRecords, lastEditTime = lastEditTime, df = df)
 }
 

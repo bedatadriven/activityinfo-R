@@ -1506,10 +1506,6 @@ tbl_sum.activityInfo_tbl_df <- function(x, ...) {
   c("ActivityInfo tibble" = sprintf("Remote form: %s (%s)",tblLabel(attr(x, "remoteRecords")), attr(x, "remoteRecords")$formTree$root), NextMethod())
 }
 
-# select.tbl_activityInfoRemoteRecords <- function(x) {
-#
-# }
-
 # ---- Source ----
 
 
@@ -1630,7 +1626,42 @@ dplyr::collect
 #' @export
 select.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   if (!is.null(tblFilter(.data))||!is.null(tblSort(.data))) warning("Using select() after a filter or sort step. Be careful not to remove a required variable from your selection.")
-
+  
+  # Extract variables to check against ActivityInfo variable expressions
+  vars <- unique(unlist(lapply(rlang::enquos(...), function(quo) {
+    var <- rlang::quo_squash(quo)
+    if (rlang::is_symbol(var) || is.character(var)) {
+      as.character(var)
+    } else {
+      NULL  # Ignore other expressions like starts_with(), etc.
+    }
+  })))
+  
+  existingVars <- names(.data$step$vars)
+  missingVars <- setdiff(vars, existingVars)
+  
+  # Extract valid ActivityInfo variable paths
+  validPaths <- list()
+  for (var in missingVars) {
+    ids <- tryCatch({
+      getPathIds(.data$formTree, var)
+    }, error = function(e) {
+      NULL  # Path is invalid
+    })
+    if (!is.null(ids)) {
+      validPaths[[var]] <- paste(ids, collapse = ".")
+    } else {
+      warning("Invalid ActivityInfo variable path: ", var)
+    }
+  }
+  
+  if (length(validPaths)>0) {
+    newVars <- c(.data$step$vars, setNames(names(validPaths), names(validPaths)))
+    newColumns <- c(.data$step$columns, validPaths)
+    .data$step <- newStep(.data$step, newVars, newColumns)
+  }
+  
+  # replicating dplyr magic
   loc <- tidyselect::eval_select(rlang::expr(c(...)), .data)
 
   new_vars <- set_names(colnames(.data)[loc], names(loc))

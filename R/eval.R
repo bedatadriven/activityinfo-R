@@ -29,6 +29,10 @@ toActivityInfoFormula <- function(.data, expr) {
         return(sprintf("%s", idVar))
       }
     } else {
+      # ActivityInfo variable expression paths
+      if (pathValid(.data$formTree, chexpr2)) {
+        return(chexpr2)
+      }
       expr2 <- deparse(rlang::eval_tidy(exprQuo))
     }
   }
@@ -62,3 +66,90 @@ toActivityInfoFormula <- function(.data, expr) {
   stop(sprintf("TODO: %s", deparse(expr2)))
 }
 
+parseActivityInfoVariable <- function(path) {
+  # Remove leading and trailing white spaces
+  path <- trimws(path)
+  
+  # Match sequences within square brackets or sequences of non-dot characters
+  pattern <- "\\[.*?\\]|[^\\.]+"
+  
+  matches <- gregexpr(pattern, path, perl = TRUE)
+  components <- regmatches(path, matches)[[1]]
+  
+  # Remove square brackets and trim white space
+  components <- trimws(gsub("\\[|\\]", "", components))
+  
+  components
+}
+
+findFieldIds <- function(formTree, currentFormId, pathComponents, collectedIds = list(), depth = 0) {
+  if (length(pathComponents) == 0) {
+    return(unlist(collectedIds))
+  }
+  
+  # form schema
+  currentForm <- formTree$forms[[currentFormId]]
+  if (is.null(currentForm)) {
+    stop(paste("Form with ID", currentFormId, "not found in form tree."))
+  }
+  
+  # Get next component
+  currentComponent <- pathComponents[1]
+  remainingComponents <- pathComponents[-1]
+  
+  if (depth == 0 && currentComponent == currentFormId) {
+    collectedIds <- currentFormId
+    return(findFieldIds(formTree, currentFormId, remainingComponents, collectedIds, depth + 1))
+  }
+  
+  # Search form's elements
+  elementFound <- FALSE
+  for (element in currentForm$elements) {
+    
+    fieldMatch <- 
+      element$id == currentComponent || 
+      (!is.null(element$code) && !is.na(element$code) && element$code == currentComponent) || 
+      trimws(element$label) == currentComponent
+    
+    if (fieldMatch) {
+      elementFound <- TRUE
+      collectedIds <- c(collectedIds, element$id)
+      
+      # If there are no more components, return the collected IDs
+      if (length(remainingComponents) == 0) {
+        return(unlist(collectedIds))
+      }
+      
+      # If the element is a reference or subform, move to the referenced form
+      if (element$type == "reference" && !is.null(element$typeParameters$range)) {
+        refFormId <- element$typeParameters$range[[1]]$formId
+        return(findFieldIds(formTree, refFormId, remainingComponents, collectedIds))
+      } else if (element$type == "subform" && !is.null(element$typeParameters$formId)) {
+        subformFormId <- element$typeParameters$formId
+        return(findFieldIds(formTree, subformFormId, remainingComponents, collectedIds))
+      } else {
+        stop(paste("Cannot traverse non-reference field", element$label))
+      }
+    }
+    
+  }
+  
+  # Did not match any element or form, stop with an error
+  stop(paste("Component", currentComponent, "not found in form", currentForm$label))
+}
+
+getPathIds <- function(formTree, path) {
+  pathComponents <- parseActivityInfoVariable(path)
+  rootFormId <- formTree$root
+  ids <- findFieldIds(formTree, rootFormId, pathComponents, collectedIds = list())
+  ids
+}
+
+pathValid <- function(formTree, path) {
+  tryCatch({
+    getPathIds(formTree, path)
+    TRUE
+  }, error = function(e) {
+    FALSE
+  })
+}

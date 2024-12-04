@@ -1563,9 +1563,40 @@ summarise.tbl_activityInfoRemoteRecords <- function(.data, ...) {
 #' @export
 #' @importFrom dplyr mutate
 mutate.tbl_activityInfoRemoteRecords <- function(.data, ...) {
-  warn_collect("mutate")
-  .data <- collect(.data)
-  mutate(.data, ...)
+
+  exprs <- rlang::enquos(...)
+  
+  tryCatch({
+    result <- lapply(exprs, function(x) {
+      toActivityInfoFormula(.data, !!x)
+    })
+    
+    mutatedVars <- names(result)
+    existingVars <- .data$step$vars
+    
+    existingColumns <- .data$step$columns
+    
+    newVars <- setdiff(mutatedVars, existingVars)
+    newColumns <- result[newVars]
+    
+    replacedVars <- mutatedVars[mutatedVars %in% existingVars]
+    replacedColumns <- result[replacedVars]
+    
+    unaffectedVars <- existingVars[!(existingVars %in% mutatedVars)]
+    unaffectedColumns <- existingColumns[unaffectedVars]
+    
+    combinedVars <- c(.data$step$vars, set_names(newVars, newVars))
+    combinedColumns <- c(unaffectedColumns, replacedColumns, newColumns)
+
+    .data$step <- newStep(parent = .data$step, vars = combinedVars, columns = combinedColumns)
+    
+    .data
+  },
+  error = function(e) {
+    warn_collect("mutate", paste0("Could not convert r expression to an ActivityInfo formula so collecting data for dplyr::mutate(). ", e$message))
+    .data <- collect(.data)
+    mutate(.data, ...)
+  })
 }
 
 
@@ -1658,7 +1689,7 @@ select.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   if (length(validPaths)>0) {
     newVars <- c(.data$step$vars, set_names(names(validPaths), names(validPaths)))
     newColumns <- c(.data$step$columns, validPaths)
-    .data$step <- newStep(.data$step, newVars, newColumns)
+    .data$step <- newStep(parent = .data$step, vars = newVars, columns = newColumns)
   }
   
   # replicating dplyr magic

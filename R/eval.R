@@ -1,3 +1,52 @@
+activityInfoFunctionNames <- c(
+  "CONCAT",
+  "IF",
+  "ISNUMBER",
+  "ISBLANK",
+  "SEARCH",
+  "VALUE",
+  "LOWER",
+  "TRIM",
+  "CONCAT",
+  "LEFT",
+  "RIGHT",
+  "MID",
+  "REGEXMATCH",
+  "REGEXEXTRACT",
+  "REGEXREPLACE",
+  "TEXT",
+  "DATE",
+  "YEAR",
+  "MONTH",
+  "DAY",
+  "YEARFRAC",
+  "TODAY",
+  "NOW",
+  "DATEVALUE",
+  "MONTHVALUE",
+  "WEEKVALUE",
+  "FORTNIGHTVALUE",
+  "ADDDATE",
+  "DAYS",
+  "SUM",
+  "ANY",
+  "AVERAGE",
+  "MAX",
+  "MIN",
+  "COUNT",
+  "COUNTDISTINCT",
+  "FIRST",
+  "LAST",
+  "TEXTJOIN",
+  "POWER",
+  "CEIL",
+  "FLOOR",
+  "COALESCE",
+  "GREAT_CIRCLE"
+)
+
+
+
 #' Convert an expression using columns in a remote records into an ActivityInfo style formula
 #'
 #' @description
@@ -25,8 +74,8 @@ toActivityInfoFormula <- function(.data, expr) {
       if(grepl(x = idVar, pattern = "^[A-Za-z_][A-Za-z0-9_]*$")) {
         return(idVar)
       } else {
-        #return(sprintf("[%s]", idVar))
-        return(sprintf("%s", idVar))
+        return(sprintf("(%s)", idVar))
+        #return(sprintf("%s", idVar))
       }
     } else {
       # ActivityInfo variable expression paths
@@ -40,16 +89,29 @@ toActivityInfoFormula <- function(.data, expr) {
   # Function calls
   if(is.call(expr2)) {
     fn <- as.character(expr2[[1]])
-    if(fn %in% c("+", "-", "*", "/","==", "!=", ">", "<", ">=", "<=")) {
+    
+    if (fn %in% activityInfoFunctionNames) {
+      args <- lapply(as.list(expr2)[-1], function(arg) toActivityInfoFormula(.data, !!arg))
+      return(sprintf("%s(%s)", fn, paste(args, collapse = ", ")))
+    } else if(fn %in% c("+", "-", "*", "/","==", "!=", ">", "<", ">=", "<=", "&&", "||")) {
       # These binary infix operators use the same semantic and syntax in ActivityInfo
       return(sprintf("(%s %s %s)", toActivityInfoFormula(.data, !!expr2[[2]]), fn, toActivityInfoFormula(.data, !!expr2[[3]])))
+    } else if(fn %in% c("&", "|")) {
+      # These binary infix operators use a slightly modified semantic and syntax in ActivityInfo
+      return(sprintf("(%s %s%s %s)", toActivityInfoFormula(.data, !!expr2[[2]]), fn, fn, toActivityInfoFormula(.data, !!expr2[[3]])))
+    } else if(fn == "!") {
+      return(sprintf("%s(%s)", fn, toActivityInfoFormula(.data, !!expr2[[2]])))
+    } else if(fn == "(") {
+      return(sprintf("(%s)", toActivityInfoFormula(.data, !!expr2[[2]])))
     } else if(fn == "grepl") {
       # Translate a call to grepl to AI's REGEXMATCH()
       call <- match.call(definition = grepl, expr2)
       return(sprintf("REGEXMATCH(%s, %s)", toActivityInfoFormula(.data, !!call$x), toActivityInfoFormula(.data, !!call$pattern)))
+    } else if(fn == "paste0") {
+      args <- lapply(as.list(expr2)[-1], function(arg) toActivityInfoFormula(.data, !!arg))
+      return(sprintf("%s(%s)", "CONCAT", paste(args, collapse = ", ")))
     } else {
       stop("This function is not yet supported: ", fn)
-      #return(deparse(rlang::eval_tidy(exprQuo, data = columns)))
     }
   }
   

@@ -1656,7 +1656,7 @@ select.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   }
   
   if (length(validPaths)>0) {
-    newVars <- c(.data$step$vars, setNames(names(validPaths), names(validPaths)))
+    newVars <- c(.data$step$vars, set_names(names(validPaths), names(validPaths)))
     newColumns <- c(.data$step$columns, validPaths)
     .data$step <- newStep(.data$step, newVars, newColumns)
   }

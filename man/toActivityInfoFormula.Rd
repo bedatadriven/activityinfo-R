@@ -2,16 +2,56 @@
 % Please edit documentation in R/eval.R
 \name{toActivityInfoFormula}
 \alias{toActivityInfoFormula}
-\title{Convert an expression using columns in a remote records into an ActivityInfo style formula}
+\title{Convert an expression using columns in a remote records into an ActivityInfo
+style formula}
 \usage{
-toActivityInfoFormula(.data, expr)
+toActivityInfoFormula(.data, expr, rootEnvironment = parent.frame())
 }
 \arguments{
 \item{.data}{the remote records object fetched with getRecords().}
 
 \item{expr}{the expression to convert}
+
+\item{rootEnvironment}{the original caller environment where the data remote
+records object resides}
 }
 \description{
-This function attempts to convert an R expression using the columns of the
-\link{getRecords} object into an ActivityInfo formula (as a string).
+This function attempts to convert an R expression in the context of a
+\link{getRecords} object into an ActivityInfo formula (as a
+character string).
+
+It also supports ActivityInfo variable expressions like \verb{[Form Field Label]}
+written as a variable or derived from a getRecords object with $ syntax (see
+example).
+
+It will check if the field/variable/column is available and whether the
+functions used are in a list of supported functions but does no syntax
+checking during translation.
+
+This function is used to implement the mutate() and filter() dplyr verbs.
+}
+\examples{
+\dontrun{
+
+x <- getRecords(formId)
+
+# Filter out records where the partner organization in BeDataDriven using $
+x \%>\% 
+  mutate(new_field = x$`[Partner organization]`$`[Name]`) \%>\% 
+  filter(new_field == "BeDataDriven")
+
+# Create a label for use in a report that prefixes the partner name using
+# a variable name and the CONCAT() function.
+x \%>\% 
+  mutate(new_field = `[Partner organization].[Name]`) \%>\%
+  mutate(report_label = CONCAT("Partner organization: ", new_field))
+
+# Get the text of an expression
+aiFormula <- toActivityInfoFormula(x, IF(ISBLANK(x$`[Partner organization]`), 
+  "No partner specified", x$`[Partner organization]`$`[Name]`))
+
+# returns "IF(ISBLANK((ce844hgm3x4xtgr5)), \"No partner specified\", 
+#   (ce844hgm3x4xtgr5.c4cx7l663x4xtgr6))"
+}
+
 }

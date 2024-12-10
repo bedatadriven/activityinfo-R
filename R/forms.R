@@ -84,7 +84,8 @@ print.formSchema <- function(x, ...) {
 #' @export
 as.data.frame.formSchema <- function(x, row.names = NULL, optional = FALSE, ...) {
   nfields <- length(x$elements)
-  null2na <- function(y) if (is.null(y) || !nzchar(y)) NA else y
+  null2na <- function(y) tryCatch({if (is.null(y) || !nzchar(y)) NA else y}, error = function(e) {return(NA)})
+  ifnullna <- function(y,z) {if (is.null(y)||is.na(y)) {z} else {y}}
 
   data.frame(
     row.names = row.names,
@@ -101,7 +102,10 @@ as.data.frame.formSchema <- function(x, row.names = NULL, optional = FALSE, ...)
     relevanceCondition = sapply(x$elements, function(e) null2na(e$relevanceCondition)),
     fieldRequired = sapply(x$elements, function(e) null2na(e$required)),
     key = sapply(x$elements, function(e) identical(e$key, TRUE)),
-    referenceFormId = sapply(x$elements, function(e) null2na(e$typeParameters$range[[1]]$formId)),
+    referenceFormId = sapply(x$elements, function(e) ifnullna(
+                                                         null2na(e$typeParameters$range[[1]]$formId), 
+                                                                null2na(e$typeParameters$formId))),
+    referenceFieldId = sapply(x$elements, function(e) null2na(e$typeParameters$fieldId)),
     formula = sapply(x$elements, function(e) null2na(e$typeParameters$formula)),
     dataEntryVisible = sapply(x$elements, function(e) !identical(e$dataEntryVisible, FALSE)),
     tableVisible = sapply(x$elements, function(e) !identical(e$tableVisible, FALSE)),

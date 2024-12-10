@@ -126,6 +126,10 @@ addFormFieldSchemaCustomClass <- function(e) {
     } else {
       class(e) <- c("activityInfoReferenceFieldSchema", class(e))
     }
+  } else if (e$type == "reversereference") {
+    class(e) <- c("activityInfoReverseReferenceFieldSchema", class(e))
+  } else if (e$type == "multiselectreference") {
+    class(e) <- c("activityInfoMultipleReferenceFieldSchema", class(e))
   } else if (e$type == "section") {
     class(e) <- c("activityInfoSectionFieldSchema", class(e))
   }
@@ -626,6 +630,78 @@ referenceFieldSchema <- function(label, description = NULL, referencedFormId, co
   
   schema
 }
+
+
+#' Create a Multiple Reference field schema
+#' 
+#' A multiple reference field is used to create a multiple select list of 
+#' reference records. For example, to create a field that indicates in a report
+#' table, exactly which people were taking part in an activity. It will allow 
+#' multiple people to be selected in the field. This is a many-to-many
+#' relationship
+#' 
+#' @inheritParams formFieldSchema
+#' @param referencedFormId The id of the referenced form
+#' @family field schemas
+#' @export
+multipleReferenceFieldSchema <- function(label, description = NULL, referencedFormId, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+  stopifnot("The reference form id must be a character string" = is.character(referencedFormId)&&length(referencedFormId)==1&&nchar(referencedFormId)>0)
+  schema <- do.call(
+    formFieldSchema, 
+    args = c(
+      list(type = "multiselectreference"),
+      formFieldArgs(as.list(environment())),
+      list(
+        typeParameters = list(
+          "range" = list(
+            list(
+              "formId" = referencedFormId
+            )
+          )
+        )
+      )
+    )
+  )
+  
+  schema
+}
+
+
+#' Create a Reverse Reference field schema
+#' 
+#' A reverse reference field is used to get records that reference the current 
+#' form. For example, a partner organization record could lookup and reverse 
+#' reference all the reports that are assigned to the partner.
+#' 
+#' @inheritParams formFieldSchema
+#' @param referencedFormId The id of the referenced form
+#' @param referencedFieldId The id of the referenced field
+#' @family field schemas
+#' @export
+reverseReferenceFieldSchema <- function(label, description = NULL, referencedFormId, referencedFieldId, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+  stopifnot("The reverse reference form id must be a character string" = is.character(referencedFormId)&&length(referencedFormId)==1&&nchar(referencedFormId)>0)
+  stopifnot("The reverse reference field id must be a character string" = is.character(referencedFieldId)&&length(referencedFormId)==1&&nchar(referencedFormId)>0)
+  schema <- do.call(
+    formFieldSchema, 
+    args = c(
+      list(type = "reversereference"),
+      formFieldArgs(as.list(environment())),
+      list(
+        typeParameters = list(
+          "formId" = referencedFormId,
+          "fieldId" = referencedFieldId
+        )
+      )
+    )
+  )
+  
+  schema
+}
+
+
+
+
+
 
 #' Create a Geographic Point form field schema
 #' 

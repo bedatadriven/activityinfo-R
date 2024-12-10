@@ -1,8 +1,5 @@
-
 testField <- function(fieldSchema) {
   testthat::expect_identical(length(class(fieldSchema)), 4L)
-  
-  length(class(barcodeFieldSchema("Test")))
   
   databaseId = database$databaseId
   fmSchm <- formSchema(databaseId = databaseId, label = paste0("R form ",fieldSchema$label , " test ", cuid()))
@@ -119,6 +116,14 @@ test_that("Test roundtrip of quantityFieldSchema()", {
 
 test_that("Test roundtrip of referenceFieldSchema()", {
   testField(referenceFieldSchema(label = "A referenceFieldSchema field", referencedFormId = "A dummy formId"))
+})
+
+test_that("Test roundtrip of reverseReferenceFieldSchema()", {
+  testField(reverseReferenceFieldSchema(label = "A reversedReferenceFieldSchema field", referencedFormId = "A dummy formId", referencedFieldId = "A dummy fieldId"))
+})
+
+test_that("Test roundtrip of multipleReferenceFieldSchema()", {
+  testField(multipleReferenceFieldSchema(label = "A multipleReferenceFieldSchema field to the person form", referencedFormId = personFormId))
 })
 
 test_that("Test roundtrip of sectionFieldSchema()", {

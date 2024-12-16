@@ -1043,16 +1043,16 @@ checkFormField <- function(formSchema, schema, df = as.data.frame(formSchema)) {
 #' Migrate and convert the data of one form field into another
 #' 
 #' With this function, the data from one form field (column) can be moved to 
-#' another form field and converted with a user-supplied function. 
+#' another form field and converted with a user-supplied R function. 
 #'  
 #' @rdname migrateFieldData
 #' @param .data remote records object of the form online
 #' @param from the source form field from which to get the data
 #' @param to the destination form field which will receive the converted data
-#' @param fn the user-supplied conversion function; default is to do nothing
+#' @param fn the user-supplied R conversion function; default is to do nothing
 #' @param idColumn the id column. The default is `_id`
 #' 
-#' @return The form field schema after the addition. This will be the form field schema from the server if changes are uploaded.
+#' @return The remote records object.
 #'
 #' @importFrom rlang enquo
 #' @export
@@ -1075,5 +1075,7 @@ migrateFieldData <- function(.data, from, to, fn = function(x) x, idColumn = as.
   cols <- tblColumns(remoteDf %>% select(id, to))
   names(df) <- cols
   
-  importRecords(formId = .data$formTree$root, data = df, recordIdColumn = "_id")
+  importRecords(formId = .data[["formTree"]]$root, data = df, recordIdColumn = "_id")
+  
+  return(.data)
 }

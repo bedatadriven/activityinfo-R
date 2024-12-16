@@ -19,14 +19,14 @@ migrateFieldData(
 
 \item{to}{the destination form field which will receive the converted data}
 
-\item{fn}{the user-supplied conversion function; default is to do nothing}
+\item{fn}{the user-supplied R conversion function; default is to do nothing}
 
 \item{idColumn}{the id column. The default is \verb{_id}}
 }
 \value{
-The form field schema after the addition. This will be the form field schema from the server if changes are uploaded.
+The remote records object.
 }
 \description{
 With this function, the data from one form field (column) can be moved to
-another form field and converted with a user-supplied function.
+another form field and converted with a user-supplied R function.
 }

@@ -117,9 +117,9 @@ toActivityInfoFormula <- function(.data, expr, rootEnvironment = parent.frame())
       }
     } else if (exists(as.character(expr2), envir = rootEnvironment, inherits = TRUE)) {
       result <- rlang::eval_tidy(expr2, env = rootEnvironment)
-      if (inherits(result, "activityInfoVariableExpression")&&result$formTree$root==.data$formTree$root) {
+      if (inherits(result, "activityInfoVariableExpression")&&result[["formTree"]]$root==.data[["formTree"]]$root) {
         return(sprintf("(%s)",paste(c(result[["formTree"]]$root, result[["pathIds"]]), collapse = ".")))
-      } else if (inherits(result, "activityInfoFormulaExpression")&&attributes(result)$root==.data$formTree$root) {
+      } else if (inherits(result, "activityInfoFormulaExpression")&&attributes(result)$root==.data[["formTree"]]$root) {
         return(sprintf("%s", result))
       } else {
         expr2 <- deparse(rlang::eval_tidy(exprQuo))
@@ -144,9 +144,9 @@ toActivityInfoFormula <- function(.data, expr, rootEnvironment = parent.frame())
     
     if (fn == "$") {
       result = rlang::eval_tidy(expr2, env = rootEnvironment)
-      if (inherits(result, "activityInfoVariableExpression")&&result$formTree$root==.data$formTree$root) {
+      if (inherits(result, "activityInfoVariableExpression")&&result[["formTree"]]$root==.data[["formTree"]]$root) {
         return(sprintf("%s",paste(c(result[["formTree"]]$root, result[["pathIds"]]), collapse = ".")))
-      } else if (inherits(result, "activityInfoFormulaExpression")&&attributes(result)$root==.data$formTree$root) {
+      } else if (inherits(result, "activityInfoFormulaExpression")&&attributes(result)$root==.data[["formTree"]]$root) {
         return(sprintf("%s", result))
       }
     } else if (fn %in% activityInfoFunctionNames) {
@@ -363,7 +363,7 @@ getNextExpansions.character <- function(x, path = NULL) {
 
 #' @export
 getNextExpansions.tbl_activityInfoRemoteRecords <- function(x, path = NULL) {
-  getNextExpansions(x$formTree, path)
+  getNextExpansions(x[["formTree"]], path)
 }
 
 #' @export
@@ -553,7 +553,7 @@ print.activityInfoVariableExpression <- function(x, ...) {
       expr <- x[['step']][['columns']][[nm]]
       class(expr) <- c("activityInfoFormulaExpression", class(expr))
       attr(expr, 'columnName') <- nm
-      attr(expr, 'root') <- x$formTree$root
+      attr(expr, 'root') <- x[["formTree"]]$root
       return(expr)
     })
     

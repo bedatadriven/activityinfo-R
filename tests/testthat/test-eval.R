@@ -8,7 +8,7 @@ test_that("toActivityInfoFormula() works", {
   
   testthat::expect_equal(toActivityInfoFormula(x, `_id`),"_id")
   testthat::expect_equal(toActivityInfoFormula(x, `_lastEditTime`),"_lastEditTime")
-  testthat::expect_equal(toActivityInfoFormula(x, `Children`),x$step$columns[["Children"]])
+  testthat::expect_equal(toActivityInfoFormula(x, `Children`),x[["step"]]$columns[["Children"]])
   testthat::expect_equal(toActivityInfoFormula(x, `[Children]`),sprintf("%s.%s", x[["formTree"]]$root, x[["step"]]$columns[["Children"]]))
   testthat::expect_equal(toActivityInfoFormula(x, `[Children].[Child name]`),sprintf("%s.%s.%s", x[["formTree"]]$root, x[["step"]]$columns[["Children"]], y[["step"]]$columns[["Child name"]]))
     

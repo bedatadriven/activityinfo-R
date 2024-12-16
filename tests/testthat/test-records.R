@@ -405,7 +405,7 @@ testthat::test_that("getRecords() works", {
       ) %>% 
       select(-values)
     
-    names(newRef1Values) <- c("personId", person$columns[["Ref 1"]])
+    names(newRef1Values) <- c("personId", person[["columns"]][["Ref 1"]])
     
     importRecords(formId = personFormId, data = newRef1Values, recordIdColumn = "personId")
     

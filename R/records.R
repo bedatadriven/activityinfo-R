@@ -470,7 +470,7 @@ getRecords.activityInfo_tbl_df <- function(form, style) {
   if (missing(style)) {
     return(x)
   } else {
-    getRecords(x$formTree, style)
+    getRecords(x[["formTree"]], style)
   }
 }
 
@@ -782,11 +782,11 @@ dimnames.tbl_activityInfoRemoteRecords <- function(x) {
 dim.tbl_activityInfoRemoteRecords <- function(x) {
   if (!is.null(x[['step']]$window)) {
     c(
-      min(x[['step']]$window[2], x$totalRecords),
+      min(x[['step']]$window[2], x[["totalRecords"]]),
       length(tblNames(x))
     )
   } else {
-    c(x$totalRecords, length(tblNames(x)))
+    c(x[["totalRecords"]], length(tblNames(x)))
   }
 }
 
@@ -1265,7 +1265,7 @@ addSelect <- function(.data, new_vars) {
 adjustWindow <- function(x, offSet = 0L, limit) {
   stopifnot(offSet>=0&&is.integer(offSet))
   if (is.null(x[['step']]$window)) {
-    oldWindow <- c(0L, as.integer(x$totalRecords))
+    oldWindow <- c(0L, as.integer(x[["totalRecords"]]))
   } else {
     oldWindow <- x[['step']]$window
   }
@@ -1304,7 +1304,7 @@ tblNames <- function(x) {
 tblFieldTypes <- function(x) {
   columns <- tblColumns(x)
   types <- unlist(lapply(columns, function(y) {
-    type <- class(x$elements[[y]])[1]
+    type <- class(x[["elements"]][[y]])[1]
     type <- sub("^activityInfo([a-zA-Z0-9]+)FieldSchema$", "\\1", type)
     type
   }))
@@ -1366,7 +1366,7 @@ tblWindow <- function(x, limit) {
   window <- x[['step']]$window
   if (!missing(limit)) {
     if (is.null(window)) {
-      window <- c(0L, as.integer(x$totalRecords))
+      window <- c(0L, as.integer(x[["totalRecords"]]))
     }
     window[2] <- min(window[2], limit)
   }
@@ -1395,7 +1395,7 @@ extractSchemaFromFields <- function(x, databaseId, label, useColumnNames = FALSE
   codes <- character(0)
   
   lapply(names(x[['step']]$columns), function(colName) {
-    y <- x$elements[[x[['step']]$columns[colName]]]
+    y <- x[["elements"]][[x[['step']]$columns[colName]]]
     if(!is.null(y)) {
       y$id <- cuid()
       if (is.null(y$code)) {
@@ -1466,7 +1466,7 @@ newStep <- function(parent, vars = parent$vars, columns = parent$columns, filter
 # ---- Table formatting ----
 
 tblLabel <- function(x) {
-  x$formTree$forms[[x$formTree$root]]$label
+  x[["formTree"]]$forms[[x[["formTree"]]$root]]$label
 }
 
 #' @importFrom pillar tbl_format_header style_subtle align
@@ -1478,9 +1478,9 @@ tbl_format_header.tbl_activityInfoRemoteRecords <- function(x, setup, ...) {
   columns <- tblColumns(x)
   
   named_header <- list(
-    "Form (id)" = sprintf("%s (%s)", tblLabel(x), x$formTree$root),
-    "Total form records" = x$totalRecords,
-    "Last edit time" = format(as.POSIXct(x$lastEditTime, origin = "1970-01-01", tz = "UTC"), "%Y-%m-%d %H:%M:%S"),
+    "Form (id)" = sprintf("%s (%s)", tblLabel(x), x[["formTree"]]$root),
+    "Total form records" = x[["totalRecords"]],
+    "Last edit time" = format(as.POSIXct(x[["lastEditTime"]], origin = "1970-01-01", tz = "UTC"), "%Y-%m-%d %H:%M:%S"),
     "Table field types" = tblFieldTypes(x),
     "Table filter" = tblFilter(x),
     "Table sort" = tblSort(x),
@@ -1506,7 +1506,7 @@ tbl_sum.tbl_activityInfoRemoteRecords <- function(x, ...) {
 
 #' @export
 tbl_sum.activityInfo_tbl_df <- function(x, ...) {
-  c("ActivityInfo tibble" = sprintf("Remote form: %s (%s)",tblLabel(attr(x, "remoteRecords")), attr(x, "remoteRecords")$formTree$root), NextMethod())
+  c("ActivityInfo tibble" = sprintf("Remote form: %s (%s)",tblLabel(attr(x, "remoteRecords")), attr(x, "remoteRecords")[["formTree"]]$root), NextMethod())
 }
 
 # ---- Source ----
@@ -1527,7 +1527,7 @@ src_activityInfo.databaseTree <- function(x) {
 #' @importFrom dplyr src_tbls
 #' @exportS3Method src_tbls src_activityInfoFormTree
 src_tbls.src_activityInfoFormTree <- function(x, ...) {
-  names(x$formTree$forms)
+  names(x[["formTree"]]$forms)
 }
 
 #' @exportS3Method src_tbls src_activityInfoDatabaseTree
@@ -1638,7 +1638,7 @@ dplyr::filter
 #' @importFrom dplyr collect
 collect.tbl_activityInfoRemoteRecords <- function(x, ...) {
   newTbl <- queryTable(
-    x$formTree,
+    x[["formTree"]],
     columns = tblColumns(x),
     asTibble = TRUE,
     makeNames = FALSE,
@@ -1682,7 +1682,7 @@ select.tbl_activityInfoRemoteRecords <- function(.data, ...) {
     if (rlang::is_call(var, name = "$")||(rlang::is_symbol(var)&&exists(as.character(var), envir = parent.frame(), inherits = TRUE))) {
       result <- rlang::eval_tidy(quo)
       
-      if (inherits(result, "activityInfoVariableExpression")&&result$formTree$root==.data$formTree$root) {
+      if (inherits(result, "activityInfoVariableExpression")&&result[["formTree"]]$root==.data[["formTree"]]$root) {
         fullPath <- paste(c(result[["formTree"]]$root, result[["pathIds"]]), collapse = ".")
         if (!is.null(name)) {
           activityInfoVars[[name]] <- fullPath
@@ -1691,7 +1691,7 @@ select.tbl_activityInfoRemoteRecords <- function(.data, ...) {
           activityInfoVars[[result[["currentPath"]]]] <- fullPath
           quosToReplace[[nm]] <- result[["currentPath"]]
         }
-      } else if (inherits(result, "activityInfoFormulaExpression")&&attributes(result)$root==.data$formTree$root) {
+      } else if (inherits(result, "activityInfoFormulaExpression")&&attributes(result)$root==.data[["formTree"]]$root) {
         quosToReplace[[nm]] <- attributes(result)$columnName
       }
     } else if (rlang::is_character(var)||rlang::is_symbol(var)) {
@@ -1708,12 +1708,15 @@ select.tbl_activityInfoRemoteRecords <- function(.data, ...) {
   validPaths <- missingActivityInfoVars
   for (var in missingVars) {
     ids <- tryCatch({
-      getPathIds(.data$formTree, var)
+      getPathIds(.data[["formTree"]], var)
     }, error = function(e) {
       NULL  # Path is invalid
     })
     if (!is.null(ids)) {
       validPaths[[var]] <- paste(ids, collapse = ".")
+      
+      validPaths[[var]] %in% names(.data[["elements"]])
+      
     } else {
       warning("Invalid ActivityInfo variable path: ", var)
     }
@@ -1782,7 +1785,7 @@ slice_head.tbl_activityInfoRemoteRecords <- function(.data, ..., n, prop) {
   if (missing(n)) {
     if (missing(prop)) stop("slice_head() must either be provide the number of rows n or prop.")
     stopifnot(prop>=0&&prop<=1)
-    n <- prop * .data$totalRecords
+    n <- prop * .data[["totalRecords"]]
   }
   head(.data, n = n)
 }
@@ -1793,7 +1796,7 @@ slice_tail.tbl_activityInfoRemoteRecords <- function(.data, ..., n, prop) {
   if (missing(n)) {
     if (missing(prop)) stop("slice_tail() must either be provide the number of rows n or prop.")
     stopifnot(prop>=0&&prop<=1)
-    n <- prop * .data$totalRecords
+    n <- prop * .data[["totalRecords"]]
   }
   tail(.data, n = n)
 }

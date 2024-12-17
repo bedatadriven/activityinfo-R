@@ -47,8 +47,11 @@ Suggests:
     markdown,
     withr,
     assertthat,
+    tidyverse,
     tidyr,
     purrr,
+    readr,
+    readxl,
     tinytex
 VignetteBuilder: knitr
 Config/testthat/edition: 3

@@ -8,7 +8,8 @@ parameter(id, label, range)
 }
 \arguments{
 \item{id}{the id of the parameter, for example "partner", which can
-be used in a formula as "@user.partner"}
+be used in a formula as "@user.partner". The id starts with a letter and may
+contain letters, numbers and underscores _ under 32 characters.}
 
 \item{label}{the label of the partner, for example, "Reporting partner"}
 

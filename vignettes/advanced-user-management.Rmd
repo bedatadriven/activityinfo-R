@@ -250,7 +250,7 @@ The CSV file used in this example might the following columns from the introduct
 | `email`                | The user's email address                                                                                                                          |
 | `role`                 | The ID of the role assigned to the user                                                                                                           |
 | `g:Reporting Partners` | Optional grant for the `Reporting Partners` form (1 for write access, 0 for read-only access)                                                     |
-| `p:Partner` (optional) | The user's reporting partner ID, which will be automatically filled in by the script based on the `Partner name` column, if not already provided. |
+| `p:Partner` (optional) | The user's reporting partner record reference |
 
 **Steps in this example**
 

@@ -47,6 +47,7 @@ Suggests:
     markdown,
     withr,
     assertthat,
+    tidyverse,
     tidyr,
     purrr,
     readr,

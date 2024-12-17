@@ -704,7 +704,7 @@ userOperations %>% filter(operation == "EDIT_RECORD")
 
 ## Find users with legacy roles
 
-It is important to update all roles so that users with legacy roles have grant-based roles when legacy roles will be phased out as they are deprecated. It is simple to find all users with legacy roles by doing the following with the `allUserRoles` and `allRoles` variables defined in the previous two sections.
+Legacy roles are marked for deprecation in the near future. Before legacy roles are phased out, it is important to migrate users with legacy roles to grant-based roles. Thankfully, it is simple to find all users with legacy roles by doing the following with the `allUserRoles` and `allRoles` variables defined in the previous two sections.
 
 ```{r eval=FALSE, include=TRUE}
 

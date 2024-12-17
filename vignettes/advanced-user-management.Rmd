@@ -148,7 +148,9 @@ readr::write_csv(x = csvData, file = "DatabaseUserRoles.csv", na = "")
 
 ```
 
-#### Adding readable parameter values
+With a complete overview of users, roles, and parameters now available in `DatabaseUserRoles.csv`, we can modify the file to add new users or make bulk updates. The next example will demonstrate how to use this file to assign users specific roles, parameters, and optional grants.
+
+#### Readable parameter values
 
 Parameters can define row-level access rules. We may want to include some specific information about a role parameter such as `Partner` that gives a user's assigned partner organization. This can make our CSV easier to review.
 
@@ -195,7 +197,41 @@ readr::write_csv(x = csvData, file = "DatabaseUserRoles.csv", na = "")
 
 ```
 
-With a complete overview of users, roles, and parameters now available in `DatabaseUserRoles.csv`, we can modify the file to add new users or make bulk updates. The next example will demonstrate how to use this file to assign users specific roles, parameters, and optional grants.
+#### Create a parameter reference lookup with labels
+
+It may also be useful to create a lookup table where we store the parameter references. Following from the last example, we need to first get the partner ID to fill our parameter `Partner` for each user with the correct reference.
+
+```{r eval=FALSE, include=TRUE}
+# Fetch partner names and IDs from the reporting partner form
+partners <- getRecords(reportingPartnerReferenceFormId) |> collect()
+
+# Create a lookup
+partnerParameterLookupTable <- partners |> 
+  select(partner = `Partner name`, id = `_id`) |>
+  mutate(
+    parameterReference = map_chr(
+      id, 
+      ~ reference(formId = reportingPartnerReferenceFormId, recordId = .x)
+    )
+  ) |>
+  select(-id)
+
+# The following named list can also be used in R to map names to references
+partnerParameterMap <- deframe(partnerParameterLookupTable[, c("partner", "parameterReference")])
+
+```
+
+This will result in a table of partners to find the parameter references one can use in the `p:` column.
+
+```
+# ActivityInfo tibble: Remote form: Reporting Partners (<partner form ID>)
+# A tibble:            3 × 2
+  partner   parameterReference                 
+  <chr>     <chr>                              
+1 Partner A <partner form ID>:cx51safm37c3f5icog
+2 Partner B <partner form ID>:crv6qs1m37c3f5icoh
+3 Partner C <partner form ID>:c6lra77m37c3f5icoi
+```
 
 ### Example 3: Bulk-add users with roles, grants, and parameters
 
@@ -206,14 +242,13 @@ With the CSV file generated in Example 2 (DatabaseUserRoles.csv), we now have a 
 
 **Understanding the CSV File**
 
-The CSV file used in this example includes the following columns:
+The CSV file used in this example might the following columns from the introduction to grant-based roles:
 
 | **Column Name**        | **Description**                                                                                                                                   |
 |---------------|---------------------------------------------------------|
 | `name`                 | The user's name                                                                                                                                   |
 | `email`                | The user's email address                                                                                                                          |
 | `role`                 | The ID of the role assigned to the user                                                                                                           |
-| `Partner name`         | The name of the user's organization, used to look up the corresponding ID in the reporting partner table                                          |
 | `g:Reporting Partners` | Optional grant for the `Reporting Partners` form (1 for write access, 0 for read-only access)                                                     |
 | `p:Partner` (optional) | The user's reporting partner ID, which will be automatically filled in by the script based on the `Partner name` column, if not already provided. |
 
@@ -221,66 +256,21 @@ The CSV file used in this example includes the following columns:
 
 The example consists of two key steps:
 
-1.  **Retrieve `Partner` reference Based on `Partner name`:**
-    -   The script maps the `Partner name` column to the corresponding partner IDs in the reporting partner table.
-    -   If any partner names do not match the existing table, the script will raise an error.
+1.  **Dynamically identify columns for optional grants and parameters:**
+    -   Fetch the definitions for optional grants and parameters so we can update the roles.
 2.  **Assign Roles, Parameters, and Grants:**
-    -   Using the CSV data, the script assigns roles to users and dynamically applies optional grants and parameters as defined in the file.
+    -   Using the CSV data, the script assigns roles to users and dynamically applies optional grants and parameters as defined in the file and in the role definitions from step 1.
 
 The following sections will walk you through each step in detail. To start we need to initialize our variables and read the CSV file:
 
 ```{r eval=FALSE, include=TRUE}
 databaseId <- "<the database id>" # Replace with your database ID
-reportingPartnerReferenceFormId = "<the partner form id>" # Replace with your partner form ID
 users <- readr::read_csv("UsersToModify.csv") # load the CSV template
 ```
 
-#### Step 1: Retrieve `Partner` reference based on `Partner name` column
+#### Step 1: Identify columns for optional grants (`g:`) and parameters (`p:`).
 
-We need to first get the partner ID to fill our parameter `Partner` for each user with the correct reference.
-
-```{r eval=FALSE, include=TRUE}
-# Fetch partner names and IDs from the reporting partner form
-partners <- getRecords(reportingPartnerReferenceFormId) |> collect()
-
-allPartnerNames <- na.omit(unique(partners[["Partner name"]]))
-
-# Check for unmatched partner names in the CSV.
-unmatchedPartners <- users[["Partner name"]][
-  !is.na(users[["Partner name"]])&!users[["Partner name"]] %in% allPartnerNames
-]
-
-
-if (length(unmatchedPartners) > 0) {
-  stop("The following values in `Partner name` do not have a corresponding _id in the Reporting Partners form: ", paste(unique(unmatchedPartners), collapse = ", "), ". Please correct the names and try again.")
-}
-
-# Map `Partner name` to corresponding partner IDs
-partnerIdMap <- deframe(partners[, c("Partner name", "_id")])
-
-# Add missing IDs to the `p:Partners` column as a parameter reference
-users <- users |>
-  mutate(
-    `p:Partner` = coalesce(
-      `p:Partner`,
-      {
-        partnerId <- unname(partnerIdMap[`Partner name`])  # Lookup partner ID and drop names
-        ifelse(
-          !is.na(partnerId) & !is.null(partnerId), 
-          reference(formId = reportingPartnerReferenceFormId, recordId = partnerId), 
-          NA_character_
-        )
-      }
-    )
-  )
-
-```
-
-Now we have the partner ID for each user's `Partner` parameter.
-
-#### Step 2: Identify columns for optional grants (`g:`) and parameters (`p:`).
-
-The second step is to retrieve all the role grants and parameters corresponding to each column in the CSV file. We will use this information to correctly add the user roles.
+The first step is to retrieve all the role grants and parameters corresponding to each column in the CSV file. We will use this information to correctly add the user roles.
 
 ```{r eval=FALSE, include=TRUE}
 # get database role definitions and resources
@@ -355,7 +345,7 @@ $`p:Partner`
 1 rp     Reporting Partner partner     Partner <reporting_partner_form_id>
 ```
 
-#### Step 3: Assign roles, parameters and grants
+#### Step 2: Assign roles, parameters and grants
 
 Finally, loop through each user record to assign roles, parameters, and optional grants.
 

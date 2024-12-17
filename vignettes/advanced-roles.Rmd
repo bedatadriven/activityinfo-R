@@ -1,0 +1,265 @@
+---
+title: "Advanced roles"
+author: "BeDataDriven B.V."
+date: "`r Sys.Date()`"
+layout: docArticle
+category: tutorials
+order: 0
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+relatedVideos:
+- /support/webinars/2023-10-19-office-hour-designing-roles
+- /support/webinars/2023-10-12-best-practices-for-designing-roles
+vignette: >
+  %\VignetteIndexEntry{Advanced roles}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(activityinfo)
+```
+
+## Introduction
+
+If you are new to grant-based roles, start with "[Working with grant-based roles](working-with-grant-based-roles.html)", which also covers role parameters for row level access and auditing roles across multiple databases.
+
+This tutorial will provide advanced use cases for how to create and work with grant-based roles and permissions. Included are:
+
+-   restrict access to records created by the user
+-   row-level access using multiple parameters in a role
+
+Note: in order to fully follow this tutorial you must have an ActivityInfo user account or a trial account with the permission to add a new database. Set up a free trial here: <https://www.activityinfo.org/signUp>
+
+### EXAMPLE 1: Create a role with access only to the records that the user created
+
+**Description:** The users are counselors who may only access their own records in a database. In order to create this role, ensure each form that a counselor should access contains a *user field*.
+
+In our example the user field has the field code `pwname`.
+
+The user will have access to records in forms where the `pwname` field matches the user. Otherwise, they will be denied access. The user will be denied access to any form which is missing the `pwname` field.
+
+We set these conditions on operations of the database grant and these conditions are also inherited by each form inside that database.
+
+*Tip:* Always ensure that field codes (such as `pwname`) are consistent across all forms where access is granted.
+
+```{r eval=FALSE, include=TRUE}
+databaseId <- "<database id>"
+
+# The @user token dynamically evaluates to the current user's identifier, and it is compared to the pwname field for row-level access.
+exampleRole1 <- role(
+  id = "counselor",
+  label = "Counselor",
+  grants = 
+    list(
+      grant(
+        resourceId = databaseId, 
+        permissions = resourcePermissions(
+          view="@user == pwname",
+          add_record="@user == pwname",
+          edit_record= "@user == pwname",
+          discover=TRUE
+        )
+      )
+  )
+)
+
+# Updating the role overwrites any existing permissions for the role in the database
+updateRole(databaseId, exampleRole1)
+
+```
+
+## Row-level access using multiple parameters in a role
+
+### EXAMPLE 2: Create a role based on two different parameters.
+
+**Description:** In this example we want to create a user based on their field office and the partner organization. They should only have access to records that are associated with their field office and organization. This example shows how to restrict access to a specific table or to all tables in a database.
+
+This role requires two different parameters that must match fields in the records they can access. Each form must have:
+
+1.  a *reference field* with code `field_office` that points to the field office form/table, and
+2.  a *reference field* with code `reporting_partner` that points to the reporting partner form/table
+
+Consistent naming of field codes such as `field_office` across forms ensures that dynamic role conditions function correctly. We will use the condition `field_office == @user.field_office&&reporting_partner == @user.partner` to dynamically determine access to records. Both parameters should be `TRUE`, thus the `&&` symbol is used.
+
+If either field is missing, the user will not have access to the form. For an example for how to create forms and fields with the R package, see the vignette "[Working with grant-based roles](working-with-grant-based-roles.html)" and the R package documentation.
+
+```{r eval=FALSE, include=TRUE}
+databaseId <- "<database id>"
+reportingFormId <- "<reporting form id>"
+
+# the user will need view access to these forms to be able to select 
+fieldOfficeReferenceFormId <- "<field office form id>"
+reportingPartnerReferenceFormId <- "<reporting partner form id>"
+
+# setup parameters pointing to the reference forms
+partnerParameter <- parameter(
+  id = "reporting_partner", 
+  label = "Reporting Partner", 
+  range = reportingPartnerReferenceFormId
+)
+fieldOfficeParameter <- parameter(
+  id = "field_office", 
+  label = "Field Office", 
+  range = fieldOfficeReferenceFormId
+)
+
+# This condition is dynamically evaluated for permissions for each record.
+combinedConditions <- "field_office == @user.field_office && reporting_partner == @user.reporting_partner"
+
+# the user should be able to view the list of partners and field offices to be able to select their own in reports
+referenceFormPermissions <- resourcePermissions(
+  view = TRUE,
+  discover = FALSE,
+  edit_record = FALSE)
+
+# apply the permissions to the partner form grant
+partnersFormGrant <- grant(
+  resourceId = reportingPartnerReferenceFormId, 
+  permissions = referenceFormPermissions
+)
+
+# apply the permissions to the field office form grant
+fieldOfficeFormGrant <- grant(
+  resourceId = fieldOfficeReferenceFormId, 
+  permissions = referenceFormPermissions
+)
+
+# apply record level access to the reporting form grant: view, add and edit only records where the partner and field office match @user
+# instead of assigning TRUE or FALSE, we use our formula to define each operation in this grant.
+reportingFormGrant <- grant(resourceId = reportingFormId,
+               permissions = resourcePermissions(
+                 view = combinedConditions,
+                 edit_record = combinedConditions,
+                 add_record = combinedConditions,
+                 discover = TRUE,
+                 export_records = TRUE))
+
+
+# grant access to just one table
+exampleRole2 <- role(  
+  id = "reportingfieldpartner",
+  label = "Reporting Partner (access to single form)",
+  grants = list(
+    partnersFormGrant,
+    fieldOfficeFormGrant,
+    reportingFormGrant
+  ),
+  parameters = list(
+    partnerParameter,
+    fieldOfficeParameter
+  )
+)
+
+# apply record-level access to any table that has both a reporting partner and field office field
+globalGrant <- grant(resourceId = databaseId,
+               permissions = resourcePermissions(
+                 view = combinedConditions,
+                 edit_record = combinedConditions,
+                 add_record = combinedConditions,
+                 discover = TRUE,
+                 export_records = TRUE))
+
+# replace the partners form grant with the database grant `globalGrant` and remove the `reportingFormGrant`
+exampleRole2Global <- role(
+  id = "reportingfieldpartnerall",
+  label = "Reporting Partner (global access to all reporting forms)",
+  grants = list(
+    partnersFormGrant,
+    fieldOfficeFormGrant,
+    globalGrant
+  ),
+  parameters = list(
+    partnerParameter,
+    fieldOfficeParameter
+  )
+)
+
+# role `rp` with only the ability to use the reporting form and view the reference forms
+updateRole(databaseId, exampleRole2)
+
+# role `rp_global` with the ability to use any form with both fields and to use view reference forms
+updateRole(databaseId, exampleRole2Global)
+
+
+```
+
+### EXAMPLE 3: Access based on three parameters
+
+**Description:** In this example we want to create a role so that a user may have access to one, two or three field offices. This example is similar to example 2 but instead we use the `||` symbol in the condition to indicate that the user should have access if any of the three fields match. Like in example 2, this requires there be a field with the code `field_office` in forms where we want to grant access.
+
+```{r eval=FALSE, include=TRUE}
+databaseId <- "<database id>"
+fieldOfficeReferenceFormId <- "<field office form id>"
+
+# create three parameters for assigning up to three field offices
+fieldOfficeParameter1 <- parameter(
+  id = "field_office_1", 
+  label = "Field Office 1", 
+  range = fieldOfficeReferenceFormId
+)
+fieldOfficeParameter2 <- parameter(
+  id = "field_office_2", 
+  label = "Field Office 2", 
+  range = fieldOfficeReferenceFormId
+)
+fieldOfficeParameter3 <- parameter(
+  id = "field_office_3", 
+  label = "Field Office 3", 
+  range = fieldOfficeReferenceFormId
+)
+
+threeFieldOfficeConditions <- "field_office == @user.field_office_1 ||
+                   field_office == @user.field_office_2 ||
+                   field_office == @user.field_office_3"
+
+
+# the user should be able to view the list of field offices to be able to select their own field offices
+referenceFormPermissions <- resourcePermissions(
+  view = TRUE,
+  discover = FALSE,
+  edit_record = FALSE)
+
+# apply the permissions to the field office form grant
+fieldOfficeFormGrant <- grant(
+  resourceId = fieldOfficeReferenceFormId, 
+  permissions = referenceFormPermissions
+)
+
+# apply record-level access to any table that contains field office field
+databaseGrant <- grant(resourceId = databaseId,
+               permissions = resourcePermissions(
+                 view = threeFieldOfficeConditions,
+                 edit_record = threeFieldOfficeConditions,
+                 add_record = threeFieldOfficeConditions,
+                 discover = TRUE,
+                 export_records = TRUE))
+
+# Create the role
+exampleRole3 <- role(  
+  id = "fieldofficeadmin",
+  label = "Field Office Administrator",
+  grants = list(
+    databaseGrant,
+    fieldOfficeFormGrant
+  ),
+  parameters = list(
+    fieldOfficeParameter1,
+    fieldOfficeParameter2,
+    fieldOfficeParameter3
+  )
+)
+
+updateRole(databaseId, exampleRole3)
+
+## IMPORTANT NOTE:  the "||" symbols stands for OR in R
+```

@@ -334,6 +334,7 @@ checkUserRole <- function(databaseId, newUser, roleId, roleParameters, roleResou
 #' @param roleId the id of the role to assign to the user.
 #' @param roleParameters a named list containing the role parameter values
 #' @param roleResources an optional list of optional grant-based resources assigned to the user
+#' @param assignment optionally create and pass a \code{\link[activityinfo]{roleAssignment}} like in updateUserRole()
 #'
 #' @details
 #'
@@ -381,9 +382,17 @@ checkUserRole <- function(databaseId, newUser, roleId, roleParameters, roleResou
 #' @export
 addDatabaseUser <- function(databaseId, email, name, locale = NA_character_, roleId,
                             roleParameters = list(),
-                            roleResources = c(databaseId)) {
+                            roleResources = c(databaseId), assignment) {
 
   url <- paste(activityInfoRootUrl(), "resources", "databases", databaseId, "users", sep = "/")
+  
+  if (!missing(assignment)) {
+    stopifnot("An assignment must be created with roleAssignment()" = ("activityInfoRoleAssignment" %in% class(assignment)))
+    stopifnot("Either an assignment must be provided or roleId to addDatabaseUser(), but not both." = missing(roleId))
+    roleId = assignment$id
+    roleParameters = assignment$parameters
+    roleResources = assignment$resources
+  }
 
   request <- list(
     email = email,
@@ -631,7 +640,7 @@ updateUserRole <- function(databaseId, userId, assignment) {
 roleAssignment <- function(roleId, roleParameters = list(), roleResources) {
   stopifnot(is.list(roleParameters))
   if (any(is.na(names(roleParameters)))) {
-    stop("roleParameters must be named with each parameter name.")
+    stop("In the `roleParameters` list, each item must be named")
   }
 
   if (length(roleParameters) == 0) {
@@ -981,7 +990,8 @@ deleteRoles <- function(databaseId, roleIds) {
 #' See \link{role} for the creation of roles.
 #'
 #' @param id the id of the parameter, for example "partner", which can
-#' be used in a formula as "@user.partner" 
+#' be used in a formula as "@user.partner". The id starts with a letter and may
+#' contain letters, numbers and underscores _ under 32 characters.
 #' @param label the label of the partner, for example, "Reporting partner"
 #' @param range the id of a reference table, for example the list of partners, 
 #' or a formula
@@ -995,7 +1005,7 @@ deleteRoles <- function(databaseId, roleIds) {
 #' }
 parameter <- function(id, label, range) {
   stopifnot("The id must be a character string" = is.null(id)||(is.character(id)&&length(id)==1&&nchar(id)>0))
-  stopifnot("The id must start with a letter, must be made of letters and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", id))
+  stopifnot("The id must start with a letter, must be made of letters, numbers and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[A-Za-z][A-Za-z0-9_]{0,31}$", id))
   stopifnot("The label is required to be a character string" = (is.character(label)&&length(label)==1&&nchar(label)>0))
   stopifnot("The range is required and must be a character string" = !is.null(range)&&(is.character(range)&&length(range)==1&&nchar(range)>0))
   
@@ -1109,7 +1119,8 @@ roleFilter <- function(id, label, filter) {
 #' Some administrative permissions are defined at the level of the role rather 
 #' than within grants. See \link{databasePermissions}.
 #'
-#' @param id the id of the role
+#' @param id the id of the role, must start with a lower case letter and may 
+#' contain up to 32 lower case letters and numbers 
 #' @param label the label or name of the role, e.g. "Viewer" or "Administrator" 
 #' @param parameters a list of \link{parameter} items defining role parameters
 #' @param grants a list of \link{grant} items for each resource and their 
@@ -1149,7 +1160,7 @@ roleFilter <- function(id, label, filter) {
 #' }
 role <- function(id, label, parameters = list(), grants, permissions = databasePermissions()) {
   stopifnot("The id must be a character string" = is.null(id)||(is.character(id)&&length(id)==1&&nchar(id)>0))
-  stopifnot("The id must start with a letter, must be made of lowercase letters and underscores _ and cannot be longer than 32 characters" = is.null(id)||grepl("^[a-z][a-z0-9_]{0,31}$", id))
+  stopifnot("The id must start with a letter, must be made of lowercase letters and numbers and cannot be longer than 32 characters" = is.null(id)||grepl("^[a-z][a-z0-9]{0,31}$", id))
   
   stopifnot("The label is required to be a character string" = (is.character(label)&&length(label)==1&&nchar(label)>0))
   

@@ -11,7 +11,8 @@ addDatabaseUser(
   locale = NA_character_,
   roleId,
   roleParameters = list(),
-  roleResources = c(databaseId)
+  roleResources = c(databaseId),
+  assignment
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ addDatabaseUser(
 \item{roleParameters}{a named list containing the role parameter values}
 
 \item{roleResources}{an optional list of optional grant-based resources assigned to the user}
+
+\item{assignment}{optionally create and pass a \code{\link[activityinfo]{roleAssignment}} like in updateUserRole()}
 }
 \description{
 Invites a user to a database and assigns a role

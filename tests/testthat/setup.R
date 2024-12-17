@@ -59,19 +59,21 @@ canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate =
         x[n] <- lapply(x[n], function(y) {
           if (is.recursive(y)) {
             # y
-            list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API."))
+            rep(list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API.")), length(y))
           } else if (is.list(y)) {
             # yReturn <- list(rep("<resource id>", length(y)))
             # names(yReturn) <- names(y)
-            list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API."))
+            rep(list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API.")), length(y))
           } else {
             # rep("<resource id>", length(y))
-            list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API."))
+            rep(list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API.")), length(y))
           }
         })
         
         n <- grepl(pattern = "resources", names(x)) & lengths(x) == 1
-        x[n] <- list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API."))
+        if (sum(n)>0) {
+          x[n] <- list(list(id = "<id>", note = "Empty resources until we can ensure a sort order in the API."))
+        }
         
         
       }
@@ -107,7 +109,7 @@ compare_recursively <- function(a, b, path = list()) {
     if (!identical(a,b)) {
       message(sprintf("Field with name/key '%s' value has changed", paste(path, collapse="'->'")))
     }
-    expect_identical(object = b, expected = a)
+    testthat::expect_identical(object = b, expected = a)
   } else if (is.list(a) && is.list(b)) {
     additionalFields <- names(b)[!names(b) %in% names(a)]
     if (length(additionalFields)>0) {
@@ -122,7 +124,7 @@ compare_recursively <- function(a, b, path = list()) {
     }
   } else {
     message(sprintf("Incompatible structures under name/key '%s'", paste(path, collapse="'->'")))
-    expect_identical(object = b, expected = a)
+    testthat::expect_identical(object = b, expected = a)
   }
 }
 
@@ -135,7 +137,7 @@ identicalForm <- function(a,b, b_allowed_new_fields = TRUE) {
   if (b_allowed_new_fields) {
     compare_recursively(a, b)
   } else {
-    expect_identical(object = b, expected = a)
+    testthat::expect_identical(object = b, expected = a)
   }
 }
 
@@ -158,7 +160,7 @@ expectActivityInfoSnapshotCompare <- function(x, snapshotName, replaceId = TRUE,
   if (allowed_new_fields) {
     compare_recursively(y, x)
   } else {
-    expect_identical(object = x, expected = y)
+    testthat::expect_identical(object = x, expected = y)
   }
 }
 

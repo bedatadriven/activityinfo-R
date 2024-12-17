@@ -1,8 +1,5 @@
-
 testField <- function(fieldSchema) {
   testthat::expect_identical(length(class(fieldSchema)), 4L)
-  
-  length(class(barcodeFieldSchema("Test")))
   
   databaseId = database$databaseId
   fmSchm <- formSchema(databaseId = databaseId, label = paste0("R form ",fieldSchema$label , " test ", cuid()))
@@ -121,6 +118,14 @@ test_that("Test roundtrip of referenceFieldSchema()", {
   testField(referenceFieldSchema(label = "A referenceFieldSchema field", referencedFormId = "A dummy formId"))
 })
 
+test_that("Test roundtrip of reverseReferenceFieldSchema()", {
+  testField(reverseReferenceFieldSchema(label = "A reversedReferenceFieldSchema field", referencedFormId = "A dummy formId", referencedFieldId = "A dummy fieldId"))
+})
+
+test_that("Test roundtrip of multipleReferenceFieldSchema()", {
+  testField(multipleReferenceFieldSchema(label = "A multipleReferenceFieldSchema field to the person form", referencedFormId = personFormId))
+})
+
 test_that("Test roundtrip of sectionFieldSchema()", {
   testField(sectionFieldSchema(label = "A sectionFieldSchema field"))
 })
@@ -216,38 +221,49 @@ testthat::test_that("migrateFieldData() works", {
     addFormField(
       singleSelectFieldSchema(label = "newC", options = as.list(letters[1:10]))
     )
-  
   updateFormSchema(schema = newSchema)
+  
+  aFnc = function(x) {
+    sprintf("2023-03-%02d", x)
+  }
+  bFnc =function(x) {
+    as.numeric(x)
+  }
+  cFnc = function(x) {
+    letters[as.numeric(x)]
+  }
   
   records <- getRecords(newSchema, prettyColumnStyle())
   
   migrateFieldData(
     records, 
     from = a, 
-    to = newA, 
-    function(x) {
-      sprintf("2023-03-%02d", x)
-    })
+    to = newA,
+    fn = aFnc
+    )
   
   migrateFieldData(
     records, 
     from = b, 
     to = newB, 
-    function(x) {
-      as.numeric(x)
-    })
+    fn = bFnc)
   
   migrateFieldData(
     records, 
     from = c, 
     to = newC, 
-    function(x) {
-      letters[as.numeric(x)]
-    })
+    fn = cFnc)
   
   recordsMinimal <- getRecords(newSchema, minimalColumnStyle()) %>% collect() %>% as.data.frame()
   
-  # should be a safe snapshot with minimalColumnStyle
-  testthat::expect_snapshot(recordsMinimal)
+  recordsMinimal <- recordsMinimal %>% mutate(
+    newALocal = aFnc(a),
+    newBLocal = bFnc(b),
+    newCLocal = cFnc(c)
+  )
+  
+  expect_identical(recordsMinimal[["newA"]], recordsMinimal[["newALocal"]])
+  expect_identical(recordsMinimal[["newB"]], recordsMinimal[["newBLocal"]])
+  expect_identical(recordsMinimal[["newC"]], recordsMinimal[["newCLocal"]])
 })
 

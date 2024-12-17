@@ -20,5 +20,4 @@ Helper method to fetch a role based on its id using the database tree or databas
 dbTree <- getDatabaseTree(databaseId = "ck3pqrp9a1z") # fetch the database tree
 role <- getDatabaseRole(dbTree, roleId = "rp") # extract the reporting partner role
 }
-
 }

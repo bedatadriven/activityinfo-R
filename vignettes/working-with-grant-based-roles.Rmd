@@ -600,7 +600,7 @@ dbUsers
 
 ```
 
-For a fuller example using optional grants and parameters for row-level access, see the previous section on creating roles. There are also advanced tutorials for bulk adding users with grants and parameters.
+For a fuller example using optional grants and parameters for row-level access, see the previous section on creating roles. There are also advanced tutorials for [bulk adding users with grants and parameters](advanced-user-management.html).
 
 ## List roles across all databases
 

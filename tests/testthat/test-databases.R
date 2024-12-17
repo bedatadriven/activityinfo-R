@@ -86,6 +86,32 @@ addTestUsers <- function(database, tree, nUsers = 1, roleId, roleParameters = li
   })
 }
 
+
+addTestUsersWithAssignment <- function(database, tree, nUsers = 1, assignment) {
+  lapply(1:nUsers, function(x) {
+    newUserEmail <- sprintf("test%s@example.com", cuid())
+    newDatabaseUser <- addDatabaseUser(
+      databaseId = database$databaseId, 
+      email = newUserEmail, 
+      name = "Test database user", 
+      locale = "en", 
+      assignment = assignment
+    )
+    
+    if (newDatabaseUser$added) {
+      testthat::expect_identical(newDatabaseUser$user$email, newUserEmail)
+      testthat::expect_identical(newDatabaseUser$user$role$id, assignment$id)
+      testthat::expect_true(newDatabaseUser$user$role$resources[[1]] %in% assignment$resources)
+      newDatabaseUser
+    } else {
+      warning("Could not add user with assignment.")
+      NULL
+    }
+  })
+}
+
+
+
 deleteTestUsers <- function(database, returnedUsers) {
   lapply(returnedUsers, function(newDatabaseUser) {
     if (newDatabaseUser$added) {
@@ -101,7 +127,7 @@ deleteTestUsers <- function(database, returnedUsers) {
 
 # Simplifies the user object for snapshots and warns when expected fields are missing and provides an informative message when there are new fields
 simplifyUsers <- function(returnedUsers, additionalFields = list(), addedUsers = FALSE, expectAdded = TRUE) {
-  expectedFields <- c(additionalFields, "databaseId","deliveryStatus","email", "name", "role", "userId")
+  expectedFields <- c(additionalFields, "databaseId","deliveryStatus","email", "name", "role", "userId", "locked")
   
   if (addedUsers) {
     expectedFields <- c("inviteTime",'version', 'activationStatus', 'lastLoginTime', 'grants', expectedFields)
@@ -340,7 +366,7 @@ testthat::test_that("addRole() and deleteRoles() work", {
     
     testthat::expect_length(addedTree$roles, length(originalTree$roles)+2)
     
-    testthat::test_that("deleteRoles", {
+    testthat::test_that("deleteRoles()", {
       deleteRoles(database$databaseId, roleIds = c(roleId1, roleId2))
       
       deletedTree <- getDatabaseTree(database$databaseId)
@@ -356,16 +382,11 @@ testthat::test_that("addRole() and deleteRoles() work", {
   
 })
 
-testthat::test_that("deleteRole() works", {
-  
-})
-
-
 testthat::test_that("updateRole() works for both legacy and new roles", {
-  roleId = "rp"
-  roleLabel = "Reporting partner"
+  roleId <- "rp"
+  roleLabel <- "Reporting partner"
 
-  # create a partner reference form
+  # create a partner reference form with label "Reporting Partners". Label is reused to find the form later on.
   partnerForm <- formSchema(
     databaseId = database$databaseId, 
     label = "Reporting Partners") |>
@@ -507,6 +528,23 @@ testthat::test_that("updateRole() works for both legacy and new roles", {
   
 })
 
+testthat::test_that("getDatabaseRoles() works", {
+  dbTree = getDatabaseTree(database$databaseId)
+  dbId = dbTree$databaseId
+  
+  result1 = getDatabaseRoles(dbId)
+  result2 = getDatabaseRoles(dbTree)
+  
+  testthat::expect_identical(result1, result2)
+  
+  testthat::expect_identical(
+    result1 |> filter(id == "rp") |> nrow(),
+    1L
+  )
+  
+  expectActivityInfoSnapshotCompare(result1, snapshotName = "databases-getDatabaseRoles", allowed_new_fields = TRUE)
+})
+
 testthat::test_that("getDatabaseRole() works", {
   dbTree = getDatabaseTree(database$databaseId)
   dbId = dbTree$databaseId
@@ -561,6 +599,26 @@ testthat::test_that("roleAssignment() works", {
     roleResources = list("resource1", "resource2", "resource3")
   ))
 })
+
+
+testthat::test_that("addDatabaseUser() accepts a role assignment with parameters and optional grants", {
+  rpRole <- getDatabaseRole(database$databaseId, roleId  = "rp")
+
+  optionalGrants <- as.list(unlist(lapply(rpRole$grants, function(x) {if (x$optional) return(x$resourceId)})))
+  
+  partnerFormId = optionalGrants[[1]] # could also use the label "Reporting Partners" if multiple grants are given
+  
+  userRoleParam <- list(
+    partner = reference(formId = partnerFormId, recordId = "partner1")
+  )
+
+  addTestUsersWithAssignment(database, tree, nUsers = 1, assignment = roleAssignment(
+    roleId = "rp", 
+    roleParameters = userRoleParam,
+    roleResources = optionalGrants
+  ))
+})
+
 
 testthat::test_that("updateGrant() works", {
   #old method - not tested#

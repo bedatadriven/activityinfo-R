@@ -1,3 +1,9 @@
+## [4.38]
+- New vignettes on grant-based roles, advanced user management (bulk actions), and advanced role use-cases (#122, #133)
+- Improved metadata on getRecords() to include last time modified (#26, #39)
+- Improved getDatabaseUsers() to include recent metadata fields (locked, userLicenseType, activitationStatus etc.) (#128, #130)
+- Improved testthat snapshot functions and removing snapshots that depend on the server
+
 ## [4.37]
 - Legacy roles are no longer supported from 4.37 onwards
 - Potential breaking change: the maxDepth parameter in column styles is now set to two by default; parent and reference columns no longer expand indefinitely

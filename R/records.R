@@ -262,6 +262,7 @@ getRecordHistory <- function(formId, recordId, asDataFrame = TRUE) {
     recHistDF <- dplyr::tibble(
       formId = unlist(lapply(recHist, function(x) {x$formId})),
       recordId = unlist(lapply(recHist, function(x) {x$recordId})),
+      version = unlist(lapply(recHist, function(x) {x$version})),
       time = format(as.POSIXct(unlist(lapply(recHist, function(x) {x$time})), origin = "1970-01-01", tz = "UTC"), "%Y-%m-%d %H:%M:%S"), #unlist(lapply(reHist, function(x) {x$time})),
       subFieldId = unlist(lapply(recHist, function(x) {x$subFieldId})),
       subFieldLabel = unlist(lapply(recHist, function(x) {x$subFieldLabel})),
@@ -1088,7 +1089,7 @@ elementVarName <- function(y, style) {
 
   colNameStyle <- style$columnNames[[1]]
 
-  colName = NULL
+  colName <- NULL
 
   if(colNameStyle == "code") {
     colName <- y[["code"]]
@@ -1140,12 +1141,15 @@ elementVarName <- function(y, style) {
 tbl.src_activityInfo <- function(src, formTree, style = defaultColumnStyle(),...) {
   stopifnot(formTree$root %in% dplyr::src_tbls(src))
 
-  totalRecords = getTotalRecords(formTree)
-  step = firstStep(formTree, style, totalRecords)
+  recordsMetadata <- getTotalLastEditTime(formTree)
+  totalRecords <- recordsMetadata[["totalRecords"]]
+  lastEditTime <- recordsMetadata[["lastEditTime"]]
+  
+  step <- firstStep(formTree, style, totalRecords)
   idStyle <- style
   idStyle$columnNames <- "id"
 
-  elements = namedElementVarList(formTree = formTree, style = idStyle)
+  elements <- namedElementVarList(formTree = formTree, style = idStyle)
 
   dplyr::make_tbl(
     c("activityInfoRemoteRecords", "lazy"),
@@ -1155,8 +1159,22 @@ tbl.src_activityInfo <- function(src, formTree, style = defaultColumnStyle(),...
     "columns" = step$columns,
     "step" = step,
     "elements" = elements,
-    "totalRecords" = totalRecords
+    "totalRecords" = totalRecords,
+    "lastEditTime" = lastEditTime
   )
+}
+
+getTotalLastEditTime <- function(formTree) {
+  df <- queryTable(formTree$root, columns = list("id"="_id", "lastEditTime" = "_lastEditTime"), asTibble = TRUE, makeNames = FALSE, window = c(0L,1L), sort=list(list(dir = "DESC", field = "_lastEditTime")))
+  totalRecords <- attr(df, "totalRows")
+  if (totalRecords==0) {
+    # required to check the formTree as queryTable used in totalRecords does not error if there are no permissions but returns 0 rows
+    formTree <- getFormTree(formTree$root)
+    df <- queryTable(formTree$root, columns = list("id"="_id", "lastEditTime" = "_lastEditTime"), asTibble = TRUE, makeNames = FALSE, window = c(0L,1L), sort=list(list(dir = "DESC", field = "_lastEditTime")))
+    totalRecords <- attr(df, "totalRows")
+  }
+  lastEditTime <- df[[1,"lastEditTime"]]
+  list(totalRecords = totalRecords, lastEditTime = lastEditTime, df = df)
 }
 
 getTotalRecords <- function(formTree) {
@@ -1455,10 +1473,11 @@ tbl_format_header.tbl_activityInfoRemoteRecords <- function(x, setup, ...) {
 
   window <- tblWindow(x)
   columns <- tblColumns(x)
-
+  
   named_header <- list(
     "Form (id)" = sprintf("%s (%s)", tblLabel(x), x$formTree$root),
     "Total form records" = x$totalRecords,
+    "Last edit time" = format(as.POSIXct(x$lastEditTime, origin = "1970-01-01", tz = "UTC"), "%Y-%m-%d %H:%M:%S"),
     "Table fields types" = tblFieldTypes(x),
     "Table filter" = tblFilter(x),
     "Table sort" = tblSort(x),

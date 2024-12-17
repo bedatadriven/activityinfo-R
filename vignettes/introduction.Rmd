@@ -66,7 +66,10 @@ activityInfoToken("2d6016c9cb3be78954eb396f806a20e9")
 
 After the authentication process has been successfully completed, a prompt will ask if the token file named *`r basename(activityinfo:::credentialsFile)`* should be written to your home directory. Only write the file to your home directory if this is secure. Don't share or publish this token file and preserve securely as it contains your personal access token.
 
-Before start working on the API calls, do not forget to restart your *R* session to have changes applied.
+If you would like to avoid prompts, set `prompt = FALSE` to explicitly do this, including for Shiny server apps or non-interactive scripts. 
+```{r, eval=FALSE}
+activityInfoToken("2d6016c9cb3be78954eb396f806a20e9", prompt = FALSE)
+```
 
 ## Databases
 
@@ -75,8 +78,8 @@ You can list the databases that you own or have been shared with you using
 as a `data.frame`:
 
 ```{r, eval=FALSE}
-dblist <- getDatabases()
-head(dblist)
+dbList <- getDatabases()
+head(dbList)
 ```
 
 

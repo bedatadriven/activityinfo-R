@@ -41,16 +41,17 @@ In order to get a list of the databases that you have access to, use `getDatabas
 
 ```{r eval=FALSE, include=TRUE}
 
-dbList <- getDatabases()
+# Get the list of databases a data.frame
+dbDf <- getDatabases()
+
 
 # get the first database
+dbList <- getDatabases(asDataFrame = FALSE)
 firstDb <- dbList[[1]]
 
-# Make the list a data.frame
-dbListDf <- do.call(rbind, lapply(dbList, data.frame))
 
 # Get the record 
-newDbRecord <- dbListDf[dbListDf$databaseId == newDb$databaseId,]
+newDbRecord <- dbDf[dbDf$databaseId == newDb$databaseId,]
 
 ```
 

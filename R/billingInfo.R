@@ -13,12 +13,12 @@ getBillingAccount <- function(billingAccountId, asDataFrame = TRUE) {
   
   billingInfo <- getResource(paste0("/billingAccounts/", billingAccountId), task = "Getting billing account info")
   billingInfo$id <- as.character(billingInfo$id)
+  billingInfo$addons <- list(billingInfo$addons)
   if (is.null(billingInfo$parentBillingAccount)) {
     billingInfo$parentBillingAccount <- NA
   } else {
     billingInfo$parentBillingAccount <- as.character(billingInfo$parentBillingAccount)
   }
-
   if (asDataFrame == TRUE) {
     billingInfo <- tibble::as_tibble(billingInfo)
     return(billingInfo)

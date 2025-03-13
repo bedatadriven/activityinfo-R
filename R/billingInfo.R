@@ -14,10 +14,10 @@ getBillingAccount <- function(billingAccountId, asDataFrame = TRUE) {
   billingInfo <- getResource(paste0("/billingAccounts/", billingAccountId), task = "Getting billing account info")
   billingInfo$id <- as.character(billingInfo$id)
   billingInfo$addons <- list(billingInfo$addons)
-  if (is.null(billingInfo$parentBillingAccount)) {
-    billingInfo$parentBillingAccount <- NA
+  if (is.null(billingInfo$parentBillingAccountId)) {
+    billingInfo$parentBillingAccountId <- NA
   } else {
-    billingInfo$parentBillingAccount <- as.character(billingInfo$parentBillingAccount)
+    billingInfo$parentBillingAccountId <- as.character(billingInfo$parentBillingAccountId)
   }
 
   if (asDataFrame == TRUE) {
@@ -141,10 +141,10 @@ getDatabaseBillingAccount <- function(databaseId, asDataFrame = TRUE) {
   billingInfo <- getResource(paste0("/databases/", databaseId, "/billingAccount"), task = "Getting database billing account")
   billingInfo$id <- as.character(billingInfo$id)
   billingInfo$addons <- list(billingInfo$addons)
-  if (is.null(billingInfo$parentBillingAccount)) {
-    billingInfo$parentBillingAccount <- NA
+  if (is.null(billingInfo$parentBillingAccountId)) {
+    billingInfo$parentBillingAccountId <- NA
   } else {
-    billingInfo$parentBillingAccount <- as.character(billingInfo$parentBillingAccount)
+    billingInfo$parentBillingAccountId <- as.character(billingInfo$parentBillingAccountId)
   }
 
   if (asDataFrame) {

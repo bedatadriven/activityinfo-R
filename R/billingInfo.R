@@ -13,9 +13,7 @@ getBillingAccount <- function(billingAccountId, asDataFrame = TRUE) {
   
   billingInfo <- getResource(paste0("/billingAccounts/", billingAccountId), task = "Getting billing account info")
   billingInfo$id <- as.character(billingInfo$id)
-  if (length(billingInfo$addons) == 0) {
-    billingInfo$addons <- c()
-  }
+  billingInfo$addons <- list(billingInfo$addons)
 
   if (asDataFrame == TRUE) {
     billingInfo <- tibble::as_tibble(billingInfo)

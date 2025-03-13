@@ -19,6 +19,7 @@ getBillingAccount <- function(billingAccountId, asDataFrame = TRUE) {
   } else {
     billingInfo$parentBillingAccount <- as.character(billingInfo$parentBillingAccount)
   }
+
   if (asDataFrame == TRUE) {
     billingInfo <- tibble::as_tibble(billingInfo)
     return(billingInfo)
@@ -139,6 +140,7 @@ getDatabaseBillingAccount <- function(databaseId, asDataFrame = TRUE) {
   
   billingInfo <- getResource(paste0("/databases/", databaseId, "/billingAccount"), task = "Getting database billing account")
   billingInfo$id <- as.character(billingInfo$id)
+  billingInfo$addons <- list(billingInfo$addons)
   if (is.null(billingInfo$parentBillingAccount)) {
     billingInfo$parentBillingAccount <- NA
   } else {

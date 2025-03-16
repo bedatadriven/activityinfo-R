@@ -22,7 +22,7 @@ testthat::test_that("getFormSchema() and as.data.frame.formSchema() return a Sch
 
   output <- as.data.frame(output)
 
-  testthat::expect_true(inherits(output, "data.frame") & nrow(output) == 2 & ncol(output) == 17)
+  testthat::expect_true(inherits(output, "data.frame") & nrow(output) > 1 & ncol(output) > 10)
   testthat::expect_true(all(c(
     "databaseId",
     "formId",

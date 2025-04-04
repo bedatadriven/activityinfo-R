@@ -13,6 +13,13 @@ getBillingAccount <- function(billingAccountId, asDataFrame = TRUE) {
   
   billingInfo <- getResource(paste0("/billingAccounts/", billingAccountId), task = "Getting billing account info")
   billingInfo$id <- as.character(billingInfo$id)
+  billingInfo$addons <- list(billingInfo$addons)
+  if (is.null(billingInfo$parentBillingAccountId)) {
+    billingInfo$parentBillingAccountId <- NA
+  } else {
+    billingInfo$parentBillingAccountId <- as.character(billingInfo$parentBillingAccountId)
+  }
+
   if (asDataFrame == TRUE) {
     billingInfo <- tibble::as_tibble(billingInfo)
     return(billingInfo)
@@ -131,13 +138,19 @@ getDatabaseBillingAccount <- function(databaseId, asDataFrame = TRUE) {
   if(missing(databaseId)) stop("A databaseId must be provided")
   stopifnot("A single databaseId must be provided" = (length(databaseId)==1))
   
-  databaseOwner <- getResource(paste0("/databases/", databaseId, "/billingAccount"), task = "Getting database owner")
-  databaseOwner$id <- as.character(databaseOwner$id)
-  
-  if (asDataFrame) {
-    databaseOwner <- as_tibble(databaseOwner)
+  billingInfo <- getResource(paste0("/databases/", databaseId, "/billingAccount"), task = "Getting database billing account")
+  billingInfo$id <- as.character(billingInfo$id)
+  billingInfo$addons <- list(billingInfo$addons)
+  if (is.null(billingInfo$parentBillingAccountId)) {
+    billingInfo$parentBillingAccountId <- NA
+  } else {
+    billingInfo$parentBillingAccountId <- as.character(billingInfo$parentBillingAccountId)
   }
-  return(databaseOwner)
+
+  if (asDataFrame) {
+    billingInfo <- as_tibble(billingInfo)
+  }
+  return(billingInfo)
 }
 
 

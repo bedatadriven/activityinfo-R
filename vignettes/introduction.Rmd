@@ -13,8 +13,9 @@ relatedVideos:
 - /support/webinars/2022-09-22-introduction-to-R-and-ActivityInfo
 vignette: >
   %\VignetteIndexEntry{Introduction to ActivityInfo and R}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
 ---
 
 ```{r, include = FALSE}
@@ -25,14 +26,9 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-This tutorial is about the *ActivityInfo R Package* that is a client used to 
-access to the [ActivityInfo REST API](https://www.activityinfo.org/apidocs/index.html).
-While this is an API client, names of functions and arguments are modeled more
-closely to web user interface to facilitate its use.
+This tutorial is about the *ActivityInfo R Package* that is a client used to access to the [ActivityInfo REST API](https://www.activityinfo.org/apidocs/index.html). While this is an API client, names of functions and arguments are modeled more closely to web user interface to facilitate its use.
 
-With this client, you can programmatically obtain and modify your data. You can also manage users, create new
-databases and forms, or define reports. Any thing else that is possible through
-ActivityInfo's user interface can be automated using the API and this R package.
+With this client, you can programmatically obtain and modify your data. You can also manage users, create new databases and forms, or define reports. Any thing else that is possible through ActivityInfo's user interface can be automated using the API and this R package.
 
 ## Install the R client
 
@@ -43,22 +39,18 @@ First, you should install *ActivityInfo API R client* in your system.
 devtools::install_github("bedatadriven/activityinfo-R")
 ```
 
-Then, put the library call at the top of your script file. 
+Then, put the library call at the top of your script file.
 
 ```{r, warning=FALSE}
 library(activityinfo)
 library(dplyr)
 ```
 
-If you are using the [ActivityInfo Self-Managed  Server](https://www.activityinfo.org/support/docs/self-managed/index.html), you must
-provide the URL of your server using [activityInfoRootUrl](../reference/activityInfoRootUrl.html)
+If you are using the [ActivityInfo Self-Managed Server](https://www.activityinfo.org/support/docs/self-managed/index.html), you must provide the URL of your server using [activityInfoRootUrl](../reference/activityInfoRootUrl.html)
 
 ## Authentication
 
-In order to access to the *ActivityInfo API*, you must authenticate to the server 
-with a personal API token. You can 
-[generate a personal access token](https://www.activityinfo.org/support/docs/m/84880/l/1333305.html)
-from the Profile Settings page in ActivityInfo. Logging in by email and password through the API is now deprecated and insecure.
+In order to access to the *ActivityInfo API*, you must authenticate to the server with a personal API token. You can [generate a personal access token](https://www.activityinfo.org/support/docs/m/84880/l/1333305.html) from the Profile Settings page in ActivityInfo. Logging in by email and password through the API is now deprecated and insecure.
 
 ```{r, eval=FALSE}
 activityInfoToken("2d6016c9cb3be78954eb396f806a20e9")
@@ -66,27 +58,22 @@ activityInfoToken("2d6016c9cb3be78954eb396f806a20e9")
 
 After the authentication process has been successfully completed, a prompt will ask if the token file named *`r basename(activityinfo:::credentialsFile)`* should be written to your home directory. Only write the file to your home directory if this is secure. Don't share or publish this token file and preserve securely as it contains your personal access token.
 
-If you would like to avoid prompts, set `prompt = FALSE` to explicitly do this, including for Shiny server apps or non-interactive scripts. 
+If you would like to avoid prompts, set `prompt = FALSE` to explicitly do this, including for Shiny server apps or non-interactive scripts.
+
 ```{r, eval=FALSE}
 activityInfoToken("2d6016c9cb3be78954eb396f806a20e9", prompt = FALSE)
 ```
 
 ## Databases
 
-You can list the databases that you own or have been shared with you using 
-[activityinfo::getDatabases]. Use the `asDf` argument to get the list 
-as a `data.frame`:
+You can list the databases that you own or have been shared with you using [activityinfo::getDatabases]. Use the `asDf` argument to get the list as a `data.frame`:
 
 ```{r, eval=FALSE}
 dbList <- getDatabases()
 head(dbList)
 ```
 
-
-In order to get details about a specific database, you can use [activityinfo::getDatabaseTree],
-or [activityinfo::getDatabaseResources] to return a `data.frame` with the list 
-of resources in the database. "Resources" include forms, subforms, folders,
-and reports.
+In order to get details about a specific database, you can use [activityinfo::getDatabaseTree], or [activityinfo::getDatabaseResources] to return a `data.frame` with the list of resources in the database. "Resources" include forms, subforms, folders, and reports.
 
 ```{r}
 resources <- getDatabaseResources("cfcdyr0kq6ik2wmf")
@@ -95,51 +82,96 @@ head(resources)
 
 ## Forms
 
-In order to get the form or sub-form schemas that you have access to, use `getFormSchema(formId)` call,
-which retrieves the the form's schema, including a list of fields in the form:
-
+In order to get the form or sub-form schemas that you have access to, use `getFormSchema(formId)` call, which retrieves the the form's schema, including a list of fields in the form:
 
 ```{r}
 schema <- getFormSchema("ceam1x8kq6ikcujg")
 head(schema, 4)
 ```
 
-You can find a form's ID from your browser's address bar when you have the form
-page open:
+You can find a form's ID from your browser's address bar when you have the form page open:
 
 ![The form id is the part following "form/"](https://www.activityinfo.org/support/screenshot/S65tNEnPlFqua.png)
 
 ## Getting records
 
-You can get the records from an ActivityInfo form as a dplyr-compatible table.
-Let's retrieve the list of projects from the [Simple 3W template](https://www.activityinfo.org/support/templates/3w.html)
-
+You can get the records from an ActivityInfo form as a dplyr-compatible table. Let's retrieve the list of projects from the [Simple 3W template](https://www.activityinfo.org/support/templates/3w.html)
 
 ```{r}
 records <- getRecords("ceam1x8kq6ikcujg") |> collect()
 head(records)
 ```
 
-Note that we pipe the records to [dplyr::collect], which actually retrieves
-all the records from the server. 
+Note that we pipe the records to [dplyr::collect], which actually retrieves all the records from the server.
 
-For forms with tens of thousands of records, you may want to apply filtering
-to narrow down the results before downloading all the records from the server.
-You can use the [dplyr::filter] function to apply a filter:
+For forms with tens of thousands of records, you may want to apply filtering to narrow down the results before downloading all the records from the server and select specific columns.
+
+You can use the [dplyr::filter] function to apply a filter and the [dplyr::select] function to select columns:
 
 ```{r}
 unicef <- getRecords("ceam1x8kq6ikcujg", prettyColumnStyle())  |> 
+  select(starts_with('_'), `Organization Name`) |>
   filter(`Organization Name` == "United Nations Childrens Fund") |>
   collect()
 ```
 
-This will send the filter to the server, and only download matching records.
+This will send the filter and selected columns to the server, and only download matching records and fields. The select statement will include the record id and last edited time that start with the special character "\_" and the organization name.
+
+### Creating and using calculated columns
+
+The remote records can be used to select specific columns and even auto expand into reference forms or subforms.
+
+![](images/clipboard-1150423579.png)
+
+The \$ character will trigger a list potential field names. This is an example of using these field references to select columns:
+
+```{r}
+x <- getRecords("ceam1x8kq6ikcujg")
+
+unicef <- x  |> 
+  select(
+    starts_with('_'), 
+    `Organization Name`,
+    location_name_burmese = x$Location$`[Name (Burmese)]`,
+    location_name_en = x$Location$`[Name]`
+    ) |>
+  filter(`Organization Name` == "United Nations Childrens Fund") |>
+  collect()
+```
+
+Additionally, one can use the [dplyr::mutate] function to add calculated fields using ActivityInfo formulas and fields before downloading the data. These can be used in filters:
+
+```{r}
+x <- getRecords("ceam1x8kq6ikcujg")
+
+unicef_falam <- x |> 
+  mutate(
+    location_combined = 
+      CONCAT(
+        "Burmese: ", x$Location$`[Name (Burmese)]`, 
+        "; ",
+        "English: ", x$Location$`[Name]`
+        ),
+    location_name_burmese = x$Location$`[Name (Burmese)]`,
+    location_name_en = `[Location].[Name]`
+  ) |>
+  select(
+    starts_with('_'), 
+    `Organization Name`,
+    contains("location")
+  ) |>
+  filter(
+    `Organization Name` == "United Nations Childrens Fund", 
+    location_name_en == "Falam"
+  ) |>
+  collect()
+
+unicef$location_combined
+```
 
 ## Updating records
 
-You can also use the R package to add, update, and import records. For single
-records you can use the [activityinfo::addRecord] and [activityinfo::updateRecord]
-functions:
+You can also use the R package to add, update, and import records. For single records you can use the [activityinfo::addRecord] and [activityinfo::updateRecord] functions:
 
 ```{r,eval=FALSE}
 addRecord(formId = "cxy123", fieldValues = list(
@@ -159,11 +191,9 @@ For adding or updating many records at once, you can use the [activityinfo::impo
 
 ## Adding and modifying forms
 
-You can also add new forms and modify existing form schemas. You can add or remove
-fields from a form, or add an entirely new form. 
+You can also add new forms and modify existing form schemas. You can add or remove fields from a form, or add an entirely new form.
 
-The example below will add a new database, and then add a new form for a survey
-to the database.
+The example below will add a new database, and then add a new form for a survey to the database.
 
 ```{r, eval=FALSE}
 surveyDb <- addDatabase("Surveys")
@@ -194,13 +224,12 @@ surveySchema <- formSchema(
 surveyForm <- addForm(survey)
 
 ```
+
 ## Managing users
 
 The R package can also be used to automate user management for a database.
 
-For example, you could read a list of users from Active Directory or other
-external source and automatically add them to an ActivityInfo database using
-[activityinfo::addDatabaseUser]:
+For example, you could read a list of users from Active Directory or other external source and automatically add them to an ActivityInfo database using [activityinfo::addDatabaseUser]:
 
 ```{r,eval=FALSE}
 
@@ -211,7 +240,3 @@ addDatabaseUser(
   locale = "en",
   roleId = "admin")
 ```
-
-
-
-

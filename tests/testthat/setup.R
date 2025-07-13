@@ -17,7 +17,7 @@ suppressWarnings(grSoftVersion())
 # creating a cuid that artificially enforces a sort order on IDs for snapshotting of API objects
 cuid <- local({
   i <- 10000000L
-
+  
   function() {
     i <<- i + 1L
     sprintf("c%d%s", i, activityinfo:::cuid())
@@ -31,29 +31,29 @@ canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate =
     if (identical(x, structure(list(), names = character(0)))) {
       return(list())
     }
-
+    
     if (is.list(x)) {
       savedAttributes <- attributes(x)
-
+      
       x <- x[order(namesOrIndexes(x))]
-
+      
       # reorder names in saved attributes
       savedAttributes$names <- names(x)
-
+      
       if (replaceId) {
         n <- (grepl(pattern = "[Ii]d$", names(x)) &
                 !grepl(pattern = "roles", names(x))) |
           grepl(pattern = "email", names(x))
         x[n] <- "<id value>"
       }
-
+      
       if (replaceDate) {
         n <- grepl(pattern = "Time", names(x), ignore.case = TRUE) | grepl(pattern = "Date", names(x), ignore.case = TRUE)
         x[n] <- "<date or time value>"
       }
-
+      
       if (replaceResource) {
-
+        
         n <- grepl(pattern = "resources", names(x)) & lengths(x) > 1
         # replace a list or vector of resource ids
         x[n] <- lapply(x[n], function(y) {
@@ -77,7 +77,7 @@ canonicalizeActivityInfoObject <- function(tree, replaceId = TRUE, replaceDate =
         
         
       }
-
+      
       x <- lapply(x, function(y) {
         recursiveCanonicalize(y, path = paste(c(path, path), collapse = "."))
       })
@@ -133,7 +133,7 @@ identicalForm <- function(a,b, b_allowed_new_fields = TRUE) {
   b <- b[!(namesOrIndexes(b) %in% c("schemaVersion"))]
   a <- canonicalizeActivityInfoObject(a, replaceId = FALSE, replaceDate = FALSE, replaceResource = FALSE)
   b <- canonicalizeActivityInfoObject(b, replaceId = FALSE, replaceDate = FALSE, replaceResource = FALSE)
-
+  
   if (b_allowed_new_fields) {
     compare_recursively(a, b)
   } else {
@@ -181,7 +181,6 @@ preprodRootUrl <- Sys.getenv("TEST_URL")
 
 if (preprodRootUrl == "") stop("TEST_URL environment variable is not set.")
 
-preprodEndpoint <- sprintf("%s/resources/testing", preprodRootUrl)
 
 # Isolate every test completely by creating a completely new user.
 # We will use the testing API to do this, which is only enabled in pre-production.
@@ -199,13 +198,58 @@ message(sprintf("Adding user %s...\n", testUser$email))
 
 tryCatch(
   {
-    response <- httr::POST(preprodEndpoint, body = testUser, encode = "json", httr::accept_json())
+    response <- httr::POST(sprintf("%s/resources/testing", preprodRootUrl), body = testUser, encode = "json", httr::accept_json())
     httr::stop_for_status(response)
   },
   http_error = function(e) {
     stop(sprintf("HTTP error while trying to setup pre-production user: %s", e$message))
   }
 )
+
+message(sprintf("Obtaining session cookie for %s...\n", testUser$email))
+
+
+login_credentials <- list(
+  email = testUser$email,
+  password = testUser$password
+)
+
+login_response <- httr::POST(
+  sprintf("%s/login", preprodRootUrl),
+  body = login_credentials,
+  encode = "json"
+)
+
+httr::stop_for_status(login_response)
+
+# Extract the session cookie
+session_cookie <- httr::cookies(login_response)
+auth_cookie <- session_cookie$value[session_cookie$name == "auth"]
+
+
+if (length(auth_cookie) == 0) {
+  stop("Authentication cookie 'auth' not found in login response.")
+}
+
+message("Session cookie obtained successfully.\n")
+message("Generating API token...\n")
+
+token_data <- list(
+  label = "Testing",
+  scope = "READ_WRITE"
+)
+
+token_response <- httr::POST(
+  sprintf("%s/resources/accounts/tokens/generate", preprodRootUrl),
+  body = token_data,
+  encode = "json",
+  httr::add_headers(Cookie = paste0("auth=", auth_cookie)),
+  httr::accept_json()
+)
+
+httr::stop_for_status(token_response)
+
+token_result <- httr::content(token_response, "parsed")
 
 # Now we can connect to this server using this account
 # Point the Package to the Pre-production server. This URL is always
@@ -215,10 +259,7 @@ tryCatch(
 activityInfoRootUrl(preprodRootUrl)
 
 # Use these credentials for the rest of the tests
-testthat::expect_warning({
-  activityinfo:::activityInfoAuthentication(sprintf("%s:%s", testUser$email, testUser$password))
-}, regexp = "deprecating")
-
+activityinfo:::activityInfoToken(token_result$token, prompt = FALSE)
 
 
 # Add a new database for this user

@@ -214,9 +214,9 @@ checkSortList <- function(sort) {
   force(sort)
   stopifnot(is.list(sort))
   invisible(lapply(sort, function(x) {
-    stopifnot(all(names(x) %in% c("dir", "field")))
+    stopifnot(all(names(x) %in% c("dir", "formula")))
     stopifnot(x[["dir"]]%in%c("ASC", "DESC"))
-    stopifnot(is.character(x[["field"]]))
+    stopifnot(is.character(x[["formula"]]))
     stopifnot(is.character(x[["dir"]]))
   }))
 }

@@ -1221,7 +1221,7 @@ addFilter <- function(x, formulaFilter) {
 #' Usually one would use the [dplyr::arrange] verb instead.
 #'
 #' @param x the remote records object fetched with [activityinfo::getRecords].
-#' @param sort the sort object in the following format: list(list(dir = "ASC", field = "\[Name\]")) or list(list(dir = "DESC", field = "\[Name\]"))
+#' @param sort the sort object in the following format: list(list(dir = "ASC", formula = "\[Name\]")) or list(list(dir = "DESC", formula = "\[Name\]"))
 #' 
 #' @export
 addSort <- function(x, sort) {
@@ -1713,14 +1713,14 @@ arrange.tbl_activityInfoRemoteRecords <- function(.data, ...) {
     if (is.symbol(expr2)) {
       chexpr <- rlang::as_name(expr2)
       if (chexpr %in% tblNames(.data)) {
-        return(addSort(x = .data, sort = list(list(dir = "ASC", field = chexpr))))
+        return(addSort(x = .data, sort = list(list(dir = "ASC", formula = chexpr))))
       }
     } else if (is.call(expr2)) {
       fn <- as.character(expr2[[1]])
       if (fn == "desc") {
         chexpr <- as.character(expr2[[2]])
         if (chexpr %in% tblNames(.data)) {
-          return(addSort(x = .data, sort = list(list(dir = "DESC", field = chexpr))))
+          return(addSort(x = .data, sort = list(list(dir = "DESC", formula = chexpr))))
         }
       }
     }

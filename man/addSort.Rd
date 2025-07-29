@@ -9,7 +9,7 @@ addSort(x, sort)
 \arguments{
 \item{x}{the remote records object fetched with \link{getRecords}.}
 
-\item{sort}{the sort object in the following format: list(list(dir = "ASC", field = "[Name]")) or list(list(dir = "DESC", field = "[Name]"))}
+\item{sort}{the sort object in the following format: list(list(dir = "ASC", formula = "[Name]")) or list(list(dir = "DESC", formula = "[Name]"))}
 }
 \description{
 This adds a single sorted column to an ActivityInfo remote records object.

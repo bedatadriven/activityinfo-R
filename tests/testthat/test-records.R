@@ -1,4 +1,4 @@
-
+  
 
 testthat::test_that("add, update, and deleteRecord() works", {
   
@@ -271,11 +271,11 @@ testthat::test_that("getRecords() works", {
 
   dfA <- rcrds %>% 
     addFilter('[A logical column] == "True"') %>% 
-    addSort(list(list(dir = "ASC", field = "_id"))) %>%
+    addSort(list(list(dir = "ASC", formula = "_id"))) %>%
     adjustWindow(offSet = 0L, limit = 10L) %>% collect()
   dfB <- rcrds %>% 
     filter(`A logical column` == "True") %>% 
-    addSort(list(list(dir = "ASC", field = "_id"))) %>%
+    addSort(list(list(dir = "ASC", formula = "_id"))) %>%
     slice_head(n = 10) %>% collect()
   
   attr(dfA, "remoteRecords") <- NULL
@@ -310,7 +310,7 @@ testthat::test_that("getRecords() works", {
     testthat::expect_warning({
       recordIds <- rcrds %>% 
         addFilter('[A logical column] == "True"') %>% 
-        addSort(list(list(dir = "DESC", field = "A date column"))) %>%
+        addSort(list(list(dir = "DESC", formula = "A date column"))) %>%
         head(n = 10) %>%
         select(`_id`) %>%
         collect() %>%
@@ -333,7 +333,7 @@ testthat::test_that("getRecords() works", {
       rcrds %>% 
         select(id = `_id`, date = `A date column`, logical = `A logical column`) %>%
         filter(logical == "True") %>% rename(date2 = date) %>% 
-        addSort(list(list(dir = "DESC", field = "date"))) %>% 
+        addSort(list(list(dir = "DESC", formula = "date"))) %>% 
         head(10) %>% 
         collect()
     })
@@ -370,7 +370,7 @@ testthat::test_that("getRecords() works", {
     recordIds <- rcrds %>% 
       select(id = `_id`, date = `A date column`, logical = `A logical column`) %>%
       filter(logical == "True") %>% 
-      addSort(list(list(dir = "DESC", field = "date"))) %>% 
+      addSort(list(list(dir = "DESC", formula = "date"))) %>% 
       head(10) %>% 
       collect() %>%
       pull("id")

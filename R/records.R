@@ -1165,12 +1165,12 @@ tbl.src_activityInfo <- function(src, formTree, style = defaultColumnStyle(),...
 }
 
 getTotalLastEditTime <- function(formTree) {
-  df <- queryTable(formTree$root, columns = list("id"="_id", "lastEditTime" = "_lastEditTime"), asTibble = TRUE, makeNames = FALSE, window = c(0L,1L), sort=list(list(dir = "DESC", field = "_lastEditTime")))
+  df <- queryTable(formTree$root, columns = list("id"="_id", "lastEditTime" = "_lastEditTime"), asTibble = TRUE, makeNames = FALSE, window = c(0L,1L), sort=list(list(dir = "DESC", formula = "_lastEditTime")))
   totalRecords <- attr(df, "totalRows")
   if (totalRecords==0) {
     # required to check the formTree as queryTable used in totalRecords does not error if there are no permissions but returns 0 rows
     formTree <- getFormTree(formTree$root)
-    df <- queryTable(formTree$root, columns = list("id"="_id", "lastEditTime" = "_lastEditTime"), asTibble = TRUE, makeNames = FALSE, window = c(0L,1L), sort=list(list(dir = "DESC", field = "_lastEditTime")))
+    df <- queryTable(formTree$root, columns = list("id"="_id", "lastEditTime" = "_lastEditTime"), asTibble = TRUE, makeNames = FALSE, window = c(0L,1L), sort=list(list(dir = "DESC", formula = "_lastEditTime")))
     totalRecords <- attr(df, "totalRows")
   }
   lastEditTime <- df[[1,"lastEditTime"]]

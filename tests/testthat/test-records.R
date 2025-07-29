@@ -271,11 +271,11 @@ testthat::test_that("getRecords() works", {
 
   dfA <- rcrds %>% 
     addFilter('[A logical column] == "True"') %>% 
-    addSort(list(list(dir = "ASC", formula = "_id"))) %>%
+    addSort(list(list(dir = "ASC", formula = "[Identifier number]"))) %>%
     adjustWindow(offSet = 0L, limit = 10L) %>% collect()
   dfB <- rcrds %>% 
     filter(`A logical column` == "True") %>% 
-    addSort(list(list(dir = "ASC", formula = "_id"))) %>%
+    addSort(list(list(dir = "ASC", formula = "[Identifier number]"))) %>%
     slice_head(n = 10) %>% collect()
   
   attr(dfA, "remoteRecords") <- NULL
@@ -344,7 +344,7 @@ testthat::test_that("getRecords() works", {
     recordIds <- rcrds %>% 
       select(id = `_id`, date = `A date column`, logical = `A logical column`) %>%
       filter(logical == "True") %>% 
-      addSort(list(list(dir = "DESC", formula = "date"))) %>% 
+      addSort(list(list(dir = "DESC", formula = "[A date column]"))) %>% 
       head(10) %>% 
       collect() %>%
       pull("id")

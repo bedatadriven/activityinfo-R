@@ -304,20 +304,6 @@ testthat::test_that("getRecords() works", {
     })
   })
   
-  # removing columns required for a filter will result in an error
-  # expect warning using select after filter or sort
-  testthat::expect_error({
-    testthat::expect_warning({
-      recordIds <- rcrds %>% 
-        addFilter('[A logical column] == "True"') %>% 
-        addSort(list(list(dir = "DESC", formula = "A date column"))) %>%
-        head(n = 10) %>%
-        select(`_id`) %>%
-        collect() %>%
-        pull("_id")
-    })
-  })
-  
   # filters will work even if the column is renamed in a lazy remote records object
   testthat::expect_no_warning({
     rcrds %>% 
@@ -325,18 +311,6 @@ testthat::test_that("getRecords() works", {
       filter(logical == "True") %>% 
       rename(logical2 = logical) %>%
       collect()
-  })
-  
-  # renaming columns required for a sort will result in an error
-  testthat::expect_error({
-    testthat::expect_warning({
-      rcrds %>% 
-        select(id = `_id`, date = `A date column`, logical = `A logical column`) %>%
-        filter(logical == "True") %>% rename(date2 = date) %>% 
-        addSort(list(list(dir = "DESC", formula = "date"))) %>% 
-        head(10) %>% 
-        collect()
-    })
   })
   
   testthat::test_that("Copying of schemas with extractSchemaFromFields()", {

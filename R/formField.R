@@ -114,8 +114,6 @@ addFormFieldSchemaCustomClass <- function(e) {
     class(e) <- c("activityInfoAttachmentFieldSchema", class(e))
   } else if (e$type == "calculated") {
     class(e) <- c("activityInfoCalculatedFieldSchema", class(e))
-  } else if (e$type == "attachment") {
-    class(e) <- c("activityInfoAttachmentFieldSchema", class(e))
   } else if (e$type == "subform") {
     class(e) <- c("activityInfoSubformFieldSchema", class(e))
   } else if (e$type == "geopoint") {

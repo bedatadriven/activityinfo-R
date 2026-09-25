@@ -22,7 +22,7 @@ testthat::test_that("getFormSchema() and as.data.frame.formSchema() return a Sch
 
   output <- as.data.frame(output)
 
-  testthat::expect_true(inherits(output, "data.frame") & nrow(output) == 2 & ncol(output) == 17)
+  testthat::expect_true(inherits(output, "data.frame") & nrow(output) == 2 & ncol(output) == 19)
   testthat::expect_true(all(c(
     "databaseId",
     "formId",
@@ -33,7 +33,9 @@ testthat::test_that("getFormSchema() and as.data.frame.formSchema() return a Sch
     "fieldLabel",
     "fieldDescription",
     "validationCondition",
+    "validationMessage",
     "relevanceCondition",
+    "requiredCondition",
     "fieldRequired",
     "key",
     "referenceFormId",

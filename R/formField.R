@@ -17,18 +17,28 @@
 #' @param validationRule Validation rules for the form field given as a single character string; default is ""
 #' @param reviewerOnly Whether the form field is for reviewers only; default is FALSE
 #' @param typeParameters The type parameters object specific to the type given.
+#' @param requiredRule A formula given as a single character string that limits
+#' the requirement to the records in which the formula is satisfied. Only 
+#' applies when `required` is TRUE; default is "", which means the field is 
+#' required for every record
+#' @param validationMessage A custom message given as a single character string 
+#' that is shown when the validation rule fails; default is NULL, which uses 
+#' the automatically composed message
 #' 
 #' @family field schemas
 #' @export
-formFieldSchema <- function(type, label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, typeParameters = NULL) {
+formFieldSchema <- function(type, label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, typeParameters = NULL, requiredRule = "", validationMessage = NULL) {
   stopifnot("The label is required to be a character string" = (is.character(label)&&length(label)==1&&nchar(label)>0))
   stopifnot("The description must be a character string" = is.null(description)||(is.character(description)&&length(description)==1&&nchar(description)>0))
   stopifnot("The code must be a character string" = is.null(code)||(is.character(code)&&length(code)==1&&nchar(code)>0))
   stopifnot("The id is required and must be a character string" = !is.null(id)&&(is.character(id)&&length(id)==1&&nchar(id)>0))
   stopifnot("`relevanceRule` must be given as a character string" = !is.null(relevanceRule)&&(is.character(relevanceRule)&&length(relevanceRule)==1))
   stopifnot("`validationRule` must be given as a character string" = !is.null(validationRule)&&(is.character(validationRule)&&length(validationRule)==1))
+  stopifnot("`requiredRule` must be given as a character string" = !is.null(requiredRule)&&(is.character(requiredRule)&&length(requiredRule)==1))
+  stopifnot("`validationMessage` must be NULL or a character string" = is.null(validationMessage)||(is.character(validationMessage)&&length(validationMessage)==1&&nchar(validationMessage)>0))
   stopifnot("The key must be a logical/boolean of length 1" = is.logical(key)&&length(key)==1)
   stopifnot("`required` must be a logical/boolean of length 1" = is.logical(required)&&length(required)==1)
+  stopifnot("`requiredRule` only applies to required fields; set `required = TRUE`" = required||!nzchar(requiredRule))
   stopifnot("`hideFromEntry` must be a logical/boolean of length 1" = is.logical(hideFromEntry)&&length(hideFromEntry)==1)
   stopifnot("`hideInTable` must be a logical/boolean of length 1" = is.logical(hideInTable)&&length(hideInTable)==1)
   stopifnot("`reviewerOnly` must be a logical/boolean of length 1" = is.logical(reviewerOnly)&&length(reviewerOnly)==1)
@@ -46,9 +56,20 @@ formFieldSchema <- function(type, label, description = NULL, code = NULL, id = c
   
   schema$label <- label
   schema$relevanceCondition <- relevanceRule
+  schema$requiredCondition <- requiredRule
   schema$validationCondition <- validationRule
-  schema$tableVisible <- !hideFromEntry
+  
+  if (!is.null(validationMessage)) {
+    schema$validationMessage <- validationMessage
+  }
+  
+  schema$dataEntryVisible <- !hideFromEntry
+  schema$tableVisible <- !hideInTable
   schema$required <- required
+  
+  if (reviewerOnly) {
+    schema$securityCategoryId <- "reviewer"
+  }
   
   if (!is.null(description)) {
     schema$description = description
@@ -68,6 +89,7 @@ formFieldSchema <- function(type, label, description = NULL, code = NULL, id = c
 asFormFieldSchema <- function(e) {
   e$key <- identical(e$key, TRUE)
   e$required <- identical(e$required, TRUE)
+  e$dataEntryVisible <- !identical(e$dataEntryVisible, FALSE)
   e$tableVisible <- !identical(e$tableVisible, FALSE)
   if(is.null(e$code)) {
     e["code"] <- list(NULL)
@@ -83,7 +105,7 @@ asFormFieldSchema <- function(e) {
 
 addFormFieldSchemaCustomClass <- function(e) {
   if (e$type == "FREE_TEXT") {
-    if (e$typeParameters$barcode) {
+    if (isTRUE(e$typeParameters$barcode)) {
       class(e) <- c("activityInfoBarcodeFieldSchema", class(e))
     } else {
       class(e) <- c("activityInfoTextFieldSchema", class(e))
@@ -114,20 +136,22 @@ addFormFieldSchemaCustomClass <- function(e) {
     class(e) <- c("activityInfoAttachmentFieldSchema", class(e))
   } else if (e$type == "calculated") {
     class(e) <- c("activityInfoCalculatedFieldSchema", class(e))
-  } else if (e$type == "attachment") {
-    class(e) <- c("activityInfoAttachmentFieldSchema", class(e))
   } else if (e$type == "subform") {
     class(e) <- c("activityInfoSubformFieldSchema", class(e))
   } else if (e$type == "geopoint") {
     class(e) <- c("activityInfoGeopointFieldSchema", class(e))
   } else if (e$type == "reference") {
-    if (grepl("@user$", e$typeParameters$range[[1]]$formId)) {
+    if (grepl("@users$", e$typeParameters$range[[1]]$formId)) {
       class(e) <- c("activityInfoUserFieldSchema", class(e))
     } else {
       class(e) <- c("activityInfoReferenceFieldSchema", class(e))
     }
+  } else if (e$type == "multiselectreference") {
+    class(e) <- c("activityInfoMultipleReferenceFieldSchema", class(e))
   } else if (e$type == "section") {
     class(e) <- c("activityInfoSectionFieldSchema", class(e))
+  } else if (e$type == "note") {
+    class(e) <- c("activityInfoNoteFieldSchema", class(e))
   }
   return(e)
 }
@@ -187,7 +211,7 @@ formFieldArgs <- function(x) {
 #' @inheritParams formFieldSchema
 #'
 #' @export
-textFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+textFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   schema <- do.call(
     formFieldSchema, 
     args = c(
@@ -208,7 +232,7 @@ textFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(),
 #' 
 #' @family field schemas
 #' @export
-barcodeFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+barcodeFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   schema <- do.call(
     formFieldSchema, 
     args = c(
@@ -269,7 +293,7 @@ serialNumberFieldSchema <- function(label, description = NULL, digits = 5L, pref
 #' is default
 #' @family field schemas
 #' @export
-quantityFieldSchema <- function(label, description = NULL, units = "", aggregation = "SUM", code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+quantityFieldSchema <- function(label, description = NULL, units = "", aggregation = "SUM", code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   stopifnot("Units must be a character string (empty or not)" = is.character(units)&&length(units)==1)
   stopifnot("Aggregation must be a character string" = is.character(aggregation)&&length(aggregation)==1)
   schema <- do.call(
@@ -298,7 +322,7 @@ quantityFieldSchema <- function(label, description = NULL, units = "", aggregati
 #' @inheritParams formFieldSchema
 #' @family field schemas
 #' @export
-multilineFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+multilineFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   schema <- do.call(
     formFieldSchema, 
     args = c(
@@ -318,7 +342,7 @@ multilineFieldSchema <- function(label, description = NULL, code = NULL, id = cu
 #' @inheritParams formFieldSchema
 #' @family field schemas
 #' @export
-dateFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+dateFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   schema <- do.call(
     formFieldSchema, 
     args = c(
@@ -339,7 +363,7 @@ dateFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(),
 #' @inheritParams formFieldSchema
 #' @family field schemas
 #' @export
-weekFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+weekFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   schema <- do.call(
     formFieldSchema, 
     args = c(
@@ -358,7 +382,7 @@ weekFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(),
 #' @inheritParams formFieldSchema
 #' @family field schemas
 #' @export
-monthFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+monthFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   schema <- do.call(
     formFieldSchema, 
     args = c(
@@ -370,7 +394,7 @@ monthFieldSchema <- function(label, description = NULL, code = NULL, id = cuid()
   schema
 }
 
-selectFieldSchema <- function(cardinality, label, description = NULL, options = list(), code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+selectFieldSchema <- function(cardinality, label, description = NULL, options = list(), code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   stopifnot("Cardinality must be a character string 'single' or 'multiple'" = is.character(cardinality)&&length(cardinality)==1&&(cardinality %in% c("single", "multiple")))
   schema <- do.call(
     formFieldSchema, 
@@ -403,7 +427,7 @@ selectFieldSchema <- function(cardinality, label, description = NULL, options = 
 #' @param options A list of the single select field options
 #' @family field schemas
 #' @export
-singleSelectFieldSchema <- function(label, description = NULL, options = list(), code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+singleSelectFieldSchema <- function(label, description = NULL, options = list(), code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   schema <- do.call(
     selectFieldSchema, 
     args = c(
@@ -423,7 +447,7 @@ singleSelectFieldSchema <- function(label, description = NULL, options = list(),
 #' @param options A list of the multiple select field options
 #' @family field schemas
 #' @export
-multipleSelectFieldSchema <- function(label, description = NULL, options = list(), code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+multipleSelectFieldSchema <- function(label, description = NULL, options = list(), code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   schema <- do.call(
     selectFieldSchema, 
     args = c(
@@ -520,7 +544,7 @@ print.activityInfoSelectOptions <- function(x, ...) {
 #' @inheritParams formFieldSchema
 #' @family field schemas
 #' @export
-attachmentFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+attachmentFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   schema <- do.call(
     formFieldSchema, 
     args = c(
@@ -578,7 +602,7 @@ calculatedFieldSchema <- function(label, description = NULL, formula, code = NUL
 #' @param subformId The id of the sub-form
 #' @family field schemas
 #' @export
-subformFieldSchema <- function(label, description = NULL, subformId, code = NULL, id = cuid(), hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+subformFieldSchema <- function(label, description = NULL, subformId, code = NULL, id = cuid(), hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, validationMessage = NULL) {
   stopifnot("The subform id must be a character string" = is.character(subformId)&&length(subformId)==1&&nchar(subformId)>0)
   schema <- do.call(
     formFieldSchema, 
@@ -604,7 +628,7 @@ subformFieldSchema <- function(label, description = NULL, subformId, code = NULL
 #' @param referencedFormId The id of the referenced form
 #' @family field schemas
 #' @export
-referenceFieldSchema <- function(label, description = NULL, referencedFormId, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+referenceFieldSchema <- function(label, description = NULL, referencedFormId, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   stopifnot("The referenced form id must be a character string" = is.character(referencedFormId)&&length(referencedFormId)==1&&nchar(referencedFormId)>0)
   schema <- do.call(
     formFieldSchema, 
@@ -618,6 +642,39 @@ referenceFieldSchema <- function(label, description = NULL, referencedFormId, co
             list(
               "formId" = referencedFormId
               )
+          )
+        )
+      )
+    )
+  )
+  
+  schema
+}
+
+#' Create a Multiple Reference field schema
+#' 
+#' A multiple reference field can be used to make reference to one or more 
+#' records in another form.
+#' 
+#' A multiple reference field cannot be a key field.
+#' 
+#' @inheritParams formFieldSchema
+#' @param referencedFormId The id of the referenced form
+#' @family field schemas
+#' @export
+multipleReferenceFieldSchema <- function(label, description = NULL, referencedFormId, code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
+  stopifnot("The referenced form id must be a character string" = is.character(referencedFormId)&&length(referencedFormId)==1&&nchar(referencedFormId)>0)
+  schema <- do.call(
+    formFieldSchema, 
+    args = c(
+      list(type = "multiselectreference"),
+      formFieldArgs(as.list(environment())),
+      list(
+        typeParameters = list(
+          "range" = list(
+            list(
+              "formId" = referencedFormId
+            )
           )
         )
       )
@@ -645,7 +702,7 @@ referenceFieldSchema <- function(label, description = NULL, referencedFormId, co
 #' is TRUE
 #' @family field schemas
 #' @export
-geopointFieldSchema <- function(label, description = NULL, requiredAccuracy = NULL, manualEntryAllowed = TRUE, code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+geopointFieldSchema <- function(label, description = NULL, requiredAccuracy = NULL, manualEntryAllowed = TRUE, code = NULL, id = cuid(), required = FALSE, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   stopifnot("requiredAccuracy must be a single numeric value or NULL" = is.null(requiredAccuracy)||(is.numeric(requiredAccuracy)&&length(requiredAccuracy)==1))
   stopifnot("manualEntryAllowed must be single logical" = is.logical(manualEntryAllowed)&&length(manualEntryAllowed)==1)
   
@@ -683,7 +740,7 @@ geopointFieldSchema <- function(label, description = NULL, requiredAccuracy = NU
 #' @param databaseId The database id of the form and users
 #' @family field schemas
 #' @export
-userFieldSchema <- function(label, description = NULL, databaseId, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE) {
+userFieldSchema <- function(label, description = NULL, databaseId, code = NULL, id = cuid(), key = FALSE, required = key, hideFromEntry = FALSE, hideInTable = FALSE, relevanceRule = "", validationRule = "", reviewerOnly = FALSE, requiredRule = "", validationMessage = NULL) {
   stopifnot("`databaseId` must be a character string" = is.character(databaseId)&&length(databaseId)==1&&nchar(databaseId)>0)
   schema <- do.call(
     formFieldSchema, 
@@ -723,6 +780,27 @@ sectionFieldSchema <- function(label, description = NULL, indentationLevel = 1L)
           "indentationLevel" = indentationLevel
         )
       )
+    )
+  )
+  
+  schema
+}
+
+#' Create a note form field schema
+#' 
+#' A note displays its label and description to users during data entry. It 
+#' does not capture a value and is not included in the records table.
+#' 
+#' @inheritParams formFieldSchema
+#' @param description The text of the note
+#' @family field schemas
+#' @export
+noteFieldSchema <- function(label, description = NULL, code = NULL, id = cuid(), hideFromEntry = FALSE, relevanceRule = "") {
+  schema <- do.call(
+    formFieldSchema, 
+    args = c(
+      list(type = "note"),
+      formFieldArgs(as.list(environment()))
     )
   )
   
@@ -917,7 +995,7 @@ addFormField <- function(...) {
 addFormField.character <- function(formId, schema, upload = FALSE, ...) {
   formSchema <- getFormSchema(formId = formId)
   sane <- checkFormField(formSchema, schema)
-  fromSchema <- sane$formSchema
+  formSchema <- sane$formSchema
   schema <- sane$schema
   formSchema$elements[[length(formSchema$elements)+1]] <- schema
   if (upload == TRUE) {
@@ -932,7 +1010,7 @@ addFormField.character <- function(formId, schema, upload = FALSE, ...) {
 #' @rdname addFormField
 addFormField.formSchema <- function(formSchema, schema, upload = FALSE, ...) {
   sane <- checkFormField(formSchema, schema)
-  fromSchema <- sane$formSchema
+  formSchema <- sane$formSchema
   schema <- sane$schema
   formSchema$elements[[length(formSchema$elements)+1]] <- schema
   if (upload == TRUE) {

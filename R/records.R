@@ -988,6 +988,15 @@ elementVars <- function(element, formTree, style = defaultColumnStyle(), namedEl
   
   elementList <- list()
   
+  # Notes do not capture a value, so have no column
+  if (inherits(element, "activityInfoNoteFieldSchema")) {
+    if (namedElement) {
+      return(elementList)
+    } else {
+      return(character())
+    }
+  }
+  
   useParentLabel <- (!missing(useParentLabel) && useParentLabel)
   if (useParentLabel) {
     stopifnot(!missing(parentLabel) && is.character(parentLabel) && length(parentLabel) == 1)

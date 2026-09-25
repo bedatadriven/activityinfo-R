@@ -151,6 +151,7 @@ prepareImport <- function(field, columnName, column) {
           quantity = as.double(column),
           enumerated = prepareEnumImport(field, columnName, column),
           reference = prepareReference(field, column),
+          multiselectreference = prepareMultipleReference(field, columnName, column),
           date = prepareDate(field, column),
           month = prepareMonth(field, columnName, column),
           serial = prepareSerial(field, columnName, column),
@@ -248,6 +249,26 @@ prepareReference <- function(field, column) {
                  paste(collapse = ", ", sprintf("'%s'", badLabels))))
   }
   column
+}
+
+prepareMultipleReference <- function(field, columnName, column) {
+  column <- as.character(column)
+  column[!nzchar(column)] <- NA_character_
+  rows <- strsplit(column, split = "\\s*,\\s*")
+  
+  lapply(rows, function(row) {
+    if(length(row) == 1 && is.na(row)) {
+      return(NA_character_)
+    }
+    invalid <- !grepl(row, pattern = "^[a-z][a-z0-9]{0,30}$")
+    if (any(invalid)) {
+      stop(sprintf("For multiple reference field '%s', the imported column `%s` contains invalid record ids: %s",
+                   field$label,
+                   columnName,
+                   paste(collapse = ", ", sprintf("'%s'", head(unique(row[invalid]), n = 5)))))
+    }
+    I(row)
+  })
 }
 
 prepareUserReference <- function(field, column) {

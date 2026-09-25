@@ -11,7 +11,13 @@ New features:
 - `as.data.frame()` of a form schema now includes the `requiredCondition` and `validationMessage` columns
 - Form field schemas from `getFormSchema()` now always include `dataEntryVisible`, like `tableVisible`
 
+Fixes:
+- `getDatabases()` and `getBillingAccountDatabases()` no longer fail when the server returns a null description, as self-managed servers do
+- The `lastRecordUpdate` column of `getBillingAccountDatabases()` is now always character, including when no database has records
+- `queryAuditLog()` no longer fails on events with none or several resource types; these are combined into a single comma-separated value in the `resourceTypes` column
+
 Testing:
+- Tests with fixed server responses for databases with and without an owner, and for the fixes above
 - API tests now authenticate with an API token rather than basic password authentication
 - Tests updated for testthat 3.3 and to not depend on the versions of pandoc and rmarkdown
 

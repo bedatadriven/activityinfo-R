@@ -1,3 +1,11 @@
+## [5.0]
+- Databases are no longer required to have an individual owner. `getDatabases()` and `getBillingAccountDatabases()` now return `NA` for the owner columns (`ownerId`, `ownerName`, `ownerEmail`) of databases without an owner
+- API tests now authenticate with an API token rather than basic password authentication
+
+## [4.39]
+- `getDatabaseBillingAccount()` now includes `parentBillingAccountId` and handles billing accounts without a parent (#150)
+- Fixed `getDatabaseBillingAccount()` for billing accounts with no addons (#151, #152)
+
 ## [4.38]
 - New vignettes on grant-based roles, advanced user management (bulk actions), and advanced role use-cases (#122, #133)
 - Improved metadata on getRecords() to include last time modified (#26, #39)

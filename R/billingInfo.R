@@ -54,7 +54,7 @@ getBillingAccountDatabases <- function(billingAccountId, asDataFrame = TRUE) {
     billingDatabases <- tibble::tibble(
       databaseId = unlist(lapply(billingDatabases, function(x) {x$databaseId})),
       label = unlist(lapply(billingDatabases, function(x) {x$label})),
-      description = unlist(lapply(billingDatabases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
+      description = vapply(billingDatabases, function(x) {emptyToNA(x$description)}, character(1)),
       ownerId = vapply(billingDatabases, function(x) {charOrNA(x$owner[["id"]])}, character(1)),
       ownerName = vapply(billingDatabases, function(x) {charOrNA(x$owner[["name"]])}, character(1)),
       ownerEmail = vapply(billingDatabases, function(x) {charOrNA(x$owner[["email"]])}, character(1)),
@@ -62,11 +62,7 @@ getBillingAccountDatabases <- function(billingAccountId, asDataFrame = TRUE) {
       userCount = unlist(lapply(billingDatabases, function(x) {x$userCount})),
       basicUserCount = unlist(lapply(billingDatabases, function(x) {x$basicUserCount})),
       recordCount = unlist(lapply(billingDatabases, function(x) {x$recordCount})),
-      lastRecordUpdate = unlist(lapply(billingDatabases, function(x) {
-        if(is.null(x$lastRecordUpdate)) 
-        {NA} else 
-        {x$lastRecordUpdate}
-      })),
+      lastRecordUpdate = vapply(billingDatabases, function(x) {charOrNA(x$lastRecordUpdate)}, character(1)),
       billingAccountId = unlist(lapply(billingDatabases, function(x) {x$billingAccountId})),
       suspended = unlist(lapply(billingDatabases, function(x) {x$suspended})),
       publishedTemplate = unlist(lapply(billingDatabases, function(x) {x$publishedTemplate}))

@@ -24,7 +24,7 @@ databasesListToTibble <- function(databases) {
   dbDF <- dplyr::tibble(
     databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
     label = unlist(lapply(databases, function(x) {x$label})),
-    description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
+    description = vapply(databases, function(x) {emptyToNA(x$description)}, character(1)),
     ownerId = vapply(databases, function(x) {charOrNA(x$ownerId)}, character(1)),
     billingAccountId = as.character(unlist(lapply(databases, function(x) {x$billingAccountId}))),
     suspended = unlist(lapply(databases, function(x) {x$suspended}))
@@ -36,6 +36,11 @@ databasesListToTibble <- function(databases) {
 # owner fields may be null
 charOrNA <- function(x) {
   if (is.null(x)) NA_character_ else as.character(x)
+}
+
+# The server may return an empty or a null description
+emptyToNA <- function(x) {
+  if (is.null(x) || !nzchar(x)) NA_character_ else as.character(x)
 }
 
 databaseUpdates <- function() {

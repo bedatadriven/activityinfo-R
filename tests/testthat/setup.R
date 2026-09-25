@@ -120,7 +120,8 @@ compare_recursively <- function(a, b, path = list()) {
       test <- name %in% names(b)
       if(!test) message(sprintf("Missing expected field name/key %s", paste(c(path, name), collapse="->")))
       testthat::expect_true(test)
-      compare_recursively(a[[name]], b[[name]], c(path, name))
+      # A missing field is a single failure; there is nothing to compare
+      if(test) compare_recursively(a[[name]], b[[name]], c(path, name))
     }
   } else {
     message(sprintf("Incompatible structures under name/key '%s'", paste(path, collapse="'->'")))

@@ -38,7 +38,9 @@ testthat::test_that("getDatabaseTree() works", {
   testthat::expect_identical(tree$databaseId, database$databaseId)
   # Databases may or may not have an individual owner, so ownerRef can be null
   testthat::expect_true(is.null(tree$ownerRef) || is.list(tree$ownerRef))
-  expectActivityInfoSnapshotCompare(tree, snapshotName = "databases-databaseTree", allowed_new_fields = TRUE, ignoreFields = "ownerRef")
+  # The version depends on the server's state and version format
+  testthat::expect_true(is.character(tree$version) && length(tree$version) == 1)
+  expectActivityInfoSnapshotCompare(tree, snapshotName = "databases-databaseTree", allowed_new_fields = TRUE, ignoreFields = c("ownerRef", "version"))
 })
 
 testthat::test_that("getDatabaseResources() works", {

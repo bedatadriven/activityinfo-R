@@ -1,6 +1,11 @@
 ## [5.0]
 - Databases are no longer required to have an individual owner. `getDatabases()` and `getBillingAccountDatabases()` now return `NA` for the owner columns (`ownerId`, `ownerName`, `ownerEmail`) of databases without an owner
 - API tests now authenticate with an API token rather than basic password authentication
+- New `noteFieldSchema()` for note fields, which display guidance during data entry but do not capture a value. Notes are not included as columns in `getRecords()`
+- New `multipleReferenceFieldSchema()` for fields that reference one or more records in another form. `importRecords()` accepts comma-separated record ids for these fields
+- New `requiredRule` and `validationMessage` arguments for form field schemas, to limit when a required field is required and to show a custom message when validation fails. `as.data.frame()` of a form schema now includes the `requiredCondition` and `validationMessage` columns
+- Potential breaking change: `hideFromEntry` now hides the field from data entry (previously it hid the field from the table), `hideInTable` now hides the field from the table (previously it was ignored), and `reviewerOnly` now restricts the field to reviewers (previously it was ignored)
+- Fixed user fields being identified as reference fields
 
 ## [4.39]
 - `getDatabaseBillingAccount()` now includes `parentBillingAccountId` and handles billing accounts without a parent (#150)

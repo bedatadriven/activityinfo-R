@@ -17,7 +17,9 @@ formFieldSchema(
   relevanceRule = "",
   validationRule = "",
   reviewerOnly = FALSE,
-  typeParameters = NULL
+  typeParameters = NULL,
+  requiredRule = "",
+  validationMessage = NULL
 )
 }
 \arguments{
@@ -46,6 +48,15 @@ formFieldSchema(
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
 
 \item{typeParameters}{The type parameters object specific to the type given.}
+
+\item{requiredRule}{A formula given as a single character string that limits
+the requirement to the records in which the formula is satisfied. Only
+applies when \code{required} is TRUE; default is "", which means the field is
+required for every record}
+
+\item{validationMessage}{A custom message given as a single character string
+that is shown when the validation rule fails; default is NULL, which uses
+the automatically composed message}
 }
 \description{
 This is the function to create a basic form field schema object. It is
@@ -61,7 +72,9 @@ Other field schemas:
 \code{\link{geopointFieldSchema}()},
 \code{\link{monthFieldSchema}()},
 \code{\link{multilineFieldSchema}()},
+\code{\link{multipleReferenceFieldSchema}()},
 \code{\link{multipleSelectFieldSchema}()},
+\code{\link{noteFieldSchema}()},
 \code{\link{quantityFieldSchema}()},
 \code{\link{referenceFieldSchema}()},
 \code{\link{sectionFieldSchema}()},

@@ -36,7 +36,9 @@ testthat::test_that("getDatabaseTree() works", {
   tree <- getDatabaseTree(databaseId = database$databaseId)
   testthat::expect_s3_class(tree, "databaseTree")
   testthat::expect_identical(tree$databaseId, database$databaseId)
-  expectActivityInfoSnapshotCompare(tree, snapshotName = "databases-databaseTree", allowed_new_fields = TRUE)
+  # Databases may or may not have an individual owner, so ownerRef can be null
+  testthat::expect_true(is.null(tree$ownerRef) || is.list(tree$ownerRef))
+  expectActivityInfoSnapshotCompare(tree, snapshotName = "databases-databaseTree", allowed_new_fields = TRUE, ignoreFields = "ownerRef")
 })
 
 testthat::test_that("getDatabaseResources() works", {

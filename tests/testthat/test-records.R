@@ -304,19 +304,24 @@ testthat::test_that("getRecords() works", {
     })
   })
   
-  # removing columns required for a filter will result in an error
-  # expect warning using select after filter or sort
-  testthat::expect_error({
-    testthat::expect_warning({
-      recordIds <- rcrds %>% 
-        addFilter('[A logical column] == "True"') %>% 
-        addSort(list(list(dir = "DESC", field = "A date column"))) %>%
-        head(n = 10) %>%
-        select(`_id`) %>%
-        collect() %>%
-        pull("_id")
-    })
-  })
+  # expect warning using select after filter or sort, but the filter still 
+  # applies even though its column is removed by select
+  testthat::expect_warning({
+    recordIds <- rcrds %>% 
+      addFilter('[A logical column] == "True"') %>% 
+      addSort(list(list(dir = "DESC", field = "A date column"))) %>%
+      head(n = 10) %>%
+      select(`_id`) %>%
+      collect() %>%
+      pull("_id")
+  }, regexp = "select\\(\\) after a filter or sort")
+  
+  trueRecordIds <- rcrds %>% 
+    filter(`A logical column` == "True") %>% 
+    collect() %>% 
+    pull("_id")
+  testthat::expect_length(recordIds, min(10L, length(trueRecordIds)))
+  testthat::expect_true(all(recordIds %in% trueRecordIds))
   
   # filters will work even if the column is renamed in a lazy remote records object
   testthat::expect_no_warning({

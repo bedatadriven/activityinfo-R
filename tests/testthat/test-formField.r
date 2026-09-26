@@ -121,6 +121,18 @@ test_that("Test roundtrip of referenceFieldSchema()", {
   testField(referenceFieldSchema(label = "A referenceFieldSchema field", referencedFormId = "A dummy formId"))
 })
 
+test_that("Test roundtrip of multipleReferenceFieldSchema()", {
+  field <- multipleReferenceFieldSchema(label = "A multipleReferenceFieldSchema field", referencedFormId = "A dummy formId")
+  testthat::expect_s3_class(field, "activityInfoMultipleReferenceFieldSchema")
+  testField(field)
+})
+
+test_that("Test roundtrip of noteFieldSchema()", {
+  field <- noteFieldSchema(label = "A noteFieldSchema field", description = "Some guidance for the user")
+  testthat::expect_s3_class(field, "activityInfoNoteFieldSchema")
+  testField(field)
+})
+
 test_that("Test roundtrip of sectionFieldSchema()", {
   testField(sectionFieldSchema(label = "A sectionFieldSchema field"))
 })
@@ -158,6 +170,47 @@ test_that("Test roundtrip of userFieldSchema()", {
 
 test_that("Test roundtrip of weekFieldSchema()", {
   testField(weekFieldSchema(label = "A weekFieldSchema field"))
+})
+
+test_that("Visibility and reviewer only options are set on the field schema", {
+  hiddenFromEntry <- textFieldSchema(label = "Hidden from entry", hideFromEntry = TRUE)
+  testthat::expect_false(hiddenFromEntry$dataEntryVisible)
+  testthat::expect_true(hiddenFromEntry$tableVisible)
+  
+  hiddenInTable <- textFieldSchema(label = "Hidden in table", hideInTable = TRUE)
+  testthat::expect_true(hiddenInTable$dataEntryVisible)
+  testthat::expect_false(hiddenInTable$tableVisible)
+  
+  testthat::expect_null(textFieldSchema(label = "Not reviewer only")$securityCategoryId)
+  testthat::expect_identical(textFieldSchema(label = "Reviewer only", reviewerOnly = TRUE)$securityCategoryId, "reviewer")
+})
+
+test_that("Test roundtrip of visibility and reviewer only options", {
+  testField(textFieldSchema(label = "A hidden text field", hideFromEntry = TRUE, hideInTable = TRUE, reviewerOnly = TRUE))
+})
+
+test_that("A required rule can only be given for required fields", {
+  testthat::expect_error(
+    textFieldSchema(label = "Not required", requiredRule = "ISBLANK(other)"),
+    regexp = "requiredRule"
+  )
+  field <- textFieldSchema(label = "Required", required = TRUE, requiredRule = "ISBLANK(other)")
+  testthat::expect_identical(field$requiredCondition, "ISBLANK(other)")
+})
+
+test_that("Test roundtrip of required rule and validation message", {
+  field <- quantityFieldSchema(
+    label = "A quantity field with rules", 
+    required = TRUE, 
+    requiredRule = "TRUE", 
+    validationRule = "VALUE() > 0", 
+    validationMessage = "Must be positive")
+  testthat::expect_identical(field$validationMessage, "Must be positive")
+  testField(field)
+})
+
+test_that("User fields have the user field schema class", {
+  testthat::expect_s3_class(userFieldSchema(label = "A user field", databaseId = "cdb123"), "activityInfoUserFieldSchema")
 })
 
 test_that("Test toSelectOptions()", {

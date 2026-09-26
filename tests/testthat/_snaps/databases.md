@@ -15,10 +15,10 @@
       dbResources
     Output
       # A tibble: 2 x 5
-        id        label       parentId  type     visibility
-      * <chr>     <chr>       <chr>     <chr>    <chr>     
-      1 c10000004 Person form c10000002 FORM     PRIVATE   
-      2 c10000005 Children    c10000004 SUB_FORM PRIVATE   
+        id     label       parentId type     visibility
+      * <chr>  <chr>       <chr>    <chr>    <chr>     
+      1 c10004 Person form c10002   FORM     PRIVATE   
+      2 c10005 Children    c10004   SUB_FORM PRIVATE   
 
 # resourcePermissions() and synonym permissions() helper works
 

@@ -1,3 +1,31 @@
+## [5.0]
+Potential breaking changes:
+- `hideFromEntry` now hides a field from data entry (previously it hid the field from the table), `hideInTable` now hides a field from the table (previously it was ignored), and `reviewerOnly` now restricts a field to reviewers (previously it was ignored)
+- Databases are no longer required to have an individual owner. `getDatabases()` and `getBillingAccountDatabases()` now return `NA` for the owner columns (`ownerId`, `ownerName`, `ownerEmail`) of databases without an owner, rather than failing
+- User fields are now identified correctly when reading form schemas, so `getRecords()` includes them as columns with `minimalColumnStyle()` (previously they were left out)
+
+New features:
+- New `noteFieldSchema()` for note fields, which display guidance during data entry but do not capture a value. Notes are not included as columns in `getRecords()`
+- New `multipleReferenceFieldSchema()` for fields that reference one or more records in another form. `importRecords()` accepts comma-separated record ids for these fields
+- New `requiredRule` and `validationMessage` arguments for form field schemas, to limit when a required field is required and to show a custom message when validation fails
+- `as.data.frame()` of a form schema now includes the `requiredCondition` and `validationMessage` columns
+- Form field schemas from `getFormSchema()` now always include `dataEntryVisible`, like `tableVisible`
+
+Fixes:
+- `getDatabases()` and `getBillingAccountDatabases()` no longer fail when the server returns a null description, as self-managed servers do
+- The `lastRecordUpdate` column of `getBillingAccountDatabases()` is now always character, including when no database has records
+- `queryAuditLog()` no longer fails on events with none or several resource types; these are combined into a single comma-separated value in the `resourceTypes` column
+
+Testing:
+- Tests with fixed server responses for databases with and without an owner, and for the fixes above
+- API tests now authenticate with an API token rather than basic password authentication
+- Tests updated for testthat 3.3 and to not depend on the versions of pandoc and rmarkdown
+- Tests can be run against the self-managed server
+
+## [4.39]
+- `getDatabaseBillingAccount()` now includes `parentBillingAccountId` and handles billing accounts without a parent (#150)
+- Fixed `getDatabaseBillingAccount()` for billing accounts with no addons (#151, #152)
+
 ## [4.38]
 - New vignettes on grant-based roles, advanced user management (bulk actions), and advanced role use-cases (#122, #133)
 - Improved metadata on getRecords() to include last time modified (#26, #39)

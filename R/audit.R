@@ -91,6 +91,11 @@ queryAuditLog <- function(databaseId, before = Sys.time(), after, resourceId = N
         event$user.email <- NA
       }
       event$user <- NULL
+      # Fields such as resourceTypes may have none or several values: combine 
+      # them so that each event is a single row
+      event <- lapply(event, function(x) {
+        if (length(x) == 1) x else if (length(x) == 0) NA else paste(unlist(x), collapse = ",")
+      })
       as.data.frame(event, stringsAsFactors = FALSE)
     }))
     

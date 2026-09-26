@@ -2,8 +2,8 @@ Package: activityinfo
 Type: Package
 Title: R interface to ActivityInfo.org, an information management software for
     humanitarian and development operations
-Version: 4.39
-Date: 2025-04-02
+Version: 5.0
+Date: 2026-09-25
 Authors@R: c(
     person("Alex", "Bertram", email = "alex@bedatadriven.com", 
            role = c("aut", "cre")),
@@ -41,7 +41,7 @@ Suggests:
     ggplot2,
     quanteda,
     scales,
-    testthat (>= 3.0.0),
+    testthat (>= 3.1.7),
     knitr,
     rmarkdown,
     markdown,

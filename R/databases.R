@@ -13,7 +13,7 @@ getDatabases <- function(asDataFrame = TRUE) {
     return(databasesListToTibble(databases))
   } else if (asDataFrame == FALSE) {
     return(lapply(databases, function(x) {
-      x$ownerId <- as.character(x$ownerId)
+      x$ownerId <- charOrNA(x$ownerId)
       x$billingAccountId <- as.character(x$billingAccountId)
       x
     }))
@@ -24,12 +24,23 @@ databasesListToTibble <- function(databases) {
   dbDF <- dplyr::tibble(
     databaseId = unlist(lapply(databases, function(x) {x$databaseId})),
     label = unlist(lapply(databases, function(x) {x$label})),
-    description = unlist(lapply(databases, function(x) { if(nzchar(x$description)) x$description else NA_character_ })),
-    ownerId = as.character(unlist(lapply(databases, function(x) {x$ownerId}))),
+    description = vapply(databases, function(x) {emptyToNA(x$description)}, character(1)),
+    ownerId = vapply(databases, function(x) {charOrNA(x$ownerId)}, character(1)),
     billingAccountId = as.character(unlist(lapply(databases, function(x) {x$billingAccountId}))),
     suspended = unlist(lapply(databases, function(x) {x$suspended}))
   )
   return(dbDF)
+}
+
+# Databases are no longer required to have an individual owner, so
+# owner fields may be null
+charOrNA <- function(x) {
+  if (is.null(x)) NA_character_ else as.character(x)
+}
+
+# The server may return an empty or a null description
+emptyToNA <- function(x) {
+  if (is.null(x) || !nzchar(x)) NA_character_ else as.character(x)
 }
 
 databaseUpdates <- function() {

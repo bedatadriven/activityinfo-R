@@ -14,13 +14,14 @@ suppressWarnings(grSoftVersion())
 
 ##### Testing functions #####
 
-# creating a cuid that artificially enforces a sort order on IDs for snapshotting of API objects
+# creating a cuid that artificially enforces a sort order on IDs for snapshotting of API objects.
+# The ids are at most 21 characters long, the maximum that the self-managed server accepts.
 cuid <- local({
-  i <- 10000000L
+  i <- 10000L
   
   function() {
     i <<- i + 1L
-    sprintf("c%d%s", i, activityinfo:::cuid())
+    sprintf("c%d%s", i, substr(activityinfo:::cuid(), 2, 16))
   }
 })
 
@@ -105,6 +106,11 @@ namesOrIndexes <- function(x) {
 }
 
 compare_recursively <- function(a, b, path = list()) {
+  # Some servers, such as the self-managed server, return null for an empty string
+  if ((identical(a, "") && is.null(b)) || (is.null(a) && identical(b, ""))) {
+    testthat::succeed()
+    return(invisible())
+  }
   if (is.atomic(a) && is.atomic(b)) {
     if (!identical(a,b)) {
       message(sprintf("Field with name/key '%s' value has changed", paste(path, collapse="'->'")))
@@ -120,7 +126,8 @@ compare_recursively <- function(a, b, path = list()) {
       test <- name %in% names(b)
       if(!test) message(sprintf("Missing expected field name/key %s", paste(c(path, name), collapse="->")))
       testthat::expect_true(test)
-      compare_recursively(a[[name]], b[[name]], c(path, name))
+      # A missing field is a single failure; there is nothing to compare
+      if(test) compare_recursively(a[[name]], b[[name]], c(path, name))
     }
   } else {
     message(sprintf("Incompatible structures under name/key '%s'", paste(path, collapse="'->'")))
@@ -141,16 +148,18 @@ identicalForm <- function(a,b, b_allowed_new_fields = TRUE) {
   }
 }
 
-expectActivityInfoSnapshotCompare <- function(x, snapshotName, replaceId = TRUE, replaceDate = TRUE, replaceResource = TRUE, allowed_new_fields = TRUE) {
+expectActivityInfoSnapshotCompare <- function(x, snapshotName, replaceId = TRUE, replaceDate = TRUE, replaceResource = TRUE, allowed_new_fields = TRUE, ignoreFields = character()) {
   if (missing(snapshotName)) stop("You must give the snapshot a name")
   stopifnot("The snapshotName must be a character string" = is.character(snapshotName)&&length(snapshotName)==1)
   
   x <- canonicalizeActivityInfoObject(x, replaceId, replaceDate, replaceResource)
+  x <- x[!(names(x) %in% ignoreFields)]
   
   path <- testthat::test_path("_activityInfoSnaps", sprintf("%s.RDS", snapshotName))
   
   if (file.exists(path)) {
     y <- readRDS(file = path)
+    y <- y[!(names(y) %in% ignoreFields)]
   } else {
     message("Adding activityInfo snapshot: ", snapshotName, ".RDS")
     saveRDS(x, file = path)

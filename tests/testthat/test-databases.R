@@ -36,7 +36,11 @@ testthat::test_that("getDatabaseTree() works", {
   tree <- getDatabaseTree(databaseId = database$databaseId)
   testthat::expect_s3_class(tree, "databaseTree")
   testthat::expect_identical(tree$databaseId, database$databaseId)
-  expectActivityInfoSnapshotCompare(tree, snapshotName = "databases-databaseTree", allowed_new_fields = TRUE)
+  # Databases may or may not have an individual owner, so ownerRef can be null
+  testthat::expect_true(is.null(tree$ownerRef) || is.list(tree$ownerRef))
+  # The version depends on the server's state and version format
+  testthat::expect_true(is.character(tree$version) && length(tree$version) == 1)
+  expectActivityInfoSnapshotCompare(tree, snapshotName = "databases-databaseTree", allowed_new_fields = TRUE, ignoreFields = c("ownerRef", "version"))
 })
 
 testthat::test_that("getDatabaseResources() works", {
@@ -50,8 +54,9 @@ testthat::test_that("getDatabaseResources() works", {
   
   dbResources <- dbResources[order(dbResources$id, dbResources$parentId, dbResources$label, dbResources$visibility),] %>% 
     select(id, label, parentId, type, visibility)
-  dbResources$id <- substr(dbResources$id,1,9)
-  dbResources$parentId <- substr(dbResources$parentId,1,9)
+  # Keep only the prefix that enforces the sort order of the test ids
+  dbResources$id <- substr(dbResources$id,1,6)
+  dbResources$parentId <- substr(dbResources$parentId,1,6)
   row.names(dbResources) <- NULL
   dbResources <- canonicalizeActivityInfoObject(dbResources, replaceId = FALSE)
     

@@ -14,7 +14,9 @@ multilineFieldSchema(
   hideInTable = FALSE,
   relevanceRule = "",
   validationRule = "",
-  reviewerOnly = FALSE
+  reviewerOnly = FALSE,
+  requiredRule = "",
+  validationMessage = NULL
 )
 }
 \arguments{
@@ -37,6 +39,15 @@ multilineFieldSchema(
 \item{validationRule}{Validation rules for the form field given as a single character string; default is ""}
 
 \item{reviewerOnly}{Whether the form field is for reviewers only; default is FALSE}
+
+\item{requiredRule}{A formula given as a single character string that limits
+the requirement to the records in which the formula is satisfied. Only
+applies when \code{required} is TRUE; default is "", which means the field is
+required for every record}
+
+\item{validationMessage}{A custom message given as a single character string
+that is shown when the validation rule fails; default is NULL, which uses
+the automatically composed message}
 }
 \description{
 Multi-Line Text fields can be used to collect long answers to open-ended
@@ -52,7 +63,9 @@ Other field schemas:
 \code{\link{formFieldSchema}()},
 \code{\link{geopointFieldSchema}()},
 \code{\link{monthFieldSchema}()},
+\code{\link{multipleReferenceFieldSchema}()},
 \code{\link{multipleSelectFieldSchema}()},
+\code{\link{noteFieldSchema}()},
 \code{\link{quantityFieldSchema}()},
 \code{\link{referenceFieldSchema}()},
 \code{\link{sectionFieldSchema}()},

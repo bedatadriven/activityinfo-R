@@ -20,6 +20,7 @@ Testing:
 - Tests with fixed server responses for databases with and without an owner, and for the fixes above
 - API tests now authenticate with an API token rather than basic password authentication
 - Tests updated for testthat 3.3 and to not depend on the versions of pandoc and rmarkdown
+- Tests can be run against the self-managed server
 
 ## [4.39]
 - `getDatabaseBillingAccount()` now includes `parentBillingAccountId` and handles billing accounts without a parent (#150)

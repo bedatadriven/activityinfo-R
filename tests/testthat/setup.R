@@ -14,13 +14,14 @@ suppressWarnings(grSoftVersion())
 
 ##### Testing functions #####
 
-# creating a cuid that artificially enforces a sort order on IDs for snapshotting of API objects
+# creating a cuid that artificially enforces a sort order on IDs for snapshotting of API objects.
+# The ids are at most 21 characters long, the maximum that the self-managed server accepts.
 cuid <- local({
-  i <- 10000000L
+  i <- 10000L
   
   function() {
     i <<- i + 1L
-    sprintf("c%d%s", i, activityinfo:::cuid())
+    sprintf("c%d%s", i, substr(activityinfo:::cuid(), 2, 16))
   }
 })
 
@@ -105,6 +106,11 @@ namesOrIndexes <- function(x) {
 }
 
 compare_recursively <- function(a, b, path = list()) {
+  # Some servers, such as the self-managed server, return null for an empty string
+  if ((identical(a, "") && is.null(b)) || (is.null(a) && identical(b, ""))) {
+    testthat::succeed()
+    return(invisible())
+  }
   if (is.atomic(a) && is.atomic(b)) {
     if (!identical(a,b)) {
       message(sprintf("Field with name/key '%s' value has changed", paste(path, collapse="'->'")))

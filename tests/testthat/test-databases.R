@@ -54,8 +54,9 @@ testthat::test_that("getDatabaseResources() works", {
   
   dbResources <- dbResources[order(dbResources$id, dbResources$parentId, dbResources$label, dbResources$visibility),] %>% 
     select(id, label, parentId, type, visibility)
-  dbResources$id <- substr(dbResources$id,1,9)
-  dbResources$parentId <- substr(dbResources$parentId,1,9)
+  # Keep only the prefix that enforces the sort order of the test ids
+  dbResources$id <- substr(dbResources$id,1,6)
+  dbResources$parentId <- substr(dbResources$parentId,1,6)
   row.names(dbResources) <- NULL
   dbResources <- canonicalizeActivityInfoObject(dbResources, replaceId = FALSE)
     

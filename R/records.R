@@ -703,6 +703,7 @@ prettyColumns <- function(x, select, ...) {
 
   styleId <- styleUI
   styleId$columnNames <- "id"
+  styleId$countRecordLists <- TRUE
   
   columns <- varNames(x, styleId, addNames = FALSE)
   names(columns) <- varNames(x, styleUI, addNames = FALSE)
@@ -728,6 +729,7 @@ styledColumns <- function(x, select, style = defaultColumnStyle(), forceId = FAL
   if (styleVars$columnNames[[1]]=="pretty"||forceId) {
     styleVars$columnNames <- "id"
   }
+  styleVars$countRecordLists <- TRUE
 
   columns <- varNames(x, styleVars, addNames = FALSE)
   names(columns) <- varNames(x, style, addNames = FALSE)
@@ -893,7 +895,7 @@ varNames.activityInfoFormTree <- function(x, style = defaultColumnStyle(), addNa
         if (identical(style$columnNames, "pretty")) {
           parentVarNames <- paste("Parent", parentVarNames, sep = " ")
         } else {
-          parentVarNames <- paste("@parent", parentVarNames, sep = ".")
+          parentVarNames <- prefixExpressions("@parent", parentVarNames)
         }
       }
       
@@ -1029,6 +1031,10 @@ elementVars <- function(element, formTree, style = defaultColumnStyle(), namedEl
       fullName <- fieldName
     }
     
+    if (isTRUE(style$countRecordLists) && isRecordListField(element)) {
+      fullName <- sprintf("COUNT(%s)", fullName)
+    }
+    
     elementList[[fullName]] <- element
   }
 
@@ -1093,6 +1099,21 @@ elementVars <- function(element, formTree, style = defaultColumnStyle(), namedEl
   }
 }
  
+# A subform or reverse reference field holds the list of its records. In a query 
+# column it is counted, so that the column is the number of records.
+isRecordListField <- function(element) {
+  isTRUE(element[["type"]] %in% c("subform", "reversereference"))
+}
+
+# Puts a path in front of column expressions. The path goes inside the COUNT() 
+# of a counted subform or reverse reference field.
+prefixExpressions <- function(prefix, expressions) {
+  counted <- grepl("^COUNT\\(.*\\)$", expressions)
+  inner <- sub("^COUNT\\((.*)\\)$", "\\1", expressions)
+  prefixed <- paste(prefix, inner, sep = ".")
+  ifelse(counted, sprintf("COUNT(%s)", prefixed), prefixed)
+}
+
 elementVarName <- function(y, style) {
   stopifnot(style$columnNames %in% c("pretty", "label", "code", "id"))
 
@@ -1157,6 +1178,8 @@ tbl.src_activityInfo <- function(src, formTree, style = defaultColumnStyle(),...
   step <- firstStep(formTree, style, totalRecords)
   idStyle <- style
   idStyle$columnNames <- "id"
+  # The elements are looked up by column expression, so they are named like the query columns
+  idStyle$countRecordLists <- TRUE
 
   elements <- namedElementVarList(formTree = formTree, style = idStyle)
 

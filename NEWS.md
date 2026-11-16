@@ -1,3 +1,7 @@
+## [Unreleased]
+Potential breaking changes:
+- `getRecords()` and `queryTable()` now request subform and reverse reference fields as `COUNT(field)`. ActivityInfo servers with list formulas return a bare subform field as the list of its record ids; the column remains the number of records. On older servers these columns are 1 for every record
+
 ## [5.0]
 Potential breaking changes:
 - `hideFromEntry` now hides a field from data entry (previously it hid the field from the table), `hideInTable` now hides a field from the table (previously it was ignored), and `reviewerOnly` now restricts a field to reviewers (previously it was ignored)
